@@ -1,0 +1,292 @@
+{
+ "key": "7fddadedd6b76d981c0deade896b49947889548830f069c4417f46dc68142b8d",
+ "model_id": "jev-1.13.0",
+ "created_at": 1790789669.390559,
+ "state": {
+  "goal": "Resolve this issue: Deprecate spider attributes that can be replaced by settings\n\nSince Scrapy 1.0, spiders can override project-level settings through `Spider.custom_settings` and `Spider.update_settings()`.\n\nBefore that, the workaround was to allow to define spider attributes that could override project settings.\n\nWe should deprecate the use of such attributes: each time one is used, log a deprecation warning asking to switch to `Spider.custom_settings` or `Spider.update_settings()` and indicating what the corresponding setting name is.\n\nFrom what I can tell based on a sear",
+  "files": {
+   "F1": "scrapy/spiders/crawl.py: This modules implements the CrawlSpider which is the recommended spider to use for scraping typical websites that requires crawling pages. Defines Rule, CrawlSpider, _identity, _identity_process_request, _get_method. Defines: _identity, _identity_process_request, _get_method, Rule, CrawlSpider.",
+   "F2": "scrapy/crawler.py: Defines Crawler, CrawlerRunnerBase, CrawlerRunner, AsyncCrawlerRunner, CrawlerProcessBase, CrawlerProcess, AsyncCrawlerProcess, _LateAttribute. Defines: _LateAttribute, Crawler, CrawlerRunnerBase, CrawlerRunner, AsyncCrawlerRunner, CrawlerProcessBase, CrawlerProcess, AsyncCrawlerProcess.",
+   "F3": "scrapy/spiders/__init__.py: Base class for Scrapy spiders. Defines Spider. Defines: Spider.",
+   "F4": "scrapy/core/__init__.py: Scrapy core library classes and functions.",
+   "F5": "scrapy/utils/log.py: Defines failure_to_exc_info, TopLevelFormatter, configure_logging, install_scrapy_root_handler, get_scrapy_root_handler, log_scrapy_info, log_reactor_info, StreamLogger and more. Defines: failure_to_exc_info, TopLevelFormatter, _SpiderRecordDefaultFilter, configure_logging, install_scrapy_root_handler, _uninstall_scrapy_root_handler, get_scrapy_root_handler, _get_formatter, _get_handler, log_scrapy_info, log_reactor_info, StreamLogger.",
+   "F6": "scrapy/pipelines/files.py: Files Pipeline. Defines StatInfo, FilesStoreProtocol, FSFilesStore, S3FilesStore, GCSFilesStore, FTPFilesStore, FilesPipeline, _to_string and more. Defines: _to_string, _md5sum, StatInfo, FilesStoreProtocol, FSFilesStore, S3FilesStore, GCSFilesStore, FTPFilesStore, FilesPipeline, __getattr__.",
+   "F7": "scrapy/pipelines/images.py: Images Pipeline. Defines ImageException, ImagesPipeline. Defines: ImageException, ImagesPipeline.",
+   "F8": "scrapy/pipelines/media.py: Defines FileInfo, FileException, MediaPipeline, _MediaRequestFiltered, _media_request_filtered. Defines: FileInfo, FileException, _MediaRequestFiltered, _media_request_filtered, MediaPipeline, MediaPipeline.SpiderInfo.",
+   "F9": "scrapy/shell.py: Scrapy Shell. Defines Shell, inspect_response. Defines: Shell, inspect_response.",
+   "F10": "scrapy/__init__.py: Scrapy - a web crawling and web scraping framework written for Python.",
+   "F11": "scrapy/exceptions.py: Scrapy core exceptions. Defines NotConfigured, IgnoreRequest, DontCloseSpider, CloseSpider, StopDownload, DownloadConnectionRefusedError, CannotResolveHostError, DownloadTimeoutError and more. Defines: NotConfigured, _InvalidOutput, IgnoreRequest, DontCloseSpider, CloseSpider, StopDownload, DownloadConnectionRefusedError, CannotResolveHostError, DownloadTimeoutError, DownloadCancelledError, DownloadFailedError, ResponseDataLossError.",
+   "F12": "scrapy/http/__init__.py: Module containing all HTTP related classes.",
+   "F13": "scrapy/http/request/__init__.py: This module implements the Request class which is used to represent HTTP requests in Scrapy. Defines VerboseCookie, NO_CALLBACK, Request, _find_method. Defines: VerboseCookie, NO_CALLBACK, Request, _find_method.",
+   "F14": "scrapy/settings/__init__.py: Defines get_settings_priority, SettingsAttribute, BaseSettings, Settings, iter_default_settings, overridden_settings. Defines: get_settings_priority, SettingsAttribute, BaseSettings, Settings, iter_default_settings, overridden_settings.",
+   "F15": "scrapy/signals.py: Scrapy signals.",
+   "F16": "scrapy/spiders/feed.py: This module implements the XMLFeedSpider which is the recommended spider to use for scraping from an XML feed. Defines XMLFeedSpider, CSVFeedSpider. Defines: XMLFeedSpider, CSVFeedSpider."
+  }
+ },
+ "questions": {
+  "need_f1": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F1 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f1": {
+   "type": "noul",
+   "instructions": "Is file F1 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f2": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F2 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f2": {
+   "type": "noul",
+   "instructions": "Is file F2 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f3": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F3 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f3": {
+   "type": "noul",
+   "instructions": "Is file F3 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f4": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F4 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f4": {
+   "type": "noul",
+   "instructions": "Is file F4 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f5": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F5 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f5": {
+   "type": "noul",
+   "instructions": "Is file F5 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f6": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F6 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f6": {
+   "type": "noul",
+   "instructions": "Is file F6 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f7": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F7 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f7": {
+   "type": "noul",
+   "instructions": "Is file F7 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f8": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F8 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f8": {
+   "type": "noul",
+   "instructions": "Is file F8 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f9": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F9 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f9": {
+   "type": "noul",
+   "instructions": "Is file F9 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f10": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F10 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f10": {
+   "type": "noul",
+   "instructions": "Is file F10 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f11": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F11 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f11": {
+   "type": "noul",
+   "instructions": "Is file F11 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f12": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F12 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f12": {
+   "type": "noul",
+   "instructions": "Is file F12 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f13": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F13 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f13": {
+   "type": "noul",
+   "instructions": "Is file F13 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f14": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F14 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f14": {
+   "type": "noul",
+   "instructions": "Is file F14 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f15": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F15 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f15": {
+   "type": "noul",
+   "instructions": "Is file F15 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f16": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F16 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f16": {
+   "type": "noul",
+   "instructions": "Is file F16 the place where the change described by the goal would most likely be made?"
+  }
+ },
+ "answers": {
+  "need_f1": {
+   "type": "noul",
+   "noul": 0.39
+  },
+  "entry_f1": {
+   "type": "noul",
+   "noul": 0.25
+  },
+  "need_f2": {
+   "type": "noul",
+   "noul": 0.22
+  },
+  "entry_f2": {
+   "type": "noul",
+   "noul": 0.16
+  },
+  "need_f3": {
+   "type": "noul",
+   "noul": 0.84
+  },
+  "entry_f3": {
+   "type": "noul",
+   "noul": 0.77
+  },
+  "need_f4": {
+   "type": "noul",
+   "noul": 0.12
+  },
+  "entry_f4": {
+   "type": "noul",
+   "noul": 0.1
+  },
+  "need_f5": {
+   "type": "noul",
+   "noul": 0.37
+  },
+  "entry_f5": {
+   "type": "noul",
+   "noul": 0.15
+  },
+  "need_f6": {
+   "type": "noul",
+   "noul": 0.09
+  },
+  "entry_f6": {
+   "type": "noul",
+   "noul": 0.08
+  },
+  "need_f7": {
+   "type": "noul",
+   "noul": 0.1
+  },
+  "entry_f7": {
+   "type": "noul",
+   "noul": 0.06
+  },
+  "need_f8": {
+   "type": "noul",
+   "noul": 0.16
+  },
+  "entry_f8": {
+   "type": "noul",
+   "noul": 0.14
+  },
+  "need_f9": {
+   "type": "noul",
+   "noul": 0.08
+  },
+  "entry_f9": {
+   "type": "noul",
+   "noul": 0.06
+  },
+  "need_f10": {
+   "type": "noul",
+   "noul": 0.13
+  },
+  "entry_f10": {
+   "type": "noul",
+   "noul": 0.07
+  },
+  "need_f11": {
+   "type": "noul",
+   "noul": 0.14
+  },
+  "entry_f11": {
+   "type": "noul",
+   "noul": 0.08
+  },
+  "need_f12": {
+   "type": "noul",
+   "noul": 0.12
+  },
+  "entry_f12": {
+   "type": "noul",
+   "noul": 0.05
+  },
+  "need_f13": {
+   "type": "noul",
+   "noul": 0.18
+  },
+  "entry_f13": {
+   "type": "noul",
+   "noul": 0.09
+  },
+  "need_f14": {
+   "type": "noul",
+   "noul": 0.64
+  },
+  "entry_f14": {
+   "type": "noul",
+   "noul": 0.31
+  },
+  "need_f15": {
+   "type": "noul",
+   "noul": 0.16
+  },
+  "entry_f15": {
+   "type": "noul",
+   "noul": 0.07
+  },
+  "need_f16": {
+   "type": "noul",
+   "noul": 0.36
+  },
+  "entry_f16": {
+   "type": "noul",
+   "noul": 0.19
+  }
+ },
+ "model_returned": "jev-1.13-free",
+ "provider": "beatapi",
+ "input_tokens": 2532,
+ "output_tokens": 594,
+ "latency_ms": 717.2891250011162,
+ "request_id": "task_Tkcamif43jBtqYF2BkhZKFBmpE8eYTQD"
+}

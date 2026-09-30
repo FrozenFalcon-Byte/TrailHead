@@ -1,0 +1,273 @@
+"""HTTP API for the web app. Long jobs (ask, tour, where) stream Server-Sent Events: every decision Jev makes is
+pushed as it lands, and a heartbeat reports when the next Jev request slot opens, since the free tier allows one a minute."""
+
+from __future__ import annotations
+
+import asyncio
+import json
+import logging
+import time
+from contextlib import asynccontextmanager
+from typing import Any, AsyncIterator, Awaitable, Callable
+
+from fastapi import Depends, FastAPI, HTTPException, Request
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
+from pydantic import BaseModel, Field
+
+from . import evals, repos
+from .auth import AuthError, User, Verifier
+from .config import ENGINE_KINDS, Settings, load_settings
+from .context import Context
+from .decisions import DecisionError
+from .llm.client import LLMError
+from .navigate import Navigator, nav_to_dict
+
+logger = logging.getLogger(__name__)
+HEARTBEAT_S = 2.0
+Emit = Callable[[str, dict[str, Any]], None]
+
+
+class AskBody(BaseModel):
+    question: str = Field(min_length=3, max_length=500)
+    repo: str | None = None
+    engine: str | None = None
+
+
+class TourBody(BaseModel):
+    goal: str = Field(min_length=3, max_length=1200)
+    repo: str | None = None
+    engine: str | None = None
+    notes: bool = True
+
+
+class ReplanBody(BaseModel):
+    tour: dict[str, Any]
+    feedback: dict[str, str]
+    repo: str | None = None
+
+
+class IngestBody(BaseModel):
+    repo: str = Field(pattern=r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$")
+
+
+def _sse(kind: str, payload: Any) -> bytes:
+    return f"event: {kind}\ndata: {json.dumps(payload, default=str)}\n\n".encode()
+
+
+def create_app(settings: Settings | None = None) -> FastAPI:
+    settings = settings or load_settings()
+    verifier = Verifier(settings)
+    contexts: dict[str, Context] = {}
+    @asynccontextmanager
+    async def lifespan(_: FastAPI) -> AsyncIterator[None]:
+        yield
+        for ctx in contexts.values():
+            await ctx.aclose()
+
+    app = FastAPI(title="Trailhead", version="0.1.0", lifespan=lifespan)
+    app.add_middleware(CORSMiddleware, allow_origins=list(settings.web_origins), allow_methods=["*"], allow_headers=["*"])
+
+    async def user(request: Request) -> User:
+        try:
+            return verifier.verify(request.headers.get("authorization"))
+        except AuthError as exc:
+            raise HTTPException(401, str(exc)) from exc
+
+    def default_repo() -> str:
+        listed = [r for r in repos.list_repos(settings) if r.get("status") == "ready"]
+        if not listed:
+            raise HTTPException(404, "no repository has been ingested yet")
+        return listed[0]["repo"]
+
+    def ctx_for(repo: str | None) -> Context:
+        name = repo or default_repo()
+        if name not in contexts:
+            try:
+                scoped = repos.settings_for(settings, name)
+            except ValueError as exc:
+                raise HTTPException(400, str(exc)) from exc
+            if not scoped.db_path.exists():
+                raise HTTPException(404, f"{name} has not been ingested")
+            contexts[name] = Context(scoped)
+        return contexts[name]
+
+    def engine_kind(kind: str | None) -> str:
+        if kind and kind not in ENGINE_KINDS:
+            raise HTTPException(400, f"engine must be one of {ENGINE_KINDS}")
+        return kind or settings.decision_engine
+
+    def next_slot() -> float:
+        """Seconds until the shared Jev limiter hands out its next request."""
+        try:
+            value = float((settings.data_dir / "ratelimit" / "beatapi.slot").read_text().strip() or 0)
+        except (OSError, ValueError):
+            return 0.0
+        return max(0.0, value - time.time())
+
+    def stream(job: Callable[[Emit], Awaitable[Any]]) -> StreamingResponse:
+        async def events() -> AsyncIterator[bytes]:
+            queue: asyncio.Queue[tuple[str, Any]] = asyncio.Queue()
+            started = time.time()
+
+            def emit(kind: str, payload: dict[str, Any]) -> None:
+                queue.put_nowait((kind, payload))
+
+            async def run() -> None:
+                try:
+                    result = await job(emit)
+                    queue.put_nowait(("done", result))
+                except (DecisionError, LLMError, ValueError) as exc:
+                    queue.put_nowait(("error", {"message": str(exc)}))
+                except Exception as exc:  # the stream must always end with an event the UI understands
+                    logger.exception("job failed")
+                    queue.put_nowait(("error", {"message": f"{type(exc).__name__}: {exc}"}))
+
+            task = asyncio.create_task(run())
+            try:
+                while True:
+                    try:
+                        kind, payload = await asyncio.wait_for(queue.get(), HEARTBEAT_S)
+                    except asyncio.TimeoutError:
+                        yield _sse("heartbeat", {"elapsed": round(time.time() - started, 1), "next_slot_s": round(next_slot(), 1)})
+                        continue
+                    yield _sse(kind, payload)
+                    if kind in ("done", "error"):
+                        break
+            finally:
+                if not task.done():
+                    task.cancel()
+
+        return StreamingResponse(events(), media_type="text/event-stream", headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
+
+    @app.get("/api/health")
+    async def health() -> dict[str, Any]:
+        return {"ok": True, "auth": settings.auth_mode, "auth_configured": verifier.configured, "engines": list(ENGINE_KINDS),
+                "default_engine": settings.decision_engine, "next_slot_s": round(next_slot(), 1)}
+
+    @app.get("/api/me")
+    async def me(current: User = Depends(user)) -> dict[str, Any]:
+        return current.__dict__
+
+    @app.get("/api/repos")
+    async def list_repos(_: User = Depends(user)) -> list[dict[str, Any]]:
+        return repos.list_repos(settings)
+
+    @app.post("/api/repos")
+    async def add_repo(body: IngestBody, _: User = Depends(user)) -> dict[str, Any]:
+        return repos.start_ingest(settings, body.repo)
+
+    @app.get("/api/overview")
+    async def overview(repo: str | None = None, _: User = Depends(user)) -> dict[str, Any]:
+        ctx = ctx_for(repo)
+        store = ctx.store
+        layers = {r["value"]: r["n"] for r in store.query("SELECT value, COUNT(*) AS n FROM annotations WHERE qid = 'layer' GROUP BY value ORDER BY n DESC")}
+        top_dirs = [dict(r) for r in store.query("SELECT path, summary FROM dirs WHERE path NOT LIKE '%/%' AND path NOT LIKE '.%' ORDER BY path")]
+        return {**repos.summary(store), "layers": layers, "top_dirs": top_dirs, "next_slot_s": round(next_slot(), 1)}
+
+    @app.get("/api/tree")
+    async def tree(path: str = "", repo: str | None = None, _: User = Depends(user)) -> dict[str, Any]:
+        ctx = ctx_for(repo)
+        t = ctx.tree(include_tests=True, include_docs=True)
+        try:
+            node = t.node(path)
+        except KeyError as exc:
+            raise HTTPException(404, f"no such path: {path}") from exc
+        children = []
+        for child in t.children(path):
+            ann = {r["qid"]: r["value"] for r in ctx.store.query("SELECT qid, value FROM annotations WHERE ref = ?", (f"file:{child.id}",))} if child.kind == "file" else {}
+            children.append({"id": child.id, "name": child.name, "kind": child.kind, "summary": child.summary, "annotations": ann})
+        children.sort(key=lambda c: (c["kind"] != "dir", c["name"]))
+        return {"id": node.id, "kind": node.kind, "summary": node.summary, "children": children}
+
+    @app.post("/api/ask")
+    async def ask_endpoint(body: AskBody, _: User = Depends(user)) -> StreamingResponse:
+        from .ask import ask
+
+        ctx, kind = ctx_for(body.repo), engine_kind(body.engine)
+        return stream(lambda emit: ask(ctx, body.question, engine_kind=kind, emit=emit))
+
+    @app.post("/api/where")
+    async def where(body: AskBody, _: User = Depends(user)) -> StreamingResponse:
+        ctx, kind = ctx_for(body.repo), engine_kind(body.engine)
+
+        async def job(emit: Emit) -> dict[str, Any]:
+            navigator = Navigator(ctx.tree(), ctx.engine(kind))
+
+            def after_depth(result: Any, steps: list[Any], beam: list[Any]) -> None:
+                emit("nav_depth", {"steps": nav_to_dict(type(result)(body.question, [], steps, None))["steps"], "beam": [{"nodes": p.nodes, "score": p.score} for p in beam]})
+
+            result = await navigator.search(body.question, after_depth=after_depth, symbol_store=ctx.store)
+            return nav_to_dict(result)
+
+        return stream(job)
+
+    @app.post("/api/tour")
+    async def tour_endpoint(body: TourBody, _: User = Depends(user)) -> StreamingResponse:
+        from .tour import TourPlanner, tour_to_dict
+
+        ctx, kind = ctx_for(body.repo), engine_kind(body.engine)
+
+        async def job(emit: Emit) -> dict[str, Any]:
+            planner = TourPlanner(ctx, ctx.engine(kind), llm=ctx.llm if body.notes else None)
+            return tour_to_dict(await planner.plan(body.goal, notes=body.notes, emit=emit))
+
+        return stream(job)
+
+    @app.post("/api/tour/replan")
+    async def replan(body: ReplanBody, _: User = Depends(user)) -> dict[str, Any]:
+        from .tour import TourPlanner, tour_from_dict, tour_to_dict
+
+        ctx = ctx_for(body.repo)
+        planner = TourPlanner(ctx, ctx.engine(), llm=ctx.llm)
+        try:
+            return tour_to_dict(await planner.replan(tour_from_dict(body.tour), body.feedback))
+        except (ValueError, KeyError, TypeError) as exc:
+            raise HTTPException(400, str(exc)) from exc
+
+    @app.get("/api/issues")
+    async def issues(repo: str | None = None, _: User = Depends(user)) -> dict[str, Any]:
+        """Ranks only issues already annotated, so this never waits on Jev. `trailhead pick` annotates more."""
+        from .picker import WEIGHTS, candidate_issues, pick_issues
+
+        ctx = ctx_for(repo)
+        annotated = {int(r["ref"].split(":")[1]) for r in ctx.store.query("SELECT DISTINCT ref FROM annotations WHERE ref LIKE 'issue:%'")}
+        numbers = [n for n in candidate_issues(ctx.store, limit=200) if n in annotated]
+        picks = []
+        for engine in {r["engine"] for r in ctx.store.query("SELECT DISTINCT engine FROM annotations WHERE ref LIKE 'issue:%'")}:
+            picks += [p.__dict__ | {"engine": engine} for p in await pick_issues(ctx.store, _NoCalls(), engine, numbers=numbers, top=50)]
+        open_total = len(candidate_issues(ctx.store, limit=1000))
+        return {"weights": WEIGHTS, "picks": sorted(picks, key=lambda p: -p["score"]), "open_unlinked": open_total, "annotated": len(numbers)}
+
+    @app.get("/api/decisions")
+    async def decisions(limit: int = 60, repo: str | None = None, _: User = Depends(user)) -> list[dict[str, Any]]:
+        ctx = ctx_for(repo)
+        return [dict(r) for r in ctx.log.recent(min(max(limit, 1), 500))]
+
+    @app.get("/api/evals")
+    async def eval_results(_: User = Depends(user)) -> dict[str, Any]:
+        out: dict[str, Any] = {}
+        for name in ("nav", "tour"):
+            data = evals.load_results(name)
+            out[name] = {m: b.get("summary", {}) for m, b in data.get("methods", {}).items()}
+        out["why"] = evals.load_results("why_jev_scores")
+        return out
+
+    return app
+
+
+class _NoCalls:
+    """Stands in for an engine when every answer must come from stored annotations."""
+
+    log = None
+    name = "stored"
+
+    async def decide(self, *args: Any, **kwargs: Any) -> Any:
+        raise DecisionError("not annotated yet")
+
+
+def main() -> None:
+    import uvicorn
+
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
+    uvicorn.run(create_app(), host="127.0.0.1", port=8000)

@@ -1,0 +1,55 @@
+{
+ "key": "55f086753add5e699cd11014e2b5d2b09409507381eeba6a50241d6b856992b7",
+ "model_id": "jev-1.13.0",
+ "created_at": 1790790256.453664,
+ "state": {
+  "goal": "Resolve this issue: Non-typing assert in getdictorlist()\n\nI noticed that the implementation of `getdictorlist()` currently has a couple of `assert` statements that can fail based on user input. They should be replaced with the raising of a `ValueError`.\n\nhttps://github.com/scrapy/scrapy/blob/0ae27b8fa11a05ea99faffc2b0e1a3235f0c70a5/scrapy/settings/__init__.py#L285\nhttps://github.com/scrapy/scrapy/blob/0ae27b8fa11a05ea99faffc2b0e1a3235f0c70a5/scrapy/settings/__init__.py#L291"
+ },
+ "questions": {
+  "in_root": {
+   "type": "choice",
+   "instructions": "Which entry is most likely to contain the code that the goal is about?",
+   "criteria": {
+    "c0": "AUTHORS",
+    "c1": "CITATION.cff",
+    "c2": "LICENSE",
+    "c3": "NEWS",
+    "c4": "codecov.yml",
+    "c5": "docs/: Contains _ext/, _static/, _templates/, _tests/, intro/, news/, topics/, utils/, conf.py, conftest.py, contributing.rst, faq.rst and 6 more.",
+    "c6": "extras/: Contains coverage-report.sh, github-release-notes.py, pre-bump.py, qps-bench-server.py, qpsclient.py, scrapy.1, upgrade-ci-pins.py, scrapy_bash_completion, scrapy_zsh_completion.",
+    "c7": "pyproject.toml",
+    "c8": "scrapy/: Scrapy - a web crawling and web scraping framework written for Python. Contains commands/, contracts/, core/, downloadermiddlewares/, extensions/, http/, linkextractors/, loader/, pipelines/, selector/, settings/, spidermiddlewares/ and 31 more.",
+    "c9": "tests_typing/: Contains test_http_request.mypy-testing, test_http_response.mypy-testing, test_spiders.mypy-testing.",
+    "c10": "tox.ini: Tox (https://tox.readthedocs.io/) is a tool for running tests in multiple virtualenvs. This configuration file will run the test suite on a…",
+    "none": "None of the listed entries is related to the goal."
+   }
+  }
+ },
+ "answers": {
+  "in_root": {
+   "type": "choice",
+   "choice": "c8",
+   "probabilities": {
+    "c0": 0.0,
+    "c1": 0.0,
+    "c10": 0.0,
+    "c2": 0.0,
+    "c3": 0.0,
+    "c4": 0.0,
+    "c5": 0.0,
+    "c6": 0.0,
+    "c7": 0.0,
+    "c8": 1.0,
+    "c9": 0.0,
+    "none": 0.0
+   },
+   "confidence": 1.0
+  }
+ },
+ "model_returned": "jev-1.13-free",
+ "provider": "beatapi",
+ "input_tokens": 874,
+ "output_tokens": 115,
+ "latency_ms": 824.1440419988066,
+ "request_id": "task_S8UqpTE35XtU22EEM5UM4shmhgeZJtHe"
+}

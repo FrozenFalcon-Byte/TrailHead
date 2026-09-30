@@ -1,0 +1,66 @@
+{
+ "key": "b7053c9a2ab0d995c866bc9b28bc5089cffd523a77106e506388af765b435b9b",
+ "model_id": "jev-1.13.0",
+ "created_at": 1790789865.009013,
+ "state": {
+  "goal": "Resolve this issue: Change default SCHEDULER_PRIORITY_QUEUE to scrapy.pqueues.DownloaderAwarePriorityQueue\n\nSee: https://github.com/scrapy/scrapy/pull/6921#discussion_r2173142138"
+ },
+ "questions": {
+  "in_scrapy_settings": {
+   "type": "choice",
+   "instructions": "Which entry is most likely to contain the code that the goal is about?",
+   "criteria": {
+    "c0": "__init__.py: Defines get_settings_priority, SettingsAttribute, BaseSettings, Settings, iter_default_settings, overridden_settings.",
+    "c1": "default_settings.py: This module contains the default values for all settings used by Scrapy. Defines __getattr__.",
+    "none": "None of the listed entries is related to the goal."
+   }
+  },
+  "in_scrapy_core": {
+   "type": "choice",
+   "instructions": "Which entry is most likely to contain the code that the goal is about?",
+   "criteria": {
+    "c0": "__init__.py: Scrapy core library classes and functions.",
+    "c1": "_http2/: Contains agent.py, protocol.py, stream.py, __init__.py.",
+    "c2": "downloader/: Contains handlers/, contextfactory.py, middleware.py, tls.py, __init__.py, _idna_patch.py.",
+    "c3": "engine.py: This is the Scrapy engine which controls the Scheduler, Downloader and Spider. Defines EngineState, ExecutionEngine, _Slot.",
+    "c4": "scheduler.py: Defines BaseSchedulerMeta, BaseScheduler, Scheduler.",
+    "c5": "scraper.py: This module implements the Scraper component which parses responses and extracts information from them. Defines Slot, Scraper.",
+    "c6": "spidermw.py: Spider Middleware manager. Defines SpiderMiddlewareManager.",
+    "none": "None of the listed entries is related to the goal."
+   }
+  }
+ },
+ "answers": {
+  "in_scrapy_settings": {
+   "type": "choice",
+   "choice": "c1",
+   "probabilities": {
+    "c0": 0.01,
+    "c1": 0.97,
+    "none": 0.02
+   },
+   "confidence": 0.97
+  },
+  "in_scrapy_core": {
+   "type": "choice",
+   "choice": "c4",
+   "probabilities": {
+    "c0": 0.03,
+    "c1": 0.0,
+    "c2": 0.01,
+    "c3": 0.02,
+    "c4": 0.93,
+    "c5": 0.0,
+    "c6": 0.0,
+    "none": 0.01
+   },
+   "confidence": 0.91
+  }
+ },
+ "model_returned": "jev-1.13-free",
+ "provider": "beatapi",
+ "input_tokens": 756,
+ "output_tokens": 125,
+ "latency_ms": 683.568042000843,
+ "request_id": "task_v6WC7dx6gqaoPVHkI9IhdMID8OeO96vv"
+}

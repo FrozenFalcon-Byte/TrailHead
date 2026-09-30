@@ -1,0 +1,122 @@
+{
+ "key": "65ddc4765035d71a84e8a3740d9346926f7aa19fb815752fa62d8f0fe4d064f2",
+ "model_id": "jev-1.13.0",
+ "created_at": 1790789929.921497,
+ "state": {
+  "goal": "Resolve this issue: Change default SCHEDULER_PRIORITY_QUEUE to scrapy.pqueues.DownloaderAwarePriorityQueue\n\nSee: https://github.com/scrapy/scrapy/pull/6921#discussion_r2173142138",
+  "files": {
+   "F1": "scrapy/settings/default_settings.py: This module contains the default values for all settings used by Scrapy. Defines __getattr__. Defines: __getattr__.",
+   "F2": "scrapy/core/scheduler.py: Defines BaseSchedulerMeta, BaseScheduler, Scheduler. Defines: BaseSchedulerMeta, BaseScheduler, Scheduler.",
+   "F3": "scrapy/squeues.py: Scheduler queues. Defines _with_mkdir, _serializable_queue, _scrapy_serialization_queue, _scrapy_non_serialization_queue, _pickle_serialize. Defines: _with_mkdir, _serializable_queue, _scrapy_serialization_queue, _scrapy_non_serialization_queue, _pickle_serialize.",
+   "F4": "scrapy/pqueues.py: Defines QueueProtocol, ScrapyPriorityQueue, DownloaderInterface, DownloaderAwarePriorityQueue, _path_safe. Defines: _path_safe, QueueProtocol, ScrapyPriorityQueue, DownloaderInterface, DownloaderAwarePriorityQueue.",
+   "F5": "scrapy/core/downloader/__init__.py: Defines Slot, Downloader, _default_jitter, _slot_jitter. Defines: Slot, _default_jitter, _slot_jitter, Downloader.",
+   "F6": "scrapy/exceptions.py: Scrapy core exceptions. Defines NotConfigured, IgnoreRequest, DontCloseSpider, CloseSpider, StopDownload, DownloadConnectionRefusedError, CannotResolveHostError, DownloadTimeoutError and more. Defines: NotConfigured, _InvalidOutput, IgnoreRequest, DontCloseSpider, CloseSpider, StopDownload, DownloadConnectionRefusedError, CannotResolveHostError, DownloadTimeoutError, DownloadCancelledError, DownloadFailedError, ResponseDataLossError."
+  }
+ },
+ "questions": {
+  "need_f1": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F1 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f1": {
+   "type": "noul",
+   "instructions": "Is file F1 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f2": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F2 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f2": {
+   "type": "noul",
+   "instructions": "Is file F2 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f3": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F3 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f3": {
+   "type": "noul",
+   "instructions": "Is file F3 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f4": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F4 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f4": {
+   "type": "noul",
+   "instructions": "Is file F4 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f5": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F5 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f5": {
+   "type": "noul",
+   "instructions": "Is file F5 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f6": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F6 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f6": {
+   "type": "noul",
+   "instructions": "Is file F6 the place where the change described by the goal would most likely be made?"
+  }
+ },
+ "answers": {
+  "need_f1": {
+   "type": "noul",
+   "noul": 0.74
+  },
+  "entry_f1": {
+   "type": "noul",
+   "noul": 0.8
+  },
+  "need_f2": {
+   "type": "noul",
+   "noul": 0.37
+  },
+  "entry_f2": {
+   "type": "noul",
+   "noul": 0.21
+  },
+  "need_f3": {
+   "type": "noul",
+   "noul": 0.22
+  },
+  "entry_f3": {
+   "type": "noul",
+   "noul": 0.08
+  },
+  "need_f4": {
+   "type": "noul",
+   "noul": 0.75
+  },
+  "entry_f4": {
+   "type": "noul",
+   "noul": 0.14
+  },
+  "need_f5": {
+   "type": "noul",
+   "noul": 0.1
+  },
+  "entry_f5": {
+   "type": "noul",
+   "noul": 0.07
+  },
+  "need_f6": {
+   "type": "noul",
+   "noul": 0.08
+  },
+  "entry_f6": {
+   "type": "noul",
+   "noul": 0.04
+  }
+ },
+ "model_returned": "jev-1.13-free",
+ "provider": "beatapi",
+ "input_tokens": 1223,
+ "output_tokens": 220,
+ "latency_ms": 378.2596669989289,
+ "request_id": "task_pzODryDmnTC8VRu7FGBGoQfzOHXHdRnI"
+}

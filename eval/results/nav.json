@@ -217,16 +217,30 @@
      "requests": 4,
      "separation_ratio": 1.2086791510187376,
      "top_score": 0.8384229670252098
+    },
+    "n16": {
+     "id": "n16",
+     "input_tokens": 6080,
+     "latency_ms": 5831.403209002019,
+     "rank": 1,
+     "ranked": [
+      "scrapy/downloadermiddlewares/httpcompression.py",
+      "scrapy/core/downloader/handlers/http11.py",
+      "scrapy/core/downloader/handlers/_base_http.py"
+     ],
+     "requests": 5,
+     "separation_ratio": 2.8021385767661986,
+     "top_score": 0.9665859359188477
     }
    },
    "summary": {
-    "acc_at_1": 0.8,
-    "hit_at_3": 0.8666666666666667,
-    "mean_input_tokens": 4293.2,
-    "mean_latency_ms": 4643.3407193993235,
-    "mean_requests": 3.6,
-    "mrr": 0.8333333333333334,
-    "n": 15
+    "acc_at_1": 0.8125,
+    "hit_at_3": 0.875,
+    "mean_input_tokens": 4404.875,
+    "mean_latency_ms": 4717.594624999492,
+    "mean_requests": 3.6875,
+    "mrr": 0.84375,
+    "n": 16
    }
   },
   "bm25": {
@@ -1516,16 +1530,28 @@
       "scrapy/downloadermiddlewares/cookies.py"
      ],
      "requests": 3
+    },
+    "n16": {
+     "cost_is_estimate": true,
+     "extra_requests": 0,
+     "id": "n16",
+     "input_tokens": 2021,
+     "latency_ms": 3966.0782444090614,
+     "rank": 1,
+     "ranked": [
+      "scrapy/downloadermiddlewares/httpcompression.py"
+     ],
+     "requests": 3
     }
    },
    "summary": {
-    "acc_at_1": 0.8,
-    "hit_at_3": 0.8,
-    "mean_input_tokens": 2585.0666666666666,
-    "mean_latency_ms": 2535.3973680576714,
-    "mean_requests": 2.7333333333333334,
-    "mrr": 0.8,
-    "n": 15
+    "acc_at_1": 0.8125,
+    "hit_at_3": 0.8125,
+    "mean_input_tokens": 2549.8125,
+    "mean_latency_ms": 2624.8149228296334,
+    "mean_requests": 2.75,
+    "mrr": 0.8125,
+    "n": 16
    }
   }
  }

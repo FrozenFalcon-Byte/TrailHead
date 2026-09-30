@@ -1,0 +1,301 @@
+/* Trailhead design system.
+   Colour-blocked sections, each a two-tone pair; ultra-condensed display caps for headlines,
+   a chunky grotesque for everything else, and a hand-written accent for margin notes. */
+
+:root {
+  --pine: #0b2b20;
+  --pine-2: #103a2b;
+  --lichen: #c8f169;
+  --paper: #f5f0e6;
+  --paper-2: #ebe4d6;
+  --ink: #151412;
+  --bark: #2b1507;
+  --blaze: #ff8a3d;
+  --glacier: #08202c;
+  --ice: #8ce6ff;
+  --plum: #2a0f2e;
+  --heather: #e7a6ff;
+  --mute: #cfc7b7;
+  --danger: #ff5d5d;
+
+  --display: 'Anton', 'Impact', 'Arial Narrow', sans-serif;
+  --chunk: 'Bricolage Grotesque Variable', 'Arial', sans-serif;
+  --hand: 'Caveat', 'Comic Sans MS', cursive;
+
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.76, 0, 0.24, 1);
+  --radius: 18px;
+  --gutter: clamp(16px, 4vw, 48px);
+
+  color-scheme: light;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--pine);
+  color: var(--paper);
+  font-family: var(--chunk);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+::selection {
+  background: var(--blaze);
+  color: var(--ink);
+}
+
+a {
+  color: inherit;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+img,
+svg {
+  display: block;
+}
+
+/* Lenis */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+/* ---------- Section themes: every block is one pair ---------- */
+.t-pine {
+  --bg: var(--pine);
+  --fg: var(--lichen);
+  --fg-soft: #a7c98a;
+  background: var(--bg);
+  color: var(--fg);
+}
+.t-paper {
+  --bg: var(--paper);
+  --fg: var(--ink);
+  --fg-soft: #57524a;
+  background: var(--bg);
+  color: var(--fg);
+}
+.t-bark {
+  --bg: var(--bark);
+  --fg: var(--blaze);
+  --fg-soft: #d79a6d;
+  background: var(--bg);
+  color: var(--fg);
+}
+.t-glacier {
+  --bg: var(--glacier);
+  --fg: var(--ice);
+  --fg-soft: #8fb9c7;
+  background: var(--bg);
+  color: var(--fg);
+}
+.t-plum {
+  --bg: var(--plum);
+  --fg: var(--heather);
+  --fg-soft: #c592d6;
+  background: var(--bg);
+  color: var(--fg);
+}
+
+/* ---------- Type ---------- */
+.display {
+  font-family: var(--display);
+  font-weight: 400;
+  text-transform: uppercase;
+  line-height: 0.84;
+  letter-spacing: -0.005em;
+  margin: 0;
+}
+.display em,
+.display .oblique {
+  font-style: normal;
+  display: inline-block;
+  transform: skewX(-11deg);
+}
+.chunk {
+  font-family: var(--chunk);
+  font-weight: 800;
+  font-stretch: 86%;
+  letter-spacing: -0.035em;
+  line-height: 0.92;
+  margin: 0;
+}
+.hand {
+  font-family: var(--hand);
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: 1;
+}
+.kicker {
+  font-family: var(--display);
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  font-size: clamp(18px, 2.2vw, 28px);
+  line-height: 1;
+}
+.lead {
+  font-family: var(--display);
+  text-transform: uppercase;
+  font-size: clamp(22px, 3vw, 40px);
+  line-height: 0.98;
+  letter-spacing: 0.005em;
+  margin: 0;
+}
+.body {
+  font-size: clamp(16px, 1.25vw, 19px);
+  line-height: 1.38;
+  font-weight: 560;
+  letter-spacing: -0.015em;
+}
+.small {
+  font-size: 13px;
+  line-height: 1.35;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+}
+.mono {
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 0.86em;
+  letter-spacing: 0;
+}
+
+/* ---------- Buttons: split pill (label + arrow block) ---------- */
+.btn {
+  --btn-bg: var(--fg);
+  --btn-fg: var(--bg);
+  display: inline-flex;
+  align-items: stretch;
+  gap: 3px;
+  border: 0;
+  padding: 0;
+  background: none;
+  cursor: pointer;
+  text-decoration: none;
+  font-weight: 750;
+  font-size: 16px;
+  letter-spacing: -0.02em;
+}
+.btn > span {
+  background: var(--btn-bg);
+  color: var(--btn-fg);
+  border-radius: 12px;
+  padding: 13px 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  transition: transform 0.35s var(--ease-out), border-radius 0.35s var(--ease-out);
+}
+.btn > span.arrow {
+  padding: 13px 14px;
+}
+.btn:hover > span:first-child {
+  transform: translateX(-2px);
+  border-radius: 16px 8px 8px 16px;
+}
+.btn:hover > span.arrow {
+  transform: translateX(4px) rotate(-6deg);
+}
+.btn:active > span {
+  transform: scale(0.97);
+}
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.btn.ghost > span {
+  background: transparent;
+  color: var(--fg);
+  box-shadow: inset 0 0 0 2px var(--fg);
+}
+.btn.small > span {
+  padding: 8px 12px;
+  font-size: 14px;
+  border-radius: 10px;
+}
+.btn:focus-visible {
+  outline: none;
+}
+.btn:focus-visible > span {
+  outline: 3px solid var(--blaze);
+  outline-offset: 2px;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  padding: 5px 11px;
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: -0.005em;
+  background: color-mix(in srgb, var(--fg) 14%, transparent);
+  color: var(--fg);
+  white-space: nowrap;
+}
+
+.field {
+  width: 100%;
+  border: 0;
+  border-radius: 14px;
+  padding: 16px 18px;
+  background: color-mix(in srgb, var(--fg) 9%, transparent);
+  color: var(--fg);
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--fg) 22%, transparent);
+  font-weight: 600;
+  font-size: 17px;
+  transition: box-shadow 0.25s var(--ease-out), background 0.25s var(--ease-out);
+}
+.field::placeholder {
+  color: color-mix(in srgb, var(--fg) 45%, transparent);
+}
+.field:focus {
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--fg);
+  background: color-mix(in srgb, var(--fg) 13%, transparent);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}

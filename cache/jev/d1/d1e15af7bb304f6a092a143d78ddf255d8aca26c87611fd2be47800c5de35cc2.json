@@ -1,0 +1,59 @@
+{
+ "key": "d1e15af7bb304f6a092a143d78ddf255d8aca26c87611fd2be47800c5de35cc2",
+ "model_id": "jev-1.13.0",
+ "created_at": 1790789343.319641,
+ "state": {
+  "goal": "Resolve this issue: Deprecate spider attributes that can be replaced by settings, round 2\n\nContinuing #6988, there are more occurrences of the same issue:\n\n* [`download_maxsize` and `download_warnsize`](https://github.com/scrapy/scrapy/blob/master/scrapy/core/downloader/handlers/http11.py#L98-L99)\n* [`download_maxsize` and `download_warnsize`](https://github.com/scrapy/scrapy/blob/master/scrapy/core/http2/protocol.py#L198-L203)\n* [`download_timeout`](https://github.com/scrapy/scrapy/blob/master/scrapy/downloadermiddlewares/downloadtimeout.py#L33)\n* [`user_agent`](https://github.com/sc"
+ },
+ "questions": {
+  "in_scrapy_core_downloader_handlers": {
+   "type": "choice",
+   "instructions": "Which entry is most likely to contain the code that the goal is about?",
+   "criteria": {
+    "c0": "__init__.py: Download handlers for different schemes. Defines DownloadHandlerProtocol, DownloadHandlers.",
+    "c1": "_aiohttp.py: Defines AiohttpDownloadHandler, _ClientResponse.",
+    "c2": "_base_http.py: Defines BaseHttpDownloadHandler.",
+    "c3": "_base_streaming.py: Defines BaseStreamingDownloadHandler, _BaseResponseArgs.",
+    "c4": "_httpx.py: ``httpx``-based HTTP(S) download handler. Currently not recommended for production use. Defines HttpxDownloadHandler.",
+    "c5": "base.py: Defines BaseDownloadHandler.",
+    "c6": "datauri.py: Defines DataURIDownloadHandler.",
+    "c7": "file.py: Defines FileDownloadHandler.",
+    "c8": "ftp.py: An asynchronous FTP file download handler for scrapy which somehow emulates an http response. Defines ReceivedDataProtocol, FTPDownloadHandler.",
+    "c9": "http.py",
+    "c10": "http11.py: Download handlers for http and https schemes. Defines HTTP11DownloadHandler, TunnelError, _ResultT, _TunnelingTCP4ClientEndpoint, _tunnel_request_data, _BindAddressAgent, _TunnelingAgent, _ScrapyProxyAgent and more.",
+    "c11": "http2.py: Defines H2DownloadHandler, _ScrapyH2Agent.",
+    "c12": "s3.py: Defines S3DownloadHandler.",
+    "none": "None of the listed entries is related to the goal."
+   }
+  }
+ },
+ "answers": {
+  "in_scrapy_core_downloader_handlers": {
+   "type": "choice",
+   "choice": "c10",
+   "probabilities": {
+    "c0": 0.0,
+    "c1": 0.0,
+    "c10": 0.98,
+    "c11": 0.01,
+    "c12": 0.0,
+    "c2": 0.0,
+    "c3": 0.0,
+    "c4": 0.0,
+    "c5": 0.0,
+    "c6": 0.0,
+    "c7": 0.0,
+    "c8": 0.0,
+    "c9": 0.0,
+    "none": 0.01
+   },
+   "confidence": 0.98
+  }
+ },
+ "model_returned": "jev-1.13-free",
+ "provider": "beatapi",
+ "input_tokens": 968,
+ "output_tokens": 141,
+ "latency_ms": 733.638334000716,
+ "request_id": "task_woFSjOYCQFFq99P1C63qAU6jQKEr2BmI"
+}

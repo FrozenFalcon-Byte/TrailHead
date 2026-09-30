@@ -52,6 +52,11 @@ class Settings:
     local_llm_base_url: str
     local_llm_model: str
     github_token: str
+    db_file: Path | None = None  # a second ingested repository lives in its own database; see repos.py
+    supabase_url: str = ""
+    supabase_jwt_secret: str = ""  # only for projects still on the legacy HS256 secret; new ones publish a JWKS
+    auth_mode: str = "supabase"  # supabase | off (local development only)
+    web_origins: tuple[str, ...] = ("http://localhost:5173",)
 
     @property
     def cache_dir(self) -> Path:
@@ -60,10 +65,10 @@ class Settings:
 
     @property
     def db_path(self) -> Path:
-        return self.data_dir / "trailhead.db"
+        return self.db_file or self.data_dir / "trailhead.db"
 
     def __repr__(self) -> str:
-        return f"Settings(engine={self.decision_engine!r}, jev_providers={[p.name for p in self.jev_providers]}, llm_model={self.llm_model!r})"
+        return f"Settings(engine={self.decision_engine!r}, auth={self.auth_mode!r}, jev_providers={[p.name for p in self.jev_providers]}, llm_model={self.llm_model!r})"
 
 
 def parse_env_file(path: Path) -> dict[str, str]:
@@ -139,4 +144,8 @@ def load_settings(env: Mapping[str, str] | None = None, env_file: Path | str | N
         local_llm_base_url=get("OLLAMA_BASE_URL", "http://localhost:11434/v1").rstrip("/"),
         local_llm_model=get("OLLAMA_MODEL", "qwen2.5-coder:7b"),
         github_token=get("GITHUB_TOKEN"),
+        supabase_url=get("SUPABASE_URL").rstrip("/"),
+        supabase_jwt_secret=get("SUPABASE_JWT_SECRET"),
+        auth_mode=get("TRAILHEAD_AUTH", "supabase").lower(),
+        web_origins=tuple(o.strip() for o in get("TRAILHEAD_WEB_ORIGINS", "http://localhost:5173").split(",") if o.strip()),
     )

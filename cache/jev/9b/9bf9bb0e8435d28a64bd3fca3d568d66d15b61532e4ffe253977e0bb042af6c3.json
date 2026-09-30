@@ -1,0 +1,70 @@
+{
+ "key": "9bf9bb0e8435d28a64bd3fca3d568d66d15b61532e4ffe253977e0bb042af6c3",
+ "model_id": "jev-1.13.0",
+ "created_at": 1790789603.883352,
+ "state": {
+  "goal": "Resolve this issue: Deprecate spider attributes that can be replaced by settings\n\nSince Scrapy 1.0, spiders can override project-level settings through `Spider.custom_settings` and `Spider.update_settings()`.\n\nBefore that, the workaround was to allow to define spider attributes that could override project settings.\n\nWe should deprecate the use of such attributes: each time one is used, log a deprecation warning asking to switch to `Spider.custom_settings` or `Spider.update_settings()` and indicating what the corresponding setting name is.\n\nFrom what I can tell based on a sear"
+ },
+ "questions": {
+  "in_scrapy_spiders": {
+   "type": "choice",
+   "instructions": "Which entry is most likely to contain the code that the goal is about?",
+   "criteria": {
+    "c0": "__init__.py: Base class for Scrapy spiders. Defines Spider.",
+    "c1": "crawl.py: This modules implements the CrawlSpider which is the recommended spider to use for scraping typical websites that requires crawling pages. Defines Rule, CrawlSpider, _identity, _identity_process_request, _get_method.",
+    "c2": "feed.py: This module implements the XMLFeedSpider which is the recommended spider to use for scraping from an XML feed. Defines XMLFeedSpider, CSVFeedSpider.",
+    "c3": "sitemap.py: Defines SitemapSpider, regex, iterloc.",
+    "none": "None of the listed entries is related to the goal."
+   }
+  },
+  "in_scrapy_core": {
+   "type": "choice",
+   "instructions": "Which entry is most likely to contain the code that the goal is about?",
+   "criteria": {
+    "c0": "__init__.py: Scrapy core library classes and functions.",
+    "c1": "_http2/: Contains agent.py, protocol.py, stream.py, __init__.py.",
+    "c2": "downloader/: Contains handlers/, contextfactory.py, middleware.py, tls.py, __init__.py, _idna_patch.py.",
+    "c3": "engine.py: This is the Scrapy engine which controls the Scheduler, Downloader and Spider. Defines EngineState, ExecutionEngine, _Slot.",
+    "c4": "scheduler.py: Defines BaseSchedulerMeta, BaseScheduler, Scheduler.",
+    "c5": "scraper.py: This module implements the Scraper component which parses responses and extracts information from them. Defines Slot, Scraper.",
+    "c6": "spidermw.py: Spider Middleware manager. Defines SpiderMiddlewareManager.",
+    "none": "None of the listed entries is related to the goal."
+   }
+  }
+ },
+ "answers": {
+  "in_scrapy_spiders": {
+   "type": "choice",
+   "choice": "c0",
+   "probabilities": {
+    "c0": 1.0,
+    "c1": 0.0,
+    "c2": 0.0,
+    "c3": 0.0,
+    "none": 0.0
+   },
+   "confidence": 0.99
+  },
+  "in_scrapy_core": {
+   "type": "choice",
+   "choice": "c0",
+   "probabilities": {
+    "c0": 0.91,
+    "c1": 0.0,
+    "c2": 0.0,
+    "c3": 0.06,
+    "c4": 0.0,
+    "c5": 0.0,
+    "c6": 0.01,
+    "none": 0.02
+   },
+   "confidence": 0.89
+  }
+ },
+ "model_returned": "jev-1.13-free",
+ "provider": "beatapi",
+ "input_tokens": 902,
+ "output_tokens": 142,
+ "latency_ms": 427.09224999998696,
+ "request_id": "task_BWxyA3DsgCX4pwRSu3wfOCDnsIq6UTfy"
+}

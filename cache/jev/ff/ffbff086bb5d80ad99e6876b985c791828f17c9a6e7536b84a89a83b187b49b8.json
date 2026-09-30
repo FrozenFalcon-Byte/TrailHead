@@ -1,0 +1,224 @@
+{
+ "key": "ffbff086bb5d80ad99e6876b985c791828f17c9a6e7536b84a89a83b187b49b8",
+ "model_id": "jev-1.13.0",
+ "created_at": 1790789017.286193,
+ "state": {
+  "goal": "Resolve this issue: Request.from_curl() raises opaque built-in errors on valid curl commands\n\n## Summary\n\n`Request.from_curl()` raises opaque built-in exceptions on curl commands that real curl accepts. The user sees `ValueError: not enough values to unpack (expected 2, got 1)` or `IndexError: list index out of range`, neither of which names the option responsible.\n\nThree distinct inputs are affected. I checked each against real curl by pointing it at a local socket and reading what it actually put on the wire, rather than relying on the man page.\n\n## Reproduction\n\n```python\nfrom scrapy ",
+  "files": {
+   "F1": "scrapy/utils/request.py: This module provides some useful functions for working with scrapy.Request objects. Defines fingerprint, RequestFingerprinterProtocol, RequestFingerprinter, request_httprepr, referer_str, request_from_dict, request_to_curl, _get_method and more. Defines: fingerprint, RequestFingerprinterProtocol, RequestFingerprinter, request_httprepr, referer_str, request_from_dict, _get_method, _to_verbose_cookies, _decode_cookie, request_to_curl.",
+   "F2": "scrapy/utils/curl.py: Defines DataAction, CurlParser, curl_to_request_kwargs, _parse_headers_and_cookies. Defines: DataAction, CurlParser, _parse_headers_and_cookies, curl_to_request_kwargs.",
+   "F3": "scrapy/http/request/__init__.py: This module implements the Request class which is used to represent HTTP requests in Scrapy. Defines VerboseCookie, NO_CALLBACK, Request, _find_method. Defines: VerboseCookie, NO_CALLBACK, Request, _find_method.",
+   "F4": "scrapy/loader/__init__.py: Item Loader. Defines ItemLoader. Defines: ItemLoader.",
+   "F5": "scrapy/mail.py: Mail sending helpers. Defines MailSender, _to_bytes_or_none. Defines: _to_bytes_or_none, MailSender.",
+   "F6": "scrapy/http/cookies.py: Defines CookieJar, potential_domain_matches, WrappedRequest, WrappedResponse, _DummyLock. Defines: CookieJar, potential_domain_matches, _DummyLock, WrappedRequest, WrappedResponse.",
+   "F7": "scrapy/downloadermiddlewares/httpcompression.py: Defines HttpCompressionMiddleware. Defines: HttpCompressionMiddleware.",
+   "F8": "scrapy/__init__.py: Scrapy - a web crawling and web scraping framework written for Python.",
+   "F9": "scrapy/http/__init__.py: Module containing all HTTP related classes.",
+   "F10": "scrapy/http/headers.py: Defines Headers. Defines: Headers.",
+   "F11": "scrapy/utils/python.py: This module contains essential stuff that should've come with Python itself ;). Defines is_listlike, unique, to_unicode, to_bytes, re_rsearch, memoizemethod_noargs, binary_is_text, get_func_args_dict and more. Defines: is_listlike, unique, to_unicode, to_bytes, _chunk_iter, re_rsearch, memoizemethod_noargs, binary_is_text, get_func_args_dict, get_func_args, get_spec, without_none_values.",
+   "F12": "scrapy/utils/trackref.py: This module provides some functions and classes to record and report references to live object instances. Defines object_ref, format_live_refs, print_live_refs, get_oldest, iter_all. Defines: object_ref, format_live_refs, print_live_refs, get_oldest, iter_all."
+  }
+ },
+ "questions": {
+  "need_f1": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F1 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f1": {
+   "type": "noul",
+   "instructions": "Is file F1 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f2": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F2 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f2": {
+   "type": "noul",
+   "instructions": "Is file F2 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f3": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F3 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f3": {
+   "type": "noul",
+   "instructions": "Is file F3 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f4": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F4 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f4": {
+   "type": "noul",
+   "instructions": "Is file F4 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f5": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F5 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f5": {
+   "type": "noul",
+   "instructions": "Is file F5 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f6": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F6 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f6": {
+   "type": "noul",
+   "instructions": "Is file F6 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f7": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F7 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f7": {
+   "type": "noul",
+   "instructions": "Is file F7 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f8": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F8 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f8": {
+   "type": "noul",
+   "instructions": "Is file F8 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f9": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F9 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f9": {
+   "type": "noul",
+   "instructions": "Is file F9 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f10": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F10 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f10": {
+   "type": "noul",
+   "instructions": "Is file F10 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f11": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F11 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f11": {
+   "type": "noul",
+   "instructions": "Is file F11 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f12": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F12 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f12": {
+   "type": "noul",
+   "instructions": "Is file F12 the place where the change described by the goal would most likely be made?"
+  }
+ },
+ "answers": {
+  "need_f1": {
+   "type": "noul",
+   "noul": 0.67
+  },
+  "entry_f1": {
+   "type": "noul",
+   "noul": 0.67
+  },
+  "need_f2": {
+   "type": "noul",
+   "noul": 0.84
+  },
+  "entry_f2": {
+   "type": "noul",
+   "noul": 0.81
+  },
+  "need_f3": {
+   "type": "noul",
+   "noul": 0.63
+  },
+  "entry_f3": {
+   "type": "noul",
+   "noul": 0.46
+  },
+  "need_f4": {
+   "type": "noul",
+   "noul": 0.07
+  },
+  "entry_f4": {
+   "type": "noul",
+   "noul": 0.04
+  },
+  "need_f5": {
+   "type": "noul",
+   "noul": 0.07
+  },
+  "entry_f5": {
+   "type": "noul",
+   "noul": 0.04
+  },
+  "need_f6": {
+   "type": "noul",
+   "noul": 0.26
+  },
+  "entry_f6": {
+   "type": "noul",
+   "noul": 0.11
+  },
+  "need_f7": {
+   "type": "noul",
+   "noul": 0.07
+  },
+  "entry_f7": {
+   "type": "noul",
+   "noul": 0.04
+  },
+  "need_f8": {
+   "type": "noul",
+   "noul": 0.11
+  },
+  "entry_f8": {
+   "type": "noul",
+   "noul": 0.05
+  },
+  "need_f9": {
+   "type": "noul",
+   "noul": 0.17
+  },
+  "entry_f9": {
+   "type": "noul",
+   "noul": 0.11
+  },
+  "need_f10": {
+   "type": "noul",
+   "noul": 0.25
+  },
+  "entry_f10": {
+   "type": "noul",
+   "noul": 0.09
+  },
+  "need_f11": {
+   "type": "noul",
+   "noul": 0.22
+  },
+  "entry_f11": {
+   "type": "noul",
+   "noul": 0.09
+  },
+  "need_f12": {
+   "type": "noul",
+   "noul": 0.07
+  },
+  "entry_f12": {
+   "type": "noul",
+   "noul": 0.04
+  }
+ },
+ "model_returned": "jev-1.13-free",
+ "provider": "beatapi",
+ "input_tokens": 1893,
+ "output_tokens": 442,
+ "latency_ms": 785.484500000166,
+ "request_id": "task_1tH7RgbESwdjuSmrAOokGZNvItp7WvpP"
+}

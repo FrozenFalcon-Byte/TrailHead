@@ -1,0 +1,190 @@
+{
+ "key": "3dc067deaae5b1a2eadb4a0920e5f7498237fbd5539bb465e8431b457cf77303",
+ "model_id": "jev-1.13.0",
+ "created_at": 1790790191.112046,
+ "state": {
+  "goal": "Resolve this issue: Deprecate CONCURRENT_REQUESTS_PER_IP\n\n`CONCURRENT_REQUESTS_PER_IP` isn't used by default, isn't supported by `DownloaderAwarePriorityQueue`,  isn't compatible with `CONCURRENT_REQUESTS_PER_DOMAIN` and is less useful than that one for most users.\n\nNot sure what can we suggest to people using it though.",
+  "files": {
+   "F1": "scrapy/settings/default_settings.py: This module contains the default values for all settings used by Scrapy. Defines __getattr__. Defines: __getattr__.",
+   "F2": "scrapy/pqueues.py: Defines QueueProtocol, ScrapyPriorityQueue, DownloaderInterface, DownloaderAwarePriorityQueue, _path_safe. Defines: _path_safe, QueueProtocol, ScrapyPriorityQueue, DownloaderInterface, DownloaderAwarePriorityQueue.",
+   "F3": "scrapy/downloadermiddlewares/offsite.py: Defines OffsiteMiddleware. Defines: OffsiteMiddleware.",
+   "F4": "scrapy/core/downloader/__init__.py: Defines Slot, Downloader, _default_jitter, _slot_jitter. Defines: Slot, _default_jitter, _slot_jitter, Downloader.",
+   "F5": "scrapy/core/engine.py: This is the Scrapy engine which controls the Scheduler, Downloader and Spider. Defines EngineState, ExecutionEngine, _Slot. Defines: EngineState, _Slot, ExecutionEngine.",
+   "F6": "scrapy/utils/engine.py: Some debugging functions for working with the Scrapy engine. Defines get_engine_status, format_engine_status, print_engine_status. Defines: get_engine_status, format_engine_status, print_engine_status.",
+   "F7": "scrapy/core/scheduler.py: Defines BaseSchedulerMeta, BaseScheduler, Scheduler. Defines: BaseSchedulerMeta, BaseScheduler, Scheduler.",
+   "F8": "scrapy/resolver.py: Defines CachingThreadedResolver, HostResolution, CachingHostnameResolver, _address_with_port, _CachingResolutionReceiver. Defines: CachingThreadedResolver, _address_with_port, HostResolution, _CachingResolutionReceiver, CachingHostnameResolver.",
+   "F9": "scrapy/squeues.py: Scheduler queues. Defines _with_mkdir, _serializable_queue, _scrapy_serialization_queue, _scrapy_non_serialization_queue, _pickle_serialize. Defines: _with_mkdir, _serializable_queue, _scrapy_serialization_queue, _scrapy_non_serialization_queue, _pickle_serialize.",
+   "F10": "scrapy/exceptions.py: Scrapy core exceptions. Defines NotConfigured, IgnoreRequest, DontCloseSpider, CloseSpider, StopDownload, DownloadConnectionRefusedError, CannotResolveHostError, DownloadTimeoutError and more. Defines: NotConfigured, _InvalidOutput, IgnoreRequest, DontCloseSpider, CloseSpider, StopDownload, DownloadConnectionRefusedError, CannotResolveHostError, DownloadTimeoutError, DownloadCancelledError, DownloadFailedError, ResponseDataLossError."
+  }
+ },
+ "questions": {
+  "need_f1": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F1 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f1": {
+   "type": "noul",
+   "instructions": "Is file F1 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f2": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F2 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f2": {
+   "type": "noul",
+   "instructions": "Is file F2 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f3": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F3 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f3": {
+   "type": "noul",
+   "instructions": "Is file F3 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f4": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F4 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f4": {
+   "type": "noul",
+   "instructions": "Is file F4 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f5": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F5 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f5": {
+   "type": "noul",
+   "instructions": "Is file F5 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f6": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F6 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f6": {
+   "type": "noul",
+   "instructions": "Is file F6 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f7": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F7 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f7": {
+   "type": "noul",
+   "instructions": "Is file F7 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f8": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F8 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f8": {
+   "type": "noul",
+   "instructions": "Is file F8 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f9": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F9 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f9": {
+   "type": "noul",
+   "instructions": "Is file F9 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f10": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F10 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f10": {
+   "type": "noul",
+   "instructions": "Is file F10 the place where the change described by the goal would most likely be made?"
+  }
+ },
+ "answers": {
+  "need_f1": {
+   "type": "noul",
+   "noul": 0.62
+  },
+  "entry_f1": {
+   "type": "noul",
+   "noul": 0.74
+  },
+  "need_f2": {
+   "type": "noul",
+   "noul": 0.8
+  },
+  "entry_f2": {
+   "type": "noul",
+   "noul": 0.38
+  },
+  "need_f3": {
+   "type": "noul",
+   "noul": 0.41
+  },
+  "entry_f3": {
+   "type": "noul",
+   "noul": 0.15
+  },
+  "need_f4": {
+   "type": "noul",
+   "noul": 0.48
+  },
+  "entry_f4": {
+   "type": "noul",
+   "noul": 0.38
+  },
+  "need_f5": {
+   "type": "noul",
+   "noul": 0.23
+  },
+  "entry_f5": {
+   "type": "noul",
+   "noul": 0.18
+  },
+  "need_f6": {
+   "type": "noul",
+   "noul": 0.08
+  },
+  "entry_f6": {
+   "type": "noul",
+   "noul": 0.04
+  },
+  "need_f7": {
+   "type": "noul",
+   "noul": 0.25
+  },
+  "entry_f7": {
+   "type": "noul",
+   "noul": 0.18
+  },
+  "need_f8": {
+   "type": "noul",
+   "noul": 0.18
+  },
+  "entry_f8": {
+   "type": "noul",
+   "noul": 0.07
+  },
+  "need_f9": {
+   "type": "noul",
+   "noul": 0.25
+  },
+  "entry_f9": {
+   "type": "noul",
+   "noul": 0.16
+  },
+  "need_f10": {
+   "type": "noul",
+   "noul": 0.18
+  },
+  "entry_f10": {
+   "type": "noul",
+   "noul": 0.13
+  }
+ },
+ "model_returned": "jev-1.13-free",
+ "provider": "beatapi",
+ "input_tokens": 1766,
+ "output_tokens": 366,
+ "latency_ms": 699.9574590008706,
+ "request_id": "task_kodcPNPAYamPdpiw1M8sjGEpdIsBTxqe"
+}

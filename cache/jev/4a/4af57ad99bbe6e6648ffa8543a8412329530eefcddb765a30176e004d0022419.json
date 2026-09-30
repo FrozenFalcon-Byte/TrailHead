@@ -1,0 +1,55 @@
+{
+ "key": "4af57ad99bbe6e6648ffa8543a8412329530eefcddb765a30176e004d0022419",
+ "model_id": "jev-1.13.0",
+ "created_at": 1790789082.3881652,
+ "state": {
+  "goal": "Resolve this issue: Deprecate spider attributes that can be replaced by settings, round 2\n\nContinuing #6988, there are more occurrences of the same issue:\n\n* [`download_maxsize` and `download_warnsize`](https://github.com/scrapy/scrapy/blob/master/scrapy/core/downloader/handlers/http11.py#L98-L99)\n* [`download_maxsize` and `download_warnsize`](https://github.com/scrapy/scrapy/blob/master/scrapy/core/http2/protocol.py#L198-L203)\n* [`download_timeout`](https://github.com/scrapy/scrapy/blob/master/scrapy/downloadermiddlewares/downloadtimeout.py#L33)\n* [`user_agent`](https://github.com/sc"
+ },
+ "questions": {
+  "in_root": {
+   "type": "choice",
+   "instructions": "Which entry is most likely to contain the code that the goal is about?",
+   "criteria": {
+    "c0": "AUTHORS",
+    "c1": "CITATION.cff",
+    "c2": "LICENSE",
+    "c3": "NEWS",
+    "c4": "codecov.yml",
+    "c5": "docs/: Contains _ext/, _static/, _templates/, _tests/, intro/, news/, topics/, utils/, conf.py, conftest.py, contributing.rst, faq.rst and 6 more.",
+    "c6": "extras/: Contains coverage-report.sh, github-release-notes.py, pre-bump.py, qps-bench-server.py, qpsclient.py, scrapy.1, upgrade-ci-pins.py, scrapy_bash_completion, scrapy_zsh_completion.",
+    "c7": "pyproject.toml",
+    "c8": "scrapy/: Scrapy - a web crawling and web scraping framework written for Python. Contains commands/, contracts/, core/, downloadermiddlewares/, extensions/, http/, linkextractors/, loader/, pipelines/, selector/, settings/, spidermiddlewares/ and 31 more.",
+    "c9": "tests_typing/: Contains test_http_request.mypy-testing, test_http_response.mypy-testing, test_spiders.mypy-testing.",
+    "c10": "tox.ini: Tox (https://tox.readthedocs.io/) is a tool for running tests in multiple virtualenvs. This configuration file will run the test suite on a…",
+    "none": "None of the listed entries is related to the goal."
+   }
+  }
+ },
+ "answers": {
+  "in_root": {
+   "type": "choice",
+   "choice": "c8",
+   "probabilities": {
+    "c0": 0.0,
+    "c1": 0.0,
+    "c10": 0.0,
+    "c2": 0.0,
+    "c3": 0.0,
+    "c4": 0.0,
+    "c5": 0.0,
+    "c6": 0.0,
+    "c7": 0.0,
+    "c8": 1.0,
+    "c9": 0.0,
+    "none": 0.0
+   },
+   "confidence": 1.0
+  }
+ },
+ "model_returned": "jev-1.13-free",
+ "provider": "beatapi",
+ "input_tokens": 874,
+ "output_tokens": 115,
+ "latency_ms": 671.2795829989773,
+ "request_id": "task_rzGNdOIa8ww5fej0UuGY1f70JsAKxaHQ"
+}

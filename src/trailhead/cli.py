@@ -303,6 +303,7 @@ def main(argv: list[str] | None = None) -> int:
     pick.add_argument("--engine", choices=list(ENGINE_KINDS))
     pick.add_argument("--limit", type=int, default=30, help="issues to consider")
     pick.add_argument("--top", type=int, default=10)
+    sub.add_parser("serve", help="run the HTTP API for the web app on 127.0.0.1:8000")
     decisions = sub.add_parser("decisions", help="print the most recent logged decisions")
     decisions.add_argument("--limit", type=int, default=30)
     args = parser.parse_args(argv)
@@ -332,6 +333,11 @@ def main(argv: list[str] | None = None) -> int:
             return asyncio.run(_evidence(settings, args))
         if args.command == "eval":
             return asyncio.run(_eval(settings, args))
+        if args.command == "serve":
+            from .api import main as serve
+
+            serve()
+            return 0
         if args.command == "tour":
             return asyncio.run(_tour(settings, args))
         if args.command == "pick":

@@ -1,0 +1,82 @@
+{
+ "key": "0096ded4fe3ea9947e007e1cd44b75a55f759d6cc4306ebee8496e9d4fef90bd",
+ "model_id": "jev-1.13.0",
+ "created_at": 1790790125.879597,
+ "state": {
+  "goal": "Resolve this issue: Deprecate CONCURRENT_REQUESTS_PER_IP\n\n`CONCURRENT_REQUESTS_PER_IP` isn't used by default, isn't supported by `DownloaderAwarePriorityQueue`,  isn't compatible with `CONCURRENT_REQUESTS_PER_DOMAIN` and is less useful than that one for most users.\n\nNot sure what can we suggest to people using it though."
+ },
+ "questions": {
+  "in_scrapy_settings": {
+   "type": "choice",
+   "instructions": "Which entry is most likely to contain the code that the goal is about?",
+   "criteria": {
+    "c0": "__init__.py: Defines get_settings_priority, SettingsAttribute, BaseSettings, Settings, iter_default_settings, overridden_settings.",
+    "c1": "default_settings.py: This module contains the default values for all settings used by Scrapy. Defines __getattr__.",
+    "none": "None of the listed entries is related to the goal."
+   }
+  },
+  "in_scrapy_downloadermiddlewares": {
+   "type": "choice",
+   "instructions": "Which entry is most likely to contain the code that the goal is about?",
+   "criteria": {
+    "c0": "__init__.py",
+    "c1": "cookies.py: Defines CookiesMiddleware, _is_public_domain.",
+    "c2": "defaultheaders.py: DefaultHeaders downloader middleware. Defines DefaultHeadersMiddleware.",
+    "c3": "downloadtimeout.py: Download timeout middleware. Defines DownloadTimeoutMiddleware.",
+    "c4": "httpauth.py: HTTP basic auth downloader middleware. Defines HttpAuthMiddleware.",
+    "c5": "httpcache.py: Defines HttpCacheMiddleware.",
+    "c6": "httpcompression.py: Defines HttpCompressionMiddleware.",
+    "c7": "httpproxy.py: Defines HttpProxyMiddleware.",
+    "c8": "jsonvalidation.py: Defines JsonValidationMiddleware.",
+    "c9": "offsite.py: Defines OffsiteMiddleware.",
+    "c10": "redirect.py: Defines BaseRedirectMiddleware, RedirectMiddleware, MetaRefreshMiddleware.",
+    "c11": "retry.py: An extension to retry failed requests that are potentially caused by temporary problems such as a connection timeout or HTTP 500 error. Defines get_retry_request, RetryMiddleware.",
+    "c12": "robotstxt.py: This is a middleware to respect robots.txt policies. To activate it you must enable this middleware and enable the ROBOTSTXT_OBEY setting. Defines RobotsTxtMiddleware.",
+    "c13": "stats.py: Defines get_header_size, get_status_size, DownloaderStats.",
+    "c14": "useragent.py: Set User-Agent header per spider or use a default value from settings. Defines UserAgentMiddleware.",
+    "none": "None of the listed entries is related to the goal."
+   }
+  }
+ },
+ "answers": {
+  "in_scrapy_settings": {
+   "type": "choice",
+   "choice": "c1",
+   "probabilities": {
+    "c0": 0.03,
+    "c1": 0.94,
+    "none": 0.03
+   },
+   "confidence": 0.91
+  },
+  "in_scrapy_downloadermiddlewares": {
+   "type": "choice",
+   "choice": "none",
+   "probabilities": {
+    "c0": 0.02,
+    "c1": 0.0,
+    "c10": 0.0,
+    "c11": 0.01,
+    "c12": 0.0,
+    "c13": 0.02,
+    "c14": 0.0,
+    "c2": 0.0,
+    "c3": 0.04,
+    "c4": 0.0,
+    "c5": 0.0,
+    "c6": 0.0,
+    "c7": 0.0,
+    "c8": 0.0,
+    "c9": 0.1,
+    "none": 0.8
+   },
+   "confidence": 0.77
+  }
+ },
+ "model_returned": "jev-1.13-free",
+ "provider": "beatapi",
+ "input_tokens": 1047,
+ "output_tokens": 200,
+ "latency_ms": 684.2820830024721,
+ "request_id": "task_gUO7fbQLmqDE6oEknHWMIyhgpYGm7TZJ"
+}

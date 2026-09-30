@@ -1,0 +1,210 @@
+{
+ "items": {
+  "w03": {
+   "abstain_reason": "",
+   "claims": [
+    {
+     "addresses": 0.9,
+     "directness": 0.94,
+     "evidence": [
+      "E2"
+     ],
+     "id": "C1",
+     "p_support": 1.0,
+     "status": "verified",
+     "text": "Processing of cookies from the Cookie request header was reverted because of the bug reported in #4717",
+     "verdict": "supports"
+    }
+   ],
+   "confidence": 1.0,
+   "evidence": [
+    {
+     "directness": 2.74,
+     "injection": 0.01,
+     "kept": true,
+     "label": "E2",
+     "passage": "[pull request] Do not process cookies from headers\nFixes #4717\r\n\r\nRevert the behaviour introduced in #2400, because of the bug reported in #4717. Once we merge this, we'll need to either reopen #1992 or create a new issue to keep track of the work towards supporting cookies in the `Cookie` request header (#4812, for instance).\r\n\r\nTasks:\r\n- [x] Update cookies middleware implementation\r\n- [x] Mark existing tests as `xfail`\r\n- [x] Docs: add warnings about the need to define cookies in the `Request.cookies` attribute (`Request.headers` attribute and `DEFAULT_REQUEST_HEADERS` setting)",
+     "ref": "pr:4823",
+     "relevance": 0.94,
+     "url": "https://github.com/scrapy/scrapy/pull/4823"
+    },
+    {
+     "directness": 2.2,
+     "injection": 0.01,
+     "kept": true,
+     "label": "E10",
+     "passage": "[comment] on #1992 Cookies from the Cookie request header are not processed\nAs setting cookies directly in headers is not an option because of https://github.com/scrapy/scrapy/pull/4823 the only remaining way to set custom cookies is to.. assign it directly to CookieJar (that later will be used by CookiesMiddleware) as requested on https://github.com/scrapy/scrapy/issues/1878\r\n\r\nWith possibility to directly set Cookie in CookieJar in spider code - we don't need to maintain possibility to process cookies from `Cookie` as request header or even from `cookie` request argument (and It resolves priority issue mentioned on https://github.com/scrapy/scrapy/issues/1992#issuecomment-261334012).",
+     "ref": "comment:1900981138",
+     "relevance": 0.74,
+     "url": "https://github.com/scrapy/scrapy/issues/1992#issuecomment-1900981138"
+    },
+    {
+     "directness": 1.63,
+     "injection": 0.02,
+     "kept": true,
+     "label": "E1",
+     "passage": "[commit message] Do not break cookie parsing on non-utf8 headers",
+     "ref": "commit:dba7e39f61cbe2c22d3c9064f32f6e36d74f14b2",
+     "relevance": 0.56,
+     "url": "https://github.com/scrapy/scrapy/commit/dba7e39f61cbe2c22d3c9064f32f6e36d74f14b2"
+    },
+    {
+     "directness": 1.41,
+     "injection": 0.01,
+     "kept": true,
+     "label": "E16",
+     "passage": "[pull request] [MRG+1] CookiesMiddleware: keep cookies from 'Cookie' request header, fix encoding\nFixes #1992.\r\n\r\nThis PR modifies the `CookiesMiddleware._get_request_cookies` method to prevent the middleware from discarding cookies already set in the headers (either by the `DefaultHeadersMiddleware` or by using the `Request`'s `headers` constructor parameter).\r\n\r\nUpdate: also fixes #3575",
+     "ref": "pr:2400",
+     "relevance": 0.56,
+     "url": "https://github.com/scrapy/scrapy/pull/2400"
+    },
+    {
+     "directness": 1.47,
+     "injection": 0.01,
+     "kept": false,
+     "label": "E8",
+     "passage": "[comment] on #1992 Cookies from the Cookie request header are not processed\nTechnically we don’t *need* to process the `Cookie` header given the `cookie` argument from `Request` that you mention, but people still expect them to work if they do set them as a header. So this is not a very important feature request since it was for a different way to do something that is already possible, but it is still worth considering.",
+     "ref": "comment:1903623459",
+     "relevance": 0.42,
+     "url": "https://github.com/scrapy/scrapy/issues/1992#issuecomment-1903623459"
+    },
+    {
+     "directness": 1.11,
+     "injection": 0.01,
+     "kept": false,
+     "label": "E14",
+     "passage": "[issue] Cookies from the Cookie request header are not processed\nI am new in scrapy, and I meet some problems which I can not get answer from google, so I post it here:\n\n1 Cookie not work even set in DEFAULT_REQUEST_HEADERS:\n\n```\nDEFAULT_REQUEST_HEADERS = {\n    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',\n    'accept-encoding': 'gzip, deflate, sdch',\n    'cache-control': 'no-cache',\n    'cookie': 'xx=yy',\n    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.94 Safari/537.36'\n}\n```\n\n```\nclass MySpider(scrapy.Spider):\n    def make_requests_from_url(self, url):\n        return scrapy.http.Request(url, head",
+     "ref": "issue:1992",
+     "relevance": 0.3,
+     "url": "https://github.com/scrapy/scrapy/issues/1992"
+    },
+    {
+     "directness": 1.07,
+     "injection": 0.01,
+     "kept": false,
+     "label": "E6",
+     "passage": "[comment] on #1992 Cookies from the Cookie request header are not processed\nA question about priorities: when creating a `Request`, if a name is specified both directly as part of `headers['Cookie']` and as a value in the `cookies` argument, which one should be used? I feel tempted to keep the one in `cookies`, but that's just my opinion.",
+     "ref": "comment:261334012",
+     "relevance": 0.31,
+     "url": "https://github.com/scrapy/scrapy/issues/1992#issuecomment-261334012"
+    },
+    {
+     "directness": 0.98,
+     "injection": 0.01,
+     "kept": false,
+     "label": "E4",
+     "passage": "[comment] on #1992 Cookies from the Cookie request header are not processed\n@elacuesta yeah, I agree that using value set in `cookies` argument makes more sense in this case.",
+     "ref": "comment:261861857",
+     "relevance": 0.22,
+     "url": "https://github.com/scrapy/scrapy/issues/1992#issuecomment-261861857"
+    },
+    {
+     "directness": 0.84,
+     "injection": 0.01,
+     "kept": false,
+     "label": "E12",
+     "passage": "[comment] on #3815 dont_merge_cookies or dont_send_cookies?\nI mean that if i set `dont_merge_cookies=true`, scrapy will dont send any cookie to server.\r\nBut i just want that scrapy don't merge my cookies with the response's cookies, and continue to send my cookies to server.\r\nIn `scrapy/downloadermiddlewares/cookies.py`\r\n\r\n```python\r\ndef process_request(self, request, spider):\r\n        if request.meta.get('dont_merge_cookies', False):\r\n            return\r\n\r\n        cookiejarkey = request.meta.get(\"cookiejar\")\r\n        jar = self.jars[cookiejarkey]\r\n        cookies = self._get_request_cookies(jar, request)\r\n        for cookie in cookies:\r\n            jar.set_cookie_if_ok(cookie, request)\r\n\r\n ",
+     "ref": "comment:499892802",
+     "relevance": 0.15,
+     "url": "https://github.com/scrapy/scrapy/issues/3815#issuecomment-499892802"
+    },
+    {
+     "directness": 0.77,
+     "injection": 0.01,
+     "kept": false,
+     "label": "E3",
+     "passage": "[commit message] Cleanup cookie handling in request_to_curl() (#7684)\n* Adjust CookiesT.\n\n* Drop list of plain cookie dicts support from request_to_curl().\n\n* Extract _decode_cookie().\n\n* Unify logging.\n\n* Extract _to_verbose_cookies().\n\n* Sync and type hint _cookie_to_set_cookie_value() in tests.\n\n* Add tests for bytes in Request.cookies.\n\n* Type hint assertCookieValEqual().",
+     "ref": "commit:52147017b43baff1f9b4668e46ab11341aa8f400",
+     "relevance": 0.1,
+     "url": "https://github.com/scrapy/scrapy/commit/52147017b43baff1f9b4668e46ab11341aa8f400"
+    },
+    {
+     "directness": 0.73,
+     "injection": 0.01,
+     "kept": false,
+     "label": "E7",
+     "passage": "[commit message] PY3 port http cookies handling",
+     "ref": "commit:5f02ef82e8560242eb34b336f385addfdef3211d",
+     "relevance": 0.07,
+     "url": "https://github.com/scrapy/scrapy/commit/5f02ef82e8560242eb34b336f385addfdef3211d"
+    },
+    {
+     "directness": 0.62,
+     "injection": 0.01,
+     "kept": false,
+     "label": "E9",
+     "passage": "[commit message] remove python 2 reminiscence in cookies",
+     "ref": "commit:0e0d1ad64323033017c4a01893b5337a980cb5ec",
+     "relevance": 0.06,
+     "url": "https://github.com/scrapy/scrapy/commit/0e0d1ad64323033017c4a01893b5337a980cb5ec"
+    },
+    {
+     "directness": 0.58,
+     "injection": 0.01,
+     "kept": false,
+     "label": "E11",
+     "passage": "[commit message] Full typing for scrapy/http/cookies.py.",
+     "ref": "commit:8a08283580176049cb539423795830b9faea91a9",
+     "relevance": 0.05,
+     "url": "https://github.com/scrapy/scrapy/commit/8a08283580176049cb539423795830b9faea91a9"
+    },
+    {
+     "directness": 0.58,
+     "injection": 0.01,
+     "kept": false,
+     "label": "E13",
+     "passage": "[pull request] Full typing for scrapy/http/cookies.py.",
+     "ref": "pr:6336",
+     "relevance": 0.05,
+     "url": "https://github.com/scrapy/scrapy/pull/6336"
+    },
+    {
+     "directness": 0.54,
+     "injection": 0.01,
+     "kept": false,
+     "label": "E5",
+     "passage": "[commit message] Skipping cookie retrieval for non http requests",
+     "ref": "commit:fb770852e87d97196e31f27c33ee8eee89aecc27",
+     "relevance": 0.09,
+     "url": "https://github.com/scrapy/scrapy/commit/fb770852e87d97196e31f27c33ee8eee89aecc27"
+    },
+    {
+     "directness": 0.53,
+     "injection": 0.01,
+     "kept": false,
+     "label": "E15",
+     "passage": "[issue] Request cookies not updated with values from previous response\n### Description\r\n\r\n[Description of the issue]\r\n\r\n### Steps to Reproduce\r\n\r\n1. Create 2 conda environments one scrapy160 with scrapy 1.6.0 version installed and scrapy230 with scrapy 2.3.0. version installed.\r\n2. `conda activate scrapy160`\r\n3. `scrapy startproject test_login`\r\n4. `cd test_login`\r\n5. `scrapy genspider login quotes.toscrape.com/login`\r\n6. Adapt login.py\r\n\r\n```\r\nimport scrapy\r\nfrom scrapy import FormRequest\r\n\r\n\r\nclass LoginSpider(scrapy.Spider):\r\n    name = 'login'\r\n    # allowed_domains = ['quotes.toscrape.com']\r\n\r\n    start_urls = ['http://quotes.toscrape.com/login']\r\n\r\n    def parse(self, response):\r\n     ",
+     "ref": "issue:4717",
+     "relevance": 0.09,
+     "url": "https://github.com/scrapy/scrapy/issues/4717"
+    }
+   ],
+   "expect": "rationale",
+   "files": [
+    "scrapy/http/cookies.py",
+    "scrapy/http/request/__init__.py"
+   ],
+   "id": "w03",
+   "question": "Why was processing of cookies from the Cookie request header reverted?",
+   "status": "answered",
+   "text": "Processing of cookies from the Cookie request header was reverted because of the bug reported in #4717 [E2].",
+   "usage": {
+    "engine_input_tokens": 723,
+    "engine_latency_ms": 425.8328750001965,
+    "engine_output_tokens": 90,
+    "engine_requests": 1,
+    "llm_input_tokens": 794,
+    "llm_latency_ms": 855.5377919983584,
+    "llm_output_tokens": 65,
+    "llm_requests": 1,
+    "retrieve_input_tokens": 4713,
+    "retrieve_latency_ms": 744.0834579974762
+   }
+  }
+ },
+ "meta": {
+  "engine": "jev",
+  "head": "bb1b5c6785e165235c0a33afd123e53a472a7864",
+  "repo": "scrapy/scrapy"
+ }
+}

@@ -1,0 +1,55 @@
+{
+ "key": "ad9cad1b56f5b8636c637ad036e28731aa65422bc2630e4e0b99b8b194d5bfd6",
+ "model_id": "jev-1.13.0",
+ "created_at": 1790788756.369784,
+ "state": {
+  "goal": "Resolve this issue: Request.from_curl() raises opaque built-in errors on valid curl commands\n\n## Summary\n\n`Request.from_curl()` raises opaque built-in exceptions on curl commands that real curl accepts. The user sees `ValueError: not enough values to unpack (expected 2, got 1)` or `IndexError: list index out of range`, neither of which names the option responsible.\n\nThree distinct inputs are affected. I checked each against real curl by pointing it at a local socket and reading what it actually put on the wire, rather than relying on the man page.\n\n## Reproduction\n\n```python\nfrom scrapy "
+ },
+ "questions": {
+  "in_root": {
+   "type": "choice",
+   "instructions": "Which entry is most likely to contain the code that the goal is about?",
+   "criteria": {
+    "c0": "AUTHORS",
+    "c1": "CITATION.cff",
+    "c2": "LICENSE",
+    "c3": "NEWS",
+    "c4": "codecov.yml",
+    "c5": "docs/: Contains _ext/, _static/, _templates/, _tests/, intro/, news/, topics/, utils/, conf.py, conftest.py, contributing.rst, faq.rst and 6 more.",
+    "c6": "extras/: Contains coverage-report.sh, github-release-notes.py, pre-bump.py, qps-bench-server.py, qpsclient.py, scrapy.1, upgrade-ci-pins.py, scrapy_bash_completion, scrapy_zsh_completion.",
+    "c7": "pyproject.toml",
+    "c8": "scrapy/: Scrapy - a web crawling and web scraping framework written for Python. Contains commands/, contracts/, core/, downloadermiddlewares/, extensions/, http/, linkextractors/, loader/, pipelines/, selector/, settings/, spidermiddlewares/ and 31 more.",
+    "c9": "tests_typing/: Contains test_http_request.mypy-testing, test_http_response.mypy-testing, test_spiders.mypy-testing.",
+    "c10": "tox.ini: Tox (https://tox.readthedocs.io/) is a tool for running tests in multiple virtualenvs. This configuration file will run the test suite on a…",
+    "none": "None of the listed entries is related to the goal."
+   }
+  }
+ },
+ "answers": {
+  "in_root": {
+   "type": "choice",
+   "choice": "c8",
+   "probabilities": {
+    "c0": 0.0,
+    "c1": 0.0,
+    "c10": 0.0,
+    "c2": 0.0,
+    "c3": 0.0,
+    "c4": 0.0,
+    "c5": 0.0,
+    "c6": 0.0,
+    "c7": 0.0,
+    "c8": 0.99,
+    "c9": 0.0,
+    "none": 0.01
+   },
+   "confidence": 0.99
+  }
+ },
+ "model_returned": "jev-1.13-free",
+ "provider": "beatapi",
+ "input_tokens": 829,
+ "output_tokens": 115,
+ "latency_ms": 739.4254999999248,
+ "request_id": "task_PzAA8cNx4rbpJ6Kem3YKNPXjKFAK8rrG"
+}

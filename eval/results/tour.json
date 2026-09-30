@@ -1,6 +1,6 @@
 {
  "meta": {
-  "cases": 60,
+  "cases": 10,
   "head": "bb1b5c6785e165235c0a33afd123e53a472a7864",
   "repo": "scrapy/scrapy"
  },
@@ -2459,6 +2459,202 @@
     "recall@3": 0.42833333333333334,
     "recall@7": 0.47833333333333333,
     "requests": 0.0
+   }
+  },
+  "tour:jev": {
+   "items": {
+    "issue:6917": {
+     "candidate_recall": 0.5,
+     "candidates": [
+      "scrapy/settings/default_settings.py",
+      "scrapy/pqueues.py",
+      "scrapy/downloadermiddlewares/offsite.py",
+      "scrapy/core/downloader/__init__.py",
+      "scrapy/core/engine.py",
+      "scrapy/utils/engine.py",
+      "scrapy/core/scheduler.py",
+      "scrapy/resolver.py",
+      "scrapy/squeues.py",
+      "scrapy/exceptions.py"
+     ],
+     "files": [
+      "scrapy/pqueues.py",
+      "scrapy/settings/default_settings.py",
+      "scrapy/core/downloader/__init__.py"
+     ],
+     "input_tokens": 5791,
+     "metrics": {
+      "mrr": 0.5,
+      "recall@1": 0.0,
+      "recall@3": 0.5,
+      "recall@7": 0.5
+     },
+     "requests": 4,
+     "tentative": [
+      "scrapy/core/downloader/__init__.py"
+     ],
+     "truth": [
+      "scrapy/settings/__init__.py",
+      "scrapy/settings/default_settings.py"
+     ]
+    },
+    "issue:6924": {
+     "candidate_recall": 1.0,
+     "candidates": [
+      "scrapy/settings/default_settings.py",
+      "scrapy/core/scheduler.py",
+      "scrapy/squeues.py",
+      "scrapy/pqueues.py",
+      "scrapy/core/downloader/__init__.py",
+      "scrapy/exceptions.py"
+     ],
+     "files": [
+      "scrapy/settings/default_settings.py",
+      "scrapy/pqueues.py",
+      "scrapy/core/scheduler.py"
+     ],
+     "input_tokens": 4901,
+     "metrics": {
+      "mrr": 1.0,
+      "recall@1": 1.0,
+      "recall@3": 1.0,
+      "recall@7": 1.0
+     },
+     "requests": 4,
+     "tentative": [
+      "scrapy/core/scheduler.py"
+     ],
+     "truth": [
+      "scrapy/settings/default_settings.py"
+     ]
+    },
+    "issue:6988": {
+     "candidate_recall": 0.0,
+     "candidates": [
+      "scrapy/spiders/crawl.py",
+      "scrapy/crawler.py",
+      "scrapy/spiders/__init__.py",
+      "scrapy/core/__init__.py",
+      "scrapy/utils/log.py",
+      "scrapy/pipelines/files.py",
+      "scrapy/pipelines/images.py",
+      "scrapy/pipelines/media.py",
+      "scrapy/shell.py",
+      "scrapy/__init__.py",
+      "scrapy/exceptions.py",
+      "scrapy/http/__init__.py",
+      "scrapy/http/request/__init__.py",
+      "scrapy/settings/__init__.py",
+      "scrapy/signals.py",
+      "scrapy/spiders/feed.py"
+     ],
+     "files": [
+      "scrapy/settings/__init__.py",
+      "scrapy/spiders/__init__.py",
+      "scrapy/spiders/crawl.py"
+     ],
+     "input_tokens": 6472,
+     "metrics": {
+      "mrr": 0.0,
+      "recall@1": 0.0,
+      "recall@3": 0.0,
+      "recall@7": 0.0
+     },
+     "requests": 4,
+     "tentative": [
+      "scrapy/spiders/crawl.py"
+     ],
+     "truth": [
+      "scrapy/core/downloader/__init__.py",
+      "scrapy/downloadermiddlewares/httpcompression.py"
+     ]
+    },
+    "issue:7038": {
+     "candidate_recall": 0.6666666666666666,
+     "candidates": [
+      "scrapy/core/downloader/handlers/http11.py",
+      "scrapy/downloadermiddlewares/downloadtimeout.py",
+      "scrapy/core/_http2/protocol.py",
+      "scrapy/downloadermiddlewares/httpcompression.py",
+      "scrapy/core/downloader/__init__.py",
+      "scrapy/settings/default_settings.py",
+      "scrapy/spiders/sitemap.py",
+      "scrapy/utils/_compression.py",
+      "scrapy/utils/gz.py",
+      "scrapy/core/scheduler.py",
+      "scrapy/__init__.py",
+      "scrapy/core/downloader/_idna_patch.py",
+      "scrapy/core/downloader/contextfactory.py",
+      "scrapy/core/downloader/handlers/_base_http.py",
+      "scrapy/crawler.py",
+      "scrapy/exceptions.py"
+     ],
+     "files": [
+      "scrapy/core/downloader/handlers/http11.py",
+      "scrapy/downloadermiddlewares/downloadtimeout.py",
+      "scrapy/core/_http2/protocol.py"
+     ],
+     "input_tokens": 9463,
+     "metrics": {
+      "mrr": 1.0,
+      "recall@1": 0.16666666666666666,
+      "recall@3": 0.3333333333333333,
+      "recall@7": 0.3333333333333333
+     },
+     "requests": 6,
+     "tentative": [],
+     "truth": [
+      "scrapy/core/downloader/__init__.py",
+      "scrapy/core/downloader/handlers/http11.py",
+      "scrapy/downloadermiddlewares/downloadtimeout.py",
+      "scrapy/downloadermiddlewares/httpcompression.py",
+      "scrapy/downloadermiddlewares/useragent.py",
+      "scrapy/utils/deprecate.py"
+     ]
+    },
+    "issue:8131": {
+     "candidate_recall": 1.0,
+     "candidates": [
+      "scrapy/utils/request.py",
+      "scrapy/utils/curl.py",
+      "scrapy/http/request/__init__.py",
+      "scrapy/loader/__init__.py",
+      "scrapy/mail.py",
+      "scrapy/http/cookies.py",
+      "scrapy/downloadermiddlewares/httpcompression.py",
+      "scrapy/__init__.py",
+      "scrapy/http/__init__.py",
+      "scrapy/http/headers.py",
+      "scrapy/utils/python.py",
+      "scrapy/utils/trackref.py"
+     ],
+     "files": [
+      "scrapy/utils/curl.py",
+      "scrapy/utils/request.py",
+      "scrapy/http/request/__init__.py"
+     ],
+     "input_tokens": 8485,
+     "metrics": {
+      "mrr": 1.0,
+      "recall@1": 1.0,
+      "recall@3": 1.0,
+      "recall@7": 1.0
+     },
+     "requests": 5,
+     "tentative": [],
+     "truth": [
+      "scrapy/utils/curl.py"
+     ]
+    }
+   },
+   "summary": {
+    "input_tokens": 7022.4,
+    "mrr": 0.7,
+    "n": 5,
+    "recall@1": 0.4333333333333333,
+    "recall@3": 0.5666666666666667,
+    "recall@7": 0.5666666666666667,
+    "requests": 4.6
    }
   }
  }

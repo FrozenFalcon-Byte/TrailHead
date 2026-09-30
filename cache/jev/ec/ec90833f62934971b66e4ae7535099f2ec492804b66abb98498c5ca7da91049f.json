@@ -1,0 +1,115 @@
+{
+ "key": "ec90833f62934971b66e4ae7535099f2ec492804b66abb98498c5ca7da91049f",
+ "model_id": "jev-1.13.0",
+ "created_at": 1790789212.595558,
+ "state": {
+  "goal": "Resolve this issue: Deprecate spider attributes that can be replaced by settings, round 2\n\nContinuing #6988, there are more occurrences of the same issue:\n\n* [`download_maxsize` and `download_warnsize`](https://github.com/scrapy/scrapy/blob/master/scrapy/core/downloader/handlers/http11.py#L98-L99)\n* [`download_maxsize` and `download_warnsize`](https://github.com/scrapy/scrapy/blob/master/scrapy/core/http2/protocol.py#L198-L203)\n* [`download_timeout`](https://github.com/scrapy/scrapy/blob/master/scrapy/downloadermiddlewares/downloadtimeout.py#L33)\n* [`user_agent`](https://github.com/sc"
+ },
+ "questions": {
+  "in_scrapy_core": {
+   "type": "choice",
+   "instructions": "Which entry is most likely to contain the code that the goal is about?",
+   "criteria": {
+    "c0": "__init__.py: Scrapy core library classes and functions.",
+    "c1": "_http2/: Contains agent.py, protocol.py, stream.py, __init__.py.",
+    "c2": "downloader/: Contains handlers/, contextfactory.py, middleware.py, tls.py, __init__.py, _idna_patch.py.",
+    "c3": "engine.py: This is the Scrapy engine which controls the Scheduler, Downloader and Spider. Defines EngineState, ExecutionEngine, _Slot.",
+    "c4": "scheduler.py: Defines BaseSchedulerMeta, BaseScheduler, Scheduler.",
+    "c5": "scraper.py: This module implements the Scraper component which parses responses and extracts information from them. Defines Slot, Scraper.",
+    "c6": "spidermw.py: Spider Middleware manager. Defines SpiderMiddlewareManager.",
+    "none": "None of the listed entries is related to the goal."
+   }
+  },
+  "in_scrapy_downloadermiddlewares": {
+   "type": "choice",
+   "instructions": "Which entry is most likely to contain the code that the goal is about?",
+   "criteria": {
+    "c0": "__init__.py",
+    "c1": "cookies.py: Defines CookiesMiddleware, _is_public_domain.",
+    "c2": "defaultheaders.py: DefaultHeaders downloader middleware. Defines DefaultHeadersMiddleware.",
+    "c3": "downloadtimeout.py: Download timeout middleware. Defines DownloadTimeoutMiddleware.",
+    "c4": "httpauth.py: HTTP basic auth downloader middleware. Defines HttpAuthMiddleware.",
+    "c5": "httpcache.py: Defines HttpCacheMiddleware.",
+    "c6": "httpcompression.py: Defines HttpCompressionMiddleware.",
+    "c7": "httpproxy.py: Defines HttpProxyMiddleware.",
+    "c8": "jsonvalidation.py: Defines JsonValidationMiddleware.",
+    "c9": "offsite.py: Defines OffsiteMiddleware.",
+    "c10": "redirect.py: Defines BaseRedirectMiddleware, RedirectMiddleware, MetaRefreshMiddleware.",
+    "c11": "retry.py: An extension to retry failed requests that are potentially caused by temporary problems such as a connection timeout or HTTP 500 error. Defines get_retry_request, RetryMiddleware.",
+    "c12": "robotstxt.py: This is a middleware to respect robots.txt policies. To activate it you must enable this middleware and enable the ROBOTSTXT_OBEY setting. Defines RobotsTxtMiddleware.",
+    "c13": "stats.py: Defines get_header_size, get_status_size, DownloaderStats.",
+    "c14": "useragent.py: Set User-Agent header per spider or use a default value from settings. Defines UserAgentMiddleware.",
+    "none": "None of the listed entries is related to the goal."
+   }
+  },
+  "in_scrapy_spiders": {
+   "type": "choice",
+   "instructions": "Which entry is most likely to contain the code that the goal is about?",
+   "criteria": {
+    "c0": "__init__.py: Base class for Scrapy spiders. Defines Spider.",
+    "c1": "crawl.py: This modules implements the CrawlSpider which is the recommended spider to use for scraping typical websites that requires crawling pages. Defines Rule, CrawlSpider, _identity, _identity_process_request, _get_method.",
+    "c2": "feed.py: This module implements the XMLFeedSpider which is the recommended spider to use for scraping from an XML feed. Defines XMLFeedSpider, CSVFeedSpider.",
+    "c3": "sitemap.py: Defines SitemapSpider, regex, iterloc.",
+    "none": "None of the listed entries is related to the goal."
+   }
+  }
+ },
+ "answers": {
+  "in_scrapy_core": {
+   "type": "choice",
+   "choice": "c2",
+   "probabilities": {
+    "c0": 0.01,
+    "c1": 0.09,
+    "c2": 0.89,
+    "c3": 0.01,
+    "c4": 0.0,
+    "c5": 0.0,
+    "c6": 0.0,
+    "none": 0.0
+   },
+   "confidence": 0.86
+  },
+  "in_scrapy_downloadermiddlewares": {
+   "type": "choice",
+   "choice": "c3",
+   "probabilities": {
+    "c0": 0.0,
+    "c1": 0.0,
+    "c10": 0.0,
+    "c11": 0.0,
+    "c12": 0.0,
+    "c13": 0.0,
+    "c14": 0.05,
+    "c2": 0.0,
+    "c3": 0.94,
+    "c4": 0.0,
+    "c5": 0.0,
+    "c6": 0.0,
+    "c7": 0.0,
+    "c8": 0.0,
+    "c9": 0.0,
+    "none": 0.01
+   },
+   "confidence": 0.93
+  },
+  "in_scrapy_spiders": {
+   "type": "choice",
+   "choice": "none",
+   "probabilities": {
+    "c0": 0.39,
+    "c1": 0.01,
+    "c2": 0.0,
+    "c3": 0.0,
+    "none": 0.6
+   },
+   "confidence": 0.49
+  }
+ },
+ "model_returned": "jev-1.13-free",
+ "provider": "beatapi",
+ "input_tokens": 1524,
+ "output_tokens": 298,
+ "latency_ms": 444.10504100233084,
+ "request_id": "task_Sbm0MisjoVerFpRDDJhAHdsTtpOkE82y"
+}

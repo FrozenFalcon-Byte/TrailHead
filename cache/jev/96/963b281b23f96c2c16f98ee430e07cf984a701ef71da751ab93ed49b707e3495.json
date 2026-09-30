@@ -1,0 +1,68 @@
+{
+ "key": "963b281b23f96c2c16f98ee430e07cf984a701ef71da751ab93ed49b707e3495",
+ "model_id": "jev-1.13.0",
+ "created_at": 1790789278.070976,
+ "state": {
+  "goal": "Resolve this issue: Deprecate spider attributes that can be replaced by settings, round 2\n\nContinuing #6988, there are more occurrences of the same issue:\n\n* [`download_maxsize` and `download_warnsize`](https://github.com/scrapy/scrapy/blob/master/scrapy/core/downloader/handlers/http11.py#L98-L99)\n* [`download_maxsize` and `download_warnsize`](https://github.com/scrapy/scrapy/blob/master/scrapy/core/http2/protocol.py#L198-L203)\n* [`download_timeout`](https://github.com/scrapy/scrapy/blob/master/scrapy/downloadermiddlewares/downloadtimeout.py#L33)\n* [`user_agent`](https://github.com/sc"
+ },
+ "questions": {
+  "in_scrapy_core_downloader": {
+   "type": "choice",
+   "instructions": "Which entry is most likely to contain the code that the goal is about?",
+   "criteria": {
+    "c0": "__init__.py: Defines Slot, Downloader, _default_jitter, _slot_jitter.",
+    "c1": "_idna_patch.py: Fallbacks for hostnames that the ``idna`` package rejects but that resolve fine. Defines _safe_hostname_bytes, _patched_idna_bytes, _patched_idna_text, _install_twisted_idna_fallbacks.",
+    "c2": "contextfactory.py: Defines BrowserLikeContextFactory, load_context_factory_from_settings, _ScrapyClientContextFactory, _get_creator_context, _AcceptableProtocolsContextFactory, _ScrapyCertificateOptions, _load_context_factory_from_settings.",
+    "c3": "handlers/: Download handlers for different schemes. Contains base.py, datauri.py, file.py, ftp.py, http.py, http11.py, http2.py, s3.py, __init__.py, _aiohttp.py, _base_http.py, _base_streaming.py and 1 more.",
+    "c4": "middleware.py: Downloader Middleware manager. Defines DownloaderMiddlewareManager.",
+    "c5": "tls.py: Defines __getattr__, _ScrapyClientTLSOptions, _ScrapyClientTLSOptions26.",
+    "none": "None of the listed entries is related to the goal."
+   }
+  },
+  "in_scrapy_core_http2": {
+   "type": "choice",
+   "instructions": "Which entry is most likely to contain the code that the goal is about?",
+   "criteria": {
+    "c0": "__init__.py",
+    "c1": "agent.py: Defines H2ConnectionPool, H2Agent.",
+    "c2": "protocol.py: Defines InvalidNegotiatedProtocol, RemoteTerminatedConnection, MethodNotAllowed405, H2ClientProtocol, H2ClientFactory.",
+    "c3": "stream.py: Defines InactiveStreamClosed, InvalidHostname, StreamCloseReason, Stream.",
+    "none": "None of the listed entries is related to the goal."
+   }
+  }
+ },
+ "answers": {
+  "in_scrapy_core_downloader": {
+   "type": "choice",
+   "choice": "c3",
+   "probabilities": {
+    "c0": 0.0,
+    "c1": 0.0,
+    "c2": 0.0,
+    "c3": 1.0,
+    "c4": 0.0,
+    "c5": 0.0,
+    "none": 0.0
+   },
+   "confidence": 1.0
+  },
+  "in_scrapy_core_http2": {
+   "type": "choice",
+   "choice": "c2",
+   "probabilities": {
+    "c0": 0.01,
+    "c1": 0.01,
+    "c2": 0.92,
+    "c3": 0.0,
+    "none": 0.06
+   },
+   "confidence": 0.9
+  }
+ },
+ "model_returned": "jev-1.13-free",
+ "provider": "beatapi",
+ "input_tokens": 1022,
+ "output_tokens": 139,
+ "latency_ms": 701.7956670024432,
+ "request_id": "task_LqXyHT7vXmjQuAzt8eoXFbaKsydC27B4"
+}
