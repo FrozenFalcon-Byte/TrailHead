@@ -1,0 +1,21 @@
+# Smoke-test question set: one of each primitive against a tiny fixed state.
+name: smoke
+questions:
+  kind:
+    type: choice
+    instructions: Which kind of change does this commit message describe?
+    criteria:
+      bug_fix: The message says that incorrect behaviour was corrected.
+      feature: The message says that new behaviour was added.
+      docs: The message says that only documentation changed.
+      other: The message fits none of the other options.
+  explains_why:
+    type: noul
+    instructions: Does the message state a reason for making the change?
+  clarity:
+    type: score
+    instructions: How clearly does the message describe what changed?
+    criteria:
+      - The message does not say what changed.
+      - The message names the area that changed but not the change itself.
+      - The message states the change and where it was made.

@@ -1,0 +1,5 @@
+#!/bin/sh
+# Run the Trailhead CLI from a checkout without relying on the editable-install .pth file
+# (macOS can flag files under .venv as hidden, and Python 3.12+ skips hidden .pth files).
+root="$(cd "$(dirname "$0")/.." && pwd)"
+PYTHONPATH="$root/src${PYTHONPATH:+:$PYTHONPATH}" exec "$root/.venv/bin/python" -m trailhead.cli "$@"
