@@ -1,0 +1,10 @@
+# One fan-out request per tour. State: the goal and candidate files, keyed F1, F2, ...
+# {label} is replaced by the file key. Ordering is done in code from the import graph.
+name: tour
+questions:
+  need:
+    type: noul
+    instructions: Would a contributor working toward the goal have to read file {label} to reach it? A file that only shares a word with the goal does not count.
+  entry:
+    type: noul
+    instructions: Is file {label} the place where the change described by the goal would most likely be made?

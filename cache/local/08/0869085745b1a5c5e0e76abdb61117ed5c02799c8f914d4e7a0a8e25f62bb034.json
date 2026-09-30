@@ -1,0 +1,111 @@
+{
+ "key": "0869085745b1a5c5e0e76abdb61117ed5c02799c8f914d4e7a0a8e25f62bb034",
+ "model_id": "llm:qwen2.5-coder:7b:1f2e0674",
+ "created_at": 1790787954.224852,
+ "state": "path: scrapy/utils/defer.py\nlanguage: python\nheader: Helper functions for dealing with Twisted deferreds\nsymbols:\n- def defer_fail(_failure: Failure) -> Deferred[Any]: # pragma: no cover  # Same as twisted.internet.defer.fail but delay calling errback until next reactor loop\n- def defer_succeed(result: _T) -> Deferred[_T]: # pragma: no cover  # Same as twisted.internet.defer.succeed but delay calling callback until next reactor loop\n- async def _process_pending_io() -> None  # Yield control until the event loop has gone through its readers and writers.\n- async def _process_pending_io_before_callback() -> None  # Same as :func:`_process_pending_io`, for use right before a spider callback, where a real delay is n\n- def defer_result(result: Any) -> Deferred[Any]: # pragma: no cover\n- def mustbe_deferred( f: Callable[_P, Deferred[_T]], *args: _P.args, **kw: _P.kwargs ) -> Deferred[_T]\n- def mustbe_deferred( f: Callable[_P, _T], *args: _P.args, **kw: _P.kwargs ) -> Deferred[_T]\n- def mustbe_deferred( f: Callable[_P, Deferred[_T] | _T], *args: _P.args, **kw: _P.kwargs, ) -> Deferred[_T]: # pragma: no cover  # Same as twisted.internet.defer.maybeDeferred, but delay calling callback/errback to next reactor loo\n- class _ParallelTasks  # Consumes *work* with no more than *count* concurrent cooperative tasks.\n- def __init__(self, work: Iterator[Any], count: int)\n- def start(self) -> None\n- def _task_done(self, _: Any) -> None\n- def parallel( iterable: Iterable[_T], count: int, callable: Callable[Concatenate[_T, _P], _T2], # noqa: A002 *args: _P.args, **named: _P.kwargs, ) -> Deferred[None]  # Execute a callable over the objects in the given iterable, in parallel, using no more than ``count``\n- class _AsyncCooperatorAdapter(Iterator[Deferred[Any]], Generic[_P, _T])  # A class that wraps an async iterable into a normal iterator suitable for using in Cooperator.coitera\n- def __init__( self, aiterable: AsyncIterator[_T], callable_: Callable[Concatenate[_T, _P], Deferred[Any] | None], *callable_args: _P.args, **callable_kwargs: _P.kwargs, )\n- def _callback(self, result: _T) -> None: # This gets called when the result from aiterator.__anext__() is available. # It calls the callable on it and sends the result to the oldest waiting Deferred…\n- def _errback(self, failure: Failure) -> None: # This gets called on any exceptions in aiterator.__anext__(). # It handles StopAsyncIteration by stopping the iteration and reraises all others.\n- def _call_anext(self) -> None: # This starts waiting for the next result from aiterator. # If aiterator is exhausted, _errback will be called.\n- def __next__(self) -> Deferred[Any]: # This puts a new Deferred into self.waiting_deferreds and returns it. # It also calls __anext__() if needed.\n- def parallel_async( async_iterable: AsyncIterator[_T], count: int, callable: Callable[Concatenate[_T, _P], Deferred[Any] | None], # noqa: A002 *args: _P.args, **named: _P.kwargs, ) -> Deferred[None]  # Like ``parallel`` but for async iterators\n- def process_chain( callbacks: Iterable[Callable[Concatenate[_T, _P], _T]], input: _T, # noqa: A002 *a: _P.args, **kw: _P.kwargs, ) -> Deferred[_T]: # pragma: no cover  # Return a Deferred built by chaining the given callbacks\n- def process_parallel( callbacks: Iterable[Callable[Concatenate[_T, _P], _T2]], input: _T, # noqa: A002 *a: _P.args, **kw: _P.kwargs, ) -> Deferred[list[_T2]]: # pragma: no cover  # Return a Deferred with the output of all successful calls to the given callbacks\n- def iter_errback( iterable: Iterable[_T], errback: Callable[Concatenate[Failure, _P], Any], *a: _P.args, **kw: _P.kwargs, ) -> Iterable[_T]  # Wrap an iterable calling an errback if an error is caught while iterating it.\n- async def aiter_errback( aiterable: AsyncIterator[_T], errback: Callable[Concatenate[Failure, _P], Any], *a: _P.args, **kw: _P.kwargs, ) -> AsyncIterator[_T]  # Wrap an async iterable calling an errback if an error is caught while iterating it. Similar to :func\n- def deferred_from_coro(o: Awaitable[_T]) -> Deferred[_T]\n- def deferred_from_coro(o: _T2) -> _T2\n- def deferred_from_coro(o: Awaitable[_T] | _T2) -> Deferred[_T] | _T2  # Convert a coroutine or other awaitable object into a Deferred, or return the object as is if it isn'\n- def deferred_f_from_coro_f( coro_f: Callable[_P, Awaitable[_T]], ) -> Callable[_P, Deferred[_T]]  # Convert a coroutine function into a function that returns a Deferred.\n- def maybeDeferred_coro( f: Callable[_P, Any], *args: _P.args, **kw: _P.kwargs ) -> Deferred[Any]: # pragma: no cover  # Copy of defer.maybeDeferred that also converts coroutines to Deferreds.\n- def _maybeDeferred_coro( f: Callable[_P, Any], warn: bool, *args: _P.args, **kw: _P.kwargs ) -> Deferred[Any]  # Copy of defer.maybeDeferred that also converts coroutines to Deferreds.\n- def deferred_to_future(d: Deferred[_T]) -> Future[_T]  # Return an :class:`asyncio.Future` object that wraps *d*.\n- def maybe_deferred_to_future(d: Deferred[_T]) -> Deferred[_T] | Future[_T]  # Return *d* as an object that can be awaited from a :ref:`Scrapy callable defined as a coroutine <cor\n- def _schedule_coro(coro: Coroutine[Any, Any, Any]) -> None  # Schedule the coroutine as a task or a Deferred.\n- def ensure_awaitable(o: Awaitable[_T], _warn: str | None = None) -> Awaitable[_T]\n- def ensure_awaitable(o: _T, _warn: str | None = None) -> Awaitable[_T]\n- def ensure_awaitable(o: _T | Awaitable[_T], _warn: str | None = None) -> Awaitable[_T]  # Convert any value to an awaitable object.",
+ "questions": {
+  "layer": {
+   "type": "choice",
+   "instructions": "Which architectural layer does this file belong to?",
+   "criteria": {
+    "ui": "The file renders output for people, such as templates, pages or command-line text.",
+    "api_routes": "The file defines public entry points that receive external requests or commands.",
+    "business_logic": "The file implements the core behaviour of the project.",
+    "data_access": "The file reads or writes storage, files, caches, queues or network connections.",
+    "config_infra": "The file holds settings, defaults, packaging, deployment or CI configuration.",
+    "tests": "The file contains automated tests or test helpers.",
+    "docs": "The file is documentation.",
+    "build_tooling": "The file is a developer script or build helper that is not shipped behaviour.",
+    "generated_or_vendored": "The file was produced by a tool or copied from another project.",
+    "other": "The file fits none of the other options."
+   }
+  },
+  "role": {
+   "type": "choice",
+   "instructions": "Which role does this file play inside its package?",
+   "criteria": {
+    "entry_point": "Execution starts here, such as a main function, a command or an application object.",
+    "core_module": "The file defines the main classes or functions that other files build on.",
+    "helpers": "The file is a collection of small utility functions used by other files.",
+    "type_definitions": "The file mostly declares types, interfaces, exceptions or constants.",
+    "example_or_fixture": "The file is sample code, test data or a fixture.",
+    "other": "The file fits none of the other options."
+   }
+  },
+  "is_generated": {
+   "type": "noul",
+   "instructions": "Was this file produced by a code generator instead of being written by a person?"
+  },
+  "exposes_public_api": {
+   "type": "noul",
+   "instructions": "Does this file define names that code outside this project is expected to import or call?"
+  },
+  "newcomer_difficulty": {
+   "type": "score",
+   "instructions": "How much background does a new contributor need before they can change this file safely?",
+   "criteria": [
+    "The file is trivial, such as constants, a short script or plain documentation.",
+    "The file is self-contained and can be understood by reading it alone.",
+    "Understanding the file requires reading a few other files of the project.",
+    "Understanding the file requires deep knowledge of the project's architecture or of an external system."
+   ]
+  }
+ },
+ "answers": {
+  "layer": {
+   "type": "choice",
+   "choice": "business_logic",
+   "probabilities": {
+    "ui": 0.0,
+    "api_routes": 0.0,
+    "business_logic": 0.8,
+    "data_access": 0.0,
+    "config_infra": 0.0,
+    "tests": 0.0,
+    "docs": 0.0,
+    "build_tooling": 0.0,
+    "generated_or_vendored": 0.0,
+    "other": 0.2
+   },
+   "confidence": 0.9
+  },
+  "role": {
+   "type": "choice",
+   "choice": "core_module",
+   "probabilities": {
+    "entry_point": 0.0,
+    "core_module": 0.7,
+    "helpers": 0.2,
+    "type_definitions": 0.1,
+    "example_or_fixture": 0.0,
+    "other": 0.0
+   },
+   "confidence": 0.9
+  },
+  "is_generated": {
+   "type": "noul",
+   "noul": 0.0
+  },
+  "exposes_public_api": {
+   "type": "noul",
+   "noul": 0.8
+  },
+  "newcomer_difficulty": {
+   "type": "score",
+   "score": 2.3,
+   "probabilities": {
+    "0": 0.0,
+    "1": 0.0,
+    "2": 0.7,
+    "3": 0.3
+   },
+   "confidence": 0.9
+  }
+ },
+ "model_returned": "qwen2.5-coder:7b",
+ "provider": "ollama",
+ "input_tokens": 2382,
+ "output_tokens": 311,
+ "latency_ms": 77478.3727920003,
+ "request_id": ""
+}

@@ -1,0 +1,11 @@
+{
+ "model": "openai/gpt-oss-120b",
+ "system": "You answer in JSON.",
+ "user": "Return {\"ok\": true} for request 7731",
+ "json_mode": true,
+ "max_tokens": 200,
+ "text": "{\"ok\":true}",
+ "input_tokens": 118,
+ "output_tokens": 30,
+ "latency_ms": 465.25225000004866
+}

@@ -1,0 +1,66 @@
+{
+ "key": "6bd676c0d3dfd65d7f1b8bce7e5013437209e68baa4b240a18dbee608e385d93",
+ "model_id": "jev-1.13.0",
+ "created_at": 1790788038.6683981,
+ "state": {
+  "question": "Why was processing of cookies from the Cookie request header reverted?",
+  "passages": {
+   "E2": "[pull request] Do not process cookies from headers\nFixes #4717\r\n\r\nRevert the behaviour introduced in #2400, because of the bug reported in #4717. Once we merge this, we'll need to either reopen #1992 or create a new issue to keep track of the work towards supporting cookies in the `Cookie` request header (#4812, for instance).\r\n\r\nTasks:\r\n- [x] Update cookies middleware implementation\r\n- [x] Mark existing tests as `xfail`\r\n- [x] Docs: add warnings about the need to define cookies in the `Request.cookies` attribute (`Request.headers` attribute and `DEFAULT_REQUEST_HEADERS` setting)"
+  },
+  "claims": {
+   "C1": {
+    "claim": "Processing of cookies from the Cookie request header was reverted because of the bug reported in #4717",
+    "cites": [
+     "E2"
+    ]
+   }
+  }
+ },
+ "questions": {
+  "support_c1": {
+   "type": "choice",
+   "instructions": "Do the passages that claim C1 cites support claim C1?",
+   "criteria": {
+    "supports": "The cited passages state the claim or clearly imply all of it.",
+    "contradicts": "The cited passages say the opposite of the claim.",
+    "unrelated": "The cited passages are about something else.",
+    "insufficient": "The cited passages are on the same topic but do not establish the claim, or they back only part of it, or the claim adds a reason, cause or detail the passages do not give."
+   }
+  },
+  "direct_c1": {
+   "type": "noul",
+   "instructions": "Do the passages that claim C1 cites state the claim explicitly, so that no inference is needed?"
+  },
+  "addresses_c1": {
+   "type": "noul",
+   "instructions": "Does claim C1 itself answer the question that was asked? Background that is true but leaves the question open does not count; for a why-question, a description of what was changed without the reason does not count."
+  }
+ },
+ "answers": {
+  "support_c1": {
+   "type": "choice",
+   "choice": "supports",
+   "probabilities": {
+    "contradicts": 0.0,
+    "insufficient": 0.0,
+    "supports": 1.0,
+    "unrelated": 0.0
+   },
+   "confidence": 1.0
+  },
+  "direct_c1": {
+   "type": "noul",
+   "noul": 0.94
+  },
+  "addresses_c1": {
+   "type": "noul",
+   "noul": 0.9
+  }
+ },
+ "model_returned": "jev-1.13-free",
+ "provider": "beatapi",
+ "input_tokens": 723,
+ "output_tokens": 90,
+ "latency_ms": 425.8328750001965,
+ "request_id": "task_2mAh3HtcPEM0sB5s1iZtRfVsRPLiQdsd"
+}

@@ -1,0 +1,70 @@
+{
+ "key": "f319346e41aa84e741acd4147f270ffe4f3548faa3e54570a08d6dc32895649a",
+ "model_id": "jev-1.13.0",
+ "created_at": 1790787843.319694,
+ "state": {
+  "goal": "Where are gzip, brotli and deflate response bodies decompressed?"
+ },
+ "questions": {
+  "in_scrapy_core_downloader": {
+   "type": "choice",
+   "instructions": "Which entry is most likely to contain the code that the goal is about?",
+   "criteria": {
+    "c0": "__init__.py: Defines Slot, Downloader, _default_jitter, _slot_jitter.",
+    "c1": "_idna_patch.py: Fallbacks for hostnames that the ``idna`` package rejects but that resolve fine. Defines _safe_hostname_bytes, _patched_idna_bytes, _patched_idna_text, _install_twisted_idna_fallbacks.",
+    "c2": "contextfactory.py: Defines BrowserLikeContextFactory, load_context_factory_from_settings, _ScrapyClientContextFactory, _get_creator_context, _AcceptableProtocolsContextFactory, _ScrapyCertificateOptions, _load_context_factory_from_settings.",
+    "c3": "handlers/: Download handlers for different schemes. Contains base.py, datauri.py, file.py, ftp.py, http.py, http11.py, http2.py, s3.py, __init__.py, _aiohttp.py, _base_http.py, _base_streaming.py and 1 more.",
+    "c4": "middleware.py: Downloader Middleware manager. Defines DownloaderMiddlewareManager.",
+    "c5": "tls.py: Defines __getattr__, _ScrapyClientTLSOptions, _ScrapyClientTLSOptions26.",
+    "none": "None of the listed entries is related to the goal."
+   }
+  },
+  "in_scrapy_http_response": {
+   "type": "choice",
+   "instructions": "Which entry is most likely to contain the code that the goal is about?",
+   "criteria": {
+    "c0": "__init__.py: This module implements the Response class which is used to represent HTTP responses in Scrapy. Defines Response.",
+    "c1": "html.py: This module implements the :class:`HtmlResponse` class which is used as a content type marker by :class:`~scrapy.selector.Selector` and can… Defines HtmlResponse.",
+    "c2": "json.py: This module implements the JsonResponse class that is used when the response has a JSON MIME type in its Content-Type header. Defines JsonResponse.",
+    "c3": "text.py: This module implements the TextResponse class which adds encoding handling and discovering (through HTTP headers) to base Response class. Defines TextResponse, _InvalidSelector, _url_from_selector.",
+    "c4": "xml.py: This module implements the :class:`XmlResponse` class which is used as a content type marker by :class:`~scrapy.selector.Selector` and can… Defines XmlResponse.",
+    "none": "None of the listed entries is related to the goal."
+   }
+  }
+ },
+ "answers": {
+  "in_scrapy_core_downloader": {
+   "type": "choice",
+   "choice": "c3",
+   "probabilities": {
+    "c0": 0.0,
+    "c1": 0.0,
+    "c2": 0.0,
+    "c3": 0.9,
+    "c4": 0.04,
+    "c5": 0.0,
+    "none": 0.06
+   },
+   "confidence": 0.87
+  },
+  "in_scrapy_http_response": {
+   "type": "choice",
+   "choice": "c3",
+   "probabilities": {
+    "c0": 0.28,
+    "c1": 0.01,
+    "c2": 0.0,
+    "c3": 0.63,
+    "c4": 0.0,
+    "none": 0.08
+   },
+   "confidence": 0.54
+  }
+ },
+ "model_returned": "jev-1.13-free",
+ "provider": "beatapi",
+ "input_tokens": 970,
+ "output_tokens": 146,
+ "latency_ms": 732.523750000837,
+ "request_id": "task_Fjpp13YDSer6YNQIOCmbWPdR9isVc5QL"
+}

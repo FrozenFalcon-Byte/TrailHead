@@ -156,6 +156,18 @@ async def _eval(settings: Settings, args: argparse.Namespace) -> int:
             methods = args.methods.split(",") if args.methods else list(nav.METHODS)
             await nav.run(settings, methods, engine_kind=args.engine or "jev", limit=args.limit)
         print(nav.report(evals.load_results("nav")))
+    elif args.name == "tour":
+        from .context import Context
+        from .evals import tour
+
+        if not args.report_only:
+            ctx = Context(settings)
+            try:
+                methods = args.methods.split(",") if args.methods else list(tour.METHODS)
+                await tour.run(ctx, methods, engine_kind=args.engine or "jev", limit=args.limit or 20)
+            finally:
+                await ctx.aclose()
+        print(tour.report(evals.load_results("tour")))
     elif args.name == "why":
         from .context import Context
         from .evals import why
@@ -170,6 +182,61 @@ async def _eval(settings: Settings, args: argparse.Namespace) -> int:
             if kind == "jev":
                 print("label sheets: %d claims, %d answers" % why.export_labels(evals.load_results("why_jev")))
         print(why.report(evals.load_results(f"why_{kind}"), f"why_{kind}"))
+    return 0
+
+
+async def _tour(settings: Settings, args: argparse.Namespace) -> int:
+    from pathlib import Path
+
+    from .context import Context
+    from .tour import TourPlanner, tour_from_dict, tour_to_dict
+
+    ctx = Context(settings)
+    planner = TourPlanner(ctx, ctx.engine(args.engine), llm=None if args.no_notes else ctx.llm)
+    try:
+        if args.replan:
+            tour = tour_from_dict(json.loads(Path(args.replan).read_text(encoding="utf-8")))
+            feedback = dict(item.split("=", 1) for item in args.skip or [])
+            await planner.replan(tour, feedback, notes=not args.no_notes)
+        else:
+            tour = await planner.plan(args.goal, notes=not args.no_notes)
+    finally:
+        await ctx.aclose()
+    data = tour_to_dict(tour)
+    if args.save:
+        Path(args.save).write_text(json.dumps(data, indent=1), encoding="utf-8")
+    if args.json:
+        print(json.dumps(data, indent=1))
+        return 0
+    print(f"Tour for: {tour.goal}\n")
+    for i, stop in enumerate(tour.stops, 1):
+        mark = " (tentative)" if stop.tentative else ""
+        print(f"{i}. {stop.path}{mark}  need={stop.need:.2f} entry={stop.entry:.2f} via {', '.join(stop.sources)}")
+        print(f"   {stop.why}")
+        if stop.look_at:
+            print(f"   start with: {', '.join(stop.look_at)}")
+        for h in stop.history[:2]:
+            print(f"   past change: {h['title'][:70]}  {h['url']}")
+    left_out = [c for c in tour.candidates if c.path not in tour.files]
+    print(f"\nconsidered {len(tour.candidates)} files, left out {len(left_out)}; requests={tour.requests} input_tokens={tour.input_tokens} notes={tour.notes or '-'}")
+    return 0
+
+
+async def _pick(settings: Settings, args: argparse.Namespace) -> int:
+    from .picker import WEIGHTS, pick_issues
+    from .store import Store
+
+    store = Store(settings.db_path)
+    kind = args.engine or settings.decision_engine
+    engine = build_engine(settings, kind, log=DecisionLog(settings.db_path))
+    try:
+        picks = await pick_issues(store, engine, kind, limit=args.limit, top=args.top)
+    finally:
+        await engine.aclose()
+    print("weights: " + ", ".join(f"{k}={v}" for k, v in WEIGHTS.items()))
+    for p in picks:
+        parts = " ".join(f"{k.split('_')[0]}={v:.2f}" for k, v in p.parts.items())
+        print(f"{p.score:.3f}  #{p.number} {p.title[:70]}  [{p.kind}] {parts}  {p.url}")
     return 0
 
 
@@ -219,11 +286,23 @@ def main(argv: list[str] | None = None) -> int:
     evidence.add_argument("--engine", choices=list(ENGINE_KINDS))
     evidence.add_argument("--limit", type=int, default=20)
     eval_cmd = sub.add_parser("eval", help="run an evaluation; replays from the call cache where it can")
-    eval_cmd.add_argument("name", choices=["nav", "why"])
+    eval_cmd.add_argument("name", choices=["nav", "why", "tour"])
     eval_cmd.add_argument("--methods", help="comma-separated subset of methods")
     eval_cmd.add_argument("--engine", choices=list(ENGINE_KINDS))
     eval_cmd.add_argument("--limit", type=int)
     eval_cmd.add_argument("--report-only", action="store_true", help="print tables from saved results without running anything")
+    tour_cmd = sub.add_parser("tour", help="plan a guided reading tour for a goal")
+    tour_cmd.add_argument("goal", nargs="?", default="")
+    tour_cmd.add_argument("--engine", choices=list(ENGINE_KINDS))
+    tour_cmd.add_argument("--no-notes", action="store_true", help="skip the LLM notes per stop")
+    tour_cmd.add_argument("--save", help="write the tour state to this JSON file")
+    tour_cmd.add_argument("--replan", help="re-plan a saved tour instead of planning a new one")
+    tour_cmd.add_argument("--skip", action="append", help="PATH=known or PATH=irrelevant (with --replan, repeatable)")
+    tour_cmd.add_argument("--json", action="store_true")
+    pick = sub.add_parser("pick", help="rank open issues for a first contribution")
+    pick.add_argument("--engine", choices=list(ENGINE_KINDS))
+    pick.add_argument("--limit", type=int, default=30, help="issues to consider")
+    pick.add_argument("--top", type=int, default=10)
     decisions = sub.add_parser("decisions", help="print the most recent logged decisions")
     decisions.add_argument("--limit", type=int, default=30)
     args = parser.parse_args(argv)
@@ -253,6 +332,10 @@ def main(argv: list[str] | None = None) -> int:
             return asyncio.run(_evidence(settings, args))
         if args.command == "eval":
             return asyncio.run(_eval(settings, args))
+        if args.command == "tour":
+            return asyncio.run(_tour(settings, args))
+        if args.command == "pick":
+            return asyncio.run(_pick(settings, args))
         if args.command == "where":
             return asyncio.run(_where(settings, args))
         if args.command == "smoke":

@@ -1,0 +1,628 @@
+{
+ "key": "c6a63eb2974da0886b65f377767b6931a101ea2ea8ad30c7e696ef32a4955ad7",
+ "model_id": "jev-1.13.0",
+ "created_at": 1790787908.5493279,
+ "state": {
+  "question": "Why was processing of cookies from the Cookie request header reverted?",
+  "passages": {
+   "E1": "[commit message] Do not break cookie parsing on non-utf8 headers",
+   "E2": "[pull request] Do not process cookies from headers\nFixes #4717\r\n\r\nRevert the behaviour introduced in #2400, because of the bug reported in #4717. Once we merge this, we'll need to either reopen #1992 or create a new issue to keep track of the work towards supporting cookies in the `Cookie` request header (#4812, for instance).\r\n\r\nTasks:\r\n- [x] Update cookies middleware implementation\r\n- [x] Mark existing tests as `xfail`\r\n- [x] Docs: add warnings about the need to define cookies in the `Request.cookies` attribute (`Request.headers` attribute and `DEFAULT_REQUEST_HEADERS` setting)",
+   "E3": "[commit message] Cleanup cookie handling in request_to_curl() (#7684)\n* Adjust CookiesT.\n\n* Drop list of plain cookie dicts support from request_to_curl().\n\n* Extract _decode_cookie().\n\n* Unify logging.\n\n* Extract _to_verbose_cookies().\n\n* Sync and type hint _cookie_to_set_cookie_value() in tests.\n\n* Add tests for bytes in Request.cookies.\n\n* Type hint assertCookieValEqual().",
+   "E4": "[comment] on #1992 Cookies from the Cookie request header are not processed\n@elacuesta yeah, I agree that using value set in `cookies` argument makes more sense in this case.",
+   "E5": "[commit message] Skipping cookie retrieval for non http requests",
+   "E6": "[comment] on #1992 Cookies from the Cookie request header are not processed\nA question about priorities: when creating a `Request`, if a name is specified both directly as part of `headers['Cookie']` and as a value in the `cookies` argument, which one should be used? I feel tempted to keep the one in `cookies`, but that's just my opinion.",
+   "E7": "[commit message] PY3 port http cookies handling",
+   "E8": "[comment] on #1992 Cookies from the Cookie request header are not processed\nTechnically we don’t *need* to process the `Cookie` header given the `cookie` argument from `Request` that you mention, but people still expect them to work if they do set them as a header. So this is not a very important feature request since it was for a different way to do something that is already possible, but it is still worth considering.",
+   "E9": "[commit message] remove python 2 reminiscence in cookies",
+   "E10": "[comment] on #1992 Cookies from the Cookie request header are not processed\nAs setting cookies directly in headers is not an option because of https://github.com/scrapy/scrapy/pull/4823 the only remaining way to set custom cookies is to.. assign it directly to CookieJar (that later will be used by CookiesMiddleware) as requested on https://github.com/scrapy/scrapy/issues/1878\r\n\r\nWith possibility to directly set Cookie in CookieJar in spider code - we don't need to maintain possibility to process cookies from `Cookie` as request header or even from `cookie` request argument (and It resolves priority issue mentioned on https://github.com/scrapy/scrapy/issues/1992#issuecomment-261334012).",
+   "E11": "[commit message] Full typing for scrapy/http/cookies.py.",
+   "E12": "[comment] on #3815 dont_merge_cookies or dont_send_cookies?\nI mean that if i set `dont_merge_cookies=true`, scrapy will dont send any cookie to server.\r\nBut i just want that scrapy don't merge my cookies with the response's cookies, and continue to send my cookies to server.\r\nIn `scrapy/downloadermiddlewares/cookies.py`\r\n\r\n```python\r\ndef process_request(self, request, spider):\r\n        if request.meta.get('dont_merge_cookies', False):\r\n            return\r\n\r\n        cookiejarkey = request.meta.get(\"cookiejar\")\r\n        jar = self.jars[cookiejarkey]\r\n        cookies = self._get_request_cookies(jar, request)\r\n        for cookie in cookies:\r\n            jar.set_cookie_if_ok(cookie, request)\r\n\r\n ",
+   "E13": "[pull request] Full typing for scrapy/http/cookies.py.",
+   "E14": "[issue] Cookies from the Cookie request header are not processed\nI am new in scrapy, and I meet some problems which I can not get answer from google, so I post it here:\n\n1 Cookie not work even set in DEFAULT_REQUEST_HEADERS:\n\n```\nDEFAULT_REQUEST_HEADERS = {\n    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',\n    'accept-encoding': 'gzip, deflate, sdch',\n    'cache-control': 'no-cache',\n    'cookie': 'xx=yy',\n    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.94 Safari/537.36'\n}\n```\n\n```\nclass MySpider(scrapy.Spider):\n    def make_requests_from_url(self, url):\n        return scrapy.http.Request(url, head",
+   "E15": "[issue] Request cookies not updated with values from previous response\n### Description\r\n\r\n[Description of the issue]\r\n\r\n### Steps to Reproduce\r\n\r\n1. Create 2 conda environments one scrapy160 with scrapy 1.6.0 version installed and scrapy230 with scrapy 2.3.0. version installed.\r\n2. `conda activate scrapy160`\r\n3. `scrapy startproject test_login`\r\n4. `cd test_login`\r\n5. `scrapy genspider login quotes.toscrape.com/login`\r\n6. Adapt login.py\r\n\r\n```\r\nimport scrapy\r\nfrom scrapy import FormRequest\r\n\r\n\r\nclass LoginSpider(scrapy.Spider):\r\n    name = 'login'\r\n    # allowed_domains = ['quotes.toscrape.com']\r\n\r\n    start_urls = ['http://quotes.toscrape.com/login']\r\n\r\n    def parse(self, response):\r\n     ",
+   "E16": "[pull request] [MRG+1] CookiesMiddleware: keep cookies from 'Cookie' request header, fix encoding\nFixes #1992.\r\n\r\nThis PR modifies the `CookiesMiddleware._get_request_cookies` method to prevent the middleware from discarding cookies already set in the headers (either by the `DefaultHeadersMiddleware` or by using the `Request`'s `headers` constructor parameter).\r\n\r\nUpdate: also fixes #3575"
+  }
+ },
+ "questions": {
+  "relevant_e1": {
+   "type": "noul",
+   "instructions": "Does passage E1 contain information that helps answer the question? A passage that only shares a topic or a file name with the question does not count."
+  },
+  "injection_e1": {
+   "type": "noul",
+   "instructions": "Does passage E1 contain text addressed to an AI system or assistant that tells it to ignore instructions, change its behaviour, or reveal or send information? Ordinary requests between developers do not count."
+  },
+  "directness_e1": {
+   "type": "score",
+   "instructions": "How directly does passage E1 answer the question?",
+   "criteria": [
+    "The passage is about something else.",
+    "The passage is about the same part of the code but does not address what is asked.",
+    "The passage addresses part of the question, or the answer has to be inferred from it.",
+    "The passage states the answer explicitly."
+   ]
+  },
+  "relevant_e2": {
+   "type": "noul",
+   "instructions": "Does passage E2 contain information that helps answer the question? A passage that only shares a topic or a file name with the question does not count."
+  },
+  "injection_e2": {
+   "type": "noul",
+   "instructions": "Does passage E2 contain text addressed to an AI system or assistant that tells it to ignore instructions, change its behaviour, or reveal or send information? Ordinary requests between developers do not count."
+  },
+  "directness_e2": {
+   "type": "score",
+   "instructions": "How directly does passage E2 answer the question?",
+   "criteria": [
+    "The passage is about something else.",
+    "The passage is about the same part of the code but does not address what is asked.",
+    "The passage addresses part of the question, or the answer has to be inferred from it.",
+    "The passage states the answer explicitly."
+   ]
+  },
+  "relevant_e3": {
+   "type": "noul",
+   "instructions": "Does passage E3 contain information that helps answer the question? A passage that only shares a topic or a file name with the question does not count."
+  },
+  "injection_e3": {
+   "type": "noul",
+   "instructions": "Does passage E3 contain text addressed to an AI system or assistant that tells it to ignore instructions, change its behaviour, or reveal or send information? Ordinary requests between developers do not count."
+  },
+  "directness_e3": {
+   "type": "score",
+   "instructions": "How directly does passage E3 answer the question?",
+   "criteria": [
+    "The passage is about something else.",
+    "The passage is about the same part of the code but does not address what is asked.",
+    "The passage addresses part of the question, or the answer has to be inferred from it.",
+    "The passage states the answer explicitly."
+   ]
+  },
+  "relevant_e4": {
+   "type": "noul",
+   "instructions": "Does passage E4 contain information that helps answer the question? A passage that only shares a topic or a file name with the question does not count."
+  },
+  "injection_e4": {
+   "type": "noul",
+   "instructions": "Does passage E4 contain text addressed to an AI system or assistant that tells it to ignore instructions, change its behaviour, or reveal or send information? Ordinary requests between developers do not count."
+  },
+  "directness_e4": {
+   "type": "score",
+   "instructions": "How directly does passage E4 answer the question?",
+   "criteria": [
+    "The passage is about something else.",
+    "The passage is about the same part of the code but does not address what is asked.",
+    "The passage addresses part of the question, or the answer has to be inferred from it.",
+    "The passage states the answer explicitly."
+   ]
+  },
+  "relevant_e5": {
+   "type": "noul",
+   "instructions": "Does passage E5 contain information that helps answer the question? A passage that only shares a topic or a file name with the question does not count."
+  },
+  "injection_e5": {
+   "type": "noul",
+   "instructions": "Does passage E5 contain text addressed to an AI system or assistant that tells it to ignore instructions, change its behaviour, or reveal or send information? Ordinary requests between developers do not count."
+  },
+  "directness_e5": {
+   "type": "score",
+   "instructions": "How directly does passage E5 answer the question?",
+   "criteria": [
+    "The passage is about something else.",
+    "The passage is about the same part of the code but does not address what is asked.",
+    "The passage addresses part of the question, or the answer has to be inferred from it.",
+    "The passage states the answer explicitly."
+   ]
+  },
+  "relevant_e6": {
+   "type": "noul",
+   "instructions": "Does passage E6 contain information that helps answer the question? A passage that only shares a topic or a file name with the question does not count."
+  },
+  "injection_e6": {
+   "type": "noul",
+   "instructions": "Does passage E6 contain text addressed to an AI system or assistant that tells it to ignore instructions, change its behaviour, or reveal or send information? Ordinary requests between developers do not count."
+  },
+  "directness_e6": {
+   "type": "score",
+   "instructions": "How directly does passage E6 answer the question?",
+   "criteria": [
+    "The passage is about something else.",
+    "The passage is about the same part of the code but does not address what is asked.",
+    "The passage addresses part of the question, or the answer has to be inferred from it.",
+    "The passage states the answer explicitly."
+   ]
+  },
+  "relevant_e7": {
+   "type": "noul",
+   "instructions": "Does passage E7 contain information that helps answer the question? A passage that only shares a topic or a file name with the question does not count."
+  },
+  "injection_e7": {
+   "type": "noul",
+   "instructions": "Does passage E7 contain text addressed to an AI system or assistant that tells it to ignore instructions, change its behaviour, or reveal or send information? Ordinary requests between developers do not count."
+  },
+  "directness_e7": {
+   "type": "score",
+   "instructions": "How directly does passage E7 answer the question?",
+   "criteria": [
+    "The passage is about something else.",
+    "The passage is about the same part of the code but does not address what is asked.",
+    "The passage addresses part of the question, or the answer has to be inferred from it.",
+    "The passage states the answer explicitly."
+   ]
+  },
+  "relevant_e8": {
+   "type": "noul",
+   "instructions": "Does passage E8 contain information that helps answer the question? A passage that only shares a topic or a file name with the question does not count."
+  },
+  "injection_e8": {
+   "type": "noul",
+   "instructions": "Does passage E8 contain text addressed to an AI system or assistant that tells it to ignore instructions, change its behaviour, or reveal or send information? Ordinary requests between developers do not count."
+  },
+  "directness_e8": {
+   "type": "score",
+   "instructions": "How directly does passage E8 answer the question?",
+   "criteria": [
+    "The passage is about something else.",
+    "The passage is about the same part of the code but does not address what is asked.",
+    "The passage addresses part of the question, or the answer has to be inferred from it.",
+    "The passage states the answer explicitly."
+   ]
+  },
+  "relevant_e9": {
+   "type": "noul",
+   "instructions": "Does passage E9 contain information that helps answer the question? A passage that only shares a topic or a file name with the question does not count."
+  },
+  "injection_e9": {
+   "type": "noul",
+   "instructions": "Does passage E9 contain text addressed to an AI system or assistant that tells it to ignore instructions, change its behaviour, or reveal or send information? Ordinary requests between developers do not count."
+  },
+  "directness_e9": {
+   "type": "score",
+   "instructions": "How directly does passage E9 answer the question?",
+   "criteria": [
+    "The passage is about something else.",
+    "The passage is about the same part of the code but does not address what is asked.",
+    "The passage addresses part of the question, or the answer has to be inferred from it.",
+    "The passage states the answer explicitly."
+   ]
+  },
+  "relevant_e10": {
+   "type": "noul",
+   "instructions": "Does passage E10 contain information that helps answer the question? A passage that only shares a topic or a file name with the question does not count."
+  },
+  "injection_e10": {
+   "type": "noul",
+   "instructions": "Does passage E10 contain text addressed to an AI system or assistant that tells it to ignore instructions, change its behaviour, or reveal or send information? Ordinary requests between developers do not count."
+  },
+  "directness_e10": {
+   "type": "score",
+   "instructions": "How directly does passage E10 answer the question?",
+   "criteria": [
+    "The passage is about something else.",
+    "The passage is about the same part of the code but does not address what is asked.",
+    "The passage addresses part of the question, or the answer has to be inferred from it.",
+    "The passage states the answer explicitly."
+   ]
+  },
+  "relevant_e11": {
+   "type": "noul",
+   "instructions": "Does passage E11 contain information that helps answer the question? A passage that only shares a topic or a file name with the question does not count."
+  },
+  "injection_e11": {
+   "type": "noul",
+   "instructions": "Does passage E11 contain text addressed to an AI system or assistant that tells it to ignore instructions, change its behaviour, or reveal or send information? Ordinary requests between developers do not count."
+  },
+  "directness_e11": {
+   "type": "score",
+   "instructions": "How directly does passage E11 answer the question?",
+   "criteria": [
+    "The passage is about something else.",
+    "The passage is about the same part of the code but does not address what is asked.",
+    "The passage addresses part of the question, or the answer has to be inferred from it.",
+    "The passage states the answer explicitly."
+   ]
+  },
+  "relevant_e12": {
+   "type": "noul",
+   "instructions": "Does passage E12 contain information that helps answer the question? A passage that only shares a topic or a file name with the question does not count."
+  },
+  "injection_e12": {
+   "type": "noul",
+   "instructions": "Does passage E12 contain text addressed to an AI system or assistant that tells it to ignore instructions, change its behaviour, or reveal or send information? Ordinary requests between developers do not count."
+  },
+  "directness_e12": {
+   "type": "score",
+   "instructions": "How directly does passage E12 answer the question?",
+   "criteria": [
+    "The passage is about something else.",
+    "The passage is about the same part of the code but does not address what is asked.",
+    "The passage addresses part of the question, or the answer has to be inferred from it.",
+    "The passage states the answer explicitly."
+   ]
+  },
+  "relevant_e13": {
+   "type": "noul",
+   "instructions": "Does passage E13 contain information that helps answer the question? A passage that only shares a topic or a file name with the question does not count."
+  },
+  "injection_e13": {
+   "type": "noul",
+   "instructions": "Does passage E13 contain text addressed to an AI system or assistant that tells it to ignore instructions, change its behaviour, or reveal or send information? Ordinary requests between developers do not count."
+  },
+  "directness_e13": {
+   "type": "score",
+   "instructions": "How directly does passage E13 answer the question?",
+   "criteria": [
+    "The passage is about something else.",
+    "The passage is about the same part of the code but does not address what is asked.",
+    "The passage addresses part of the question, or the answer has to be inferred from it.",
+    "The passage states the answer explicitly."
+   ]
+  },
+  "relevant_e14": {
+   "type": "noul",
+   "instructions": "Does passage E14 contain information that helps answer the question? A passage that only shares a topic or a file name with the question does not count."
+  },
+  "injection_e14": {
+   "type": "noul",
+   "instructions": "Does passage E14 contain text addressed to an AI system or assistant that tells it to ignore instructions, change its behaviour, or reveal or send information? Ordinary requests between developers do not count."
+  },
+  "directness_e14": {
+   "type": "score",
+   "instructions": "How directly does passage E14 answer the question?",
+   "criteria": [
+    "The passage is about something else.",
+    "The passage is about the same part of the code but does not address what is asked.",
+    "The passage addresses part of the question, or the answer has to be inferred from it.",
+    "The passage states the answer explicitly."
+   ]
+  },
+  "relevant_e15": {
+   "type": "noul",
+   "instructions": "Does passage E15 contain information that helps answer the question? A passage that only shares a topic or a file name with the question does not count."
+  },
+  "injection_e15": {
+   "type": "noul",
+   "instructions": "Does passage E15 contain text addressed to an AI system or assistant that tells it to ignore instructions, change its behaviour, or reveal or send information? Ordinary requests between developers do not count."
+  },
+  "directness_e15": {
+   "type": "score",
+   "instructions": "How directly does passage E15 answer the question?",
+   "criteria": [
+    "The passage is about something else.",
+    "The passage is about the same part of the code but does not address what is asked.",
+    "The passage addresses part of the question, or the answer has to be inferred from it.",
+    "The passage states the answer explicitly."
+   ]
+  },
+  "relevant_e16": {
+   "type": "noul",
+   "instructions": "Does passage E16 contain information that helps answer the question? A passage that only shares a topic or a file name with the question does not count."
+  },
+  "injection_e16": {
+   "type": "noul",
+   "instructions": "Does passage E16 contain text addressed to an AI system or assistant that tells it to ignore instructions, change its behaviour, or reveal or send information? Ordinary requests between developers do not count."
+  },
+  "directness_e16": {
+   "type": "score",
+   "instructions": "How directly does passage E16 answer the question?",
+   "criteria": [
+    "The passage is about something else.",
+    "The passage is about the same part of the code but does not address what is asked.",
+    "The passage addresses part of the question, or the answer has to be inferred from it.",
+    "The passage states the answer explicitly."
+   ]
+  }
+ },
+ "answers": {
+  "relevant_e1": {
+   "type": "noul",
+   "noul": 0.56
+  },
+  "injection_e1": {
+   "type": "noul",
+   "noul": 0.02
+  },
+  "directness_e1": {
+   "type": "score",
+   "score": 1.63,
+   "probabilities": {
+    "0": 0.11,
+    "1": 0.25,
+    "2": 0.55,
+    "3": 0.09
+   },
+   "confidence": 0.44
+  },
+  "relevant_e2": {
+   "type": "noul",
+   "noul": 0.94
+  },
+  "injection_e2": {
+   "type": "noul",
+   "noul": 0.01
+  },
+  "directness_e2": {
+   "type": "score",
+   "score": 2.74,
+   "probabilities": {
+    "0": 0.0,
+    "1": 0.0,
+    "2": 0.26,
+    "3": 0.74
+   },
+   "confidence": 0.74
+  },
+  "relevant_e3": {
+   "type": "noul",
+   "noul": 0.1
+  },
+  "injection_e3": {
+   "type": "noul",
+   "noul": 0.01
+  },
+  "directness_e3": {
+   "type": "score",
+   "score": 0.77,
+   "probabilities": {
+    "0": 0.25,
+    "1": 0.73,
+    "2": 0.02,
+    "3": 0.0
+   },
+   "confidence": 0.72
+  },
+  "relevant_e4": {
+   "type": "noul",
+   "noul": 0.22
+  },
+  "injection_e4": {
+   "type": "noul",
+   "noul": 0.01
+  },
+  "directness_e4": {
+   "type": "score",
+   "score": 0.98,
+   "probabilities": {
+    "0": 0.13,
+    "1": 0.76,
+    "2": 0.11,
+    "3": 0.0
+   },
+   "confidence": 0.75
+  },
+  "relevant_e5": {
+   "type": "noul",
+   "noul": 0.09
+  },
+  "injection_e5": {
+   "type": "noul",
+   "noul": 0.01
+  },
+  "directness_e5": {
+   "type": "score",
+   "score": 0.54,
+   "probabilities": {
+    "0": 0.48,
+    "1": 0.5,
+    "2": 0.02,
+    "3": 0.0
+   },
+   "confidence": 0.5
+  },
+  "relevant_e6": {
+   "type": "noul",
+   "noul": 0.31
+  },
+  "injection_e6": {
+   "type": "noul",
+   "noul": 0.01
+  },
+  "directness_e6": {
+   "type": "score",
+   "score": 1.07,
+   "probabilities": {
+    "0": 0.07,
+    "1": 0.79,
+    "2": 0.14,
+    "3": 0.0
+   },
+   "confidence": 0.78
+  },
+  "relevant_e7": {
+   "type": "noul",
+   "noul": 0.07
+  },
+  "injection_e7": {
+   "type": "noul",
+   "noul": 0.01
+  },
+  "directness_e7": {
+   "type": "score",
+   "score": 0.73,
+   "probabilities": {
+    "0": 0.28,
+    "1": 0.71,
+    "2": 0.01,
+    "3": 0.0
+   },
+   "confidence": 0.71
+  },
+  "relevant_e8": {
+   "type": "noul",
+   "noul": 0.42
+  },
+  "injection_e8": {
+   "type": "noul",
+   "noul": 0.01
+  },
+  "directness_e8": {
+   "type": "score",
+   "score": 1.47,
+   "probabilities": {
+    "0": 0.02,
+    "1": 0.5,
+    "2": 0.47,
+    "3": 0.01
+   },
+   "confidence": 0.49
+  },
+  "relevant_e9": {
+   "type": "noul",
+   "noul": 0.06
+  },
+  "injection_e9": {
+   "type": "noul",
+   "noul": 0.01
+  },
+  "directness_e9": {
+   "type": "score",
+   "score": 0.62,
+   "probabilities": {
+    "0": 0.39,
+    "1": 0.6,
+    "2": 0.01,
+    "3": 0.0
+   },
+   "confidence": 0.6
+  },
+  "relevant_e10": {
+   "type": "noul",
+   "noul": 0.74
+  },
+  "injection_e10": {
+   "type": "noul",
+   "noul": 0.01
+  },
+  "directness_e10": {
+   "type": "score",
+   "score": 2.2,
+   "probabilities": {
+    "0": 0.01,
+    "1": 0.07,
+    "2": 0.63,
+    "3": 0.29
+   },
+   "confidence": 0.62
+  },
+  "relevant_e11": {
+   "type": "noul",
+   "noul": 0.05
+  },
+  "injection_e11": {
+   "type": "noul",
+   "noul": 0.01
+  },
+  "directness_e11": {
+   "type": "score",
+   "score": 0.58,
+   "probabilities": {
+    "0": 0.42,
+    "1": 0.58,
+    "2": 0.0,
+    "3": 0.0
+   },
+   "confidence": 0.58
+  },
+  "relevant_e12": {
+   "type": "noul",
+   "noul": 0.15
+  },
+  "injection_e12": {
+   "type": "noul",
+   "noul": 0.01
+  },
+  "directness_e12": {
+   "type": "score",
+   "score": 0.84,
+   "probabilities": {
+    "0": 0.21,
+    "1": 0.74,
+    "2": 0.05,
+    "3": 0.0
+   },
+   "confidence": 0.74
+  },
+  "relevant_e13": {
+   "type": "noul",
+   "noul": 0.05
+  },
+  "injection_e13": {
+   "type": "noul",
+   "noul": 0.01
+  },
+  "directness_e13": {
+   "type": "score",
+   "score": 0.58,
+   "probabilities": {
+    "0": 0.42,
+    "1": 0.58,
+    "2": 0.0,
+    "3": 0.0
+   },
+   "confidence": 0.57
+  },
+  "relevant_e14": {
+   "type": "noul",
+   "noul": 0.3
+  },
+  "injection_e14": {
+   "type": "noul",
+   "noul": 0.01
+  },
+  "directness_e14": {
+   "type": "score",
+   "score": 1.11,
+   "probabilities": {
+    "0": 0.05,
+    "1": 0.8,
+    "2": 0.15,
+    "3": 0.0
+   },
+   "confidence": 0.8
+  },
+  "relevant_e15": {
+   "type": "noul",
+   "noul": 0.09
+  },
+  "injection_e15": {
+   "type": "noul",
+   "noul": 0.01
+  },
+  "directness_e15": {
+   "type": "score",
+   "score": 0.53,
+   "probabilities": {
+    "0": 0.49,
+    "1": 0.5,
+    "2": 0.01,
+    "3": 0.0
+   },
+   "confidence": 0.5
+  },
+  "relevant_e16": {
+   "type": "noul",
+   "noul": 0.56
+  },
+  "injection_e16": {
+   "type": "noul",
+   "noul": 0.01
+  },
+  "directness_e16": {
+   "type": "score",
+   "score": 1.41,
+   "probabilities": {
+    "0": 0.1,
+    "1": 0.45,
+    "2": 0.39,
+    "3": 0.06
+   },
+   "confidence": 0.4
+  }
+ },
+ "model_returned": "jev-1.13-free",
+ "provider": "beatapi",
+ "input_tokens": 4713,
+ "output_tokens": 937,
+ "latency_ms": 744.0834579974762,
+ "request_id": "task_5cVfMhd7uq9bEbxwiOe5NmX0URImtCIG"
+}
