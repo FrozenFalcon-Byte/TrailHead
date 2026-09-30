@@ -1,0 +1,111 @@
+{
+ "key": "0d56e7fb1563891c7a4c9052eaa01c890cc1644964179b09bda15da2e997653e",
+ "model_id": "llm:qwen2.5-coder:7b:1f2e0674",
+ "created_at": 1790783253.254789,
+ "state": "path: scrapy/core/downloader/__init__.py\nlanguage: python\nsymbols:\n- class Slot  # Downloader slot\n- def __init__( self, concurrency: int, delay: float, jitter: float | None = None, randomize_delay: bool | None = None, ) -> None\n- def randomize_delay(self) -> bool\n- def randomize_delay(self, value: bool) -> None\n- def free_transfer_slots(self) -> int\n- def download_delay(self) -> float\n- def close(self) -> None\n- def __str__(self) -> str\n- def _default_jitter(settings: BaseSettings) -> float  # Return the magnitude of the random variation to apply to the delay of slots that do not set their ow\n- def _slot_jitter(slot_settings: dict[str, Any], default: float) -> float  # Return the jitter of a :setting:`DOWNLOAD_SLOTS` entry, from its ``jitter`` key, its deprecated ``ra\n- class Downloader\n- def __init__(self, crawler: Crawler)\n- def randomize_delay(self) -> bool\n- def fetch( self, request: Request, spider: Spider | None = None ) -> Generator[Deferred[Any], Any, Response | Request]\n- def needs_backout(self) -> bool: # A total concurrency of 0 means no limit.\n- def _get_slot( self, request: Request, spider: Spider | None = None ) -> tuple[str, Slot]\n- def get_slot_key(self, request: Request) -> str\n- async def _enqueue_request(self, request: Request) -> Response\n- def _process_queue(self, slot: Slot) -> None\n- def _download_task_done(self, result: Any, request: Request) -> Any\n- def _latercall(self, slot: Slot) -> None\n- async def _download(self, slot: Slot, request: Request) -> Response: # The order is very important for the following logic. Do not change!\n- async def _wait_for_download( self, slot: Slot, request: Request, queue_dfd: Deferred[Response] ) -> None\n- async def stop(self) -> int\n- def close(self) -> None\n- def _slot_gc(self, age: float = 60) -> None\n- def _start_slot_gc(self) -> None\n- def _stop_slot_gc(self) -> None",
+ "questions": {
+  "layer": {
+   "type": "choice",
+   "instructions": "Which architectural layer does this file belong to?",
+   "criteria": {
+    "ui": "The file renders output for people, such as templates, pages or command-line text.",
+    "api_routes": "The file defines public entry points that receive external requests or commands.",
+    "business_logic": "The file implements the core behaviour of the project.",
+    "data_access": "The file reads or writes storage, files, caches, queues or network connections.",
+    "config_infra": "The file holds settings, defaults, packaging, deployment or CI configuration.",
+    "tests": "The file contains automated tests or test helpers.",
+    "docs": "The file is documentation.",
+    "build_tooling": "The file is a developer script or build helper that is not shipped behaviour.",
+    "generated_or_vendored": "The file was produced by a tool or copied from another project.",
+    "other": "The file fits none of the other options."
+   }
+  },
+  "role": {
+   "type": "choice",
+   "instructions": "Which role does this file play inside its package?",
+   "criteria": {
+    "entry_point": "Execution starts here, such as a main function, a command or an application object.",
+    "core_module": "The file defines the main classes or functions that other files build on.",
+    "helpers": "The file is a collection of small utility functions used by other files.",
+    "type_definitions": "The file mostly declares types, interfaces, exceptions or constants.",
+    "example_or_fixture": "The file is sample code, test data or a fixture.",
+    "other": "The file fits none of the other options."
+   }
+  },
+  "is_generated": {
+   "type": "noul",
+   "instructions": "Was this file produced by a code generator instead of being written by a person?"
+  },
+  "exposes_public_api": {
+   "type": "noul",
+   "instructions": "Does this file define names that code outside this project is expected to import or call?"
+  },
+  "newcomer_difficulty": {
+   "type": "score",
+   "instructions": "How much background does a new contributor need before they can change this file safely?",
+   "criteria": [
+    "The file is trivial, such as constants, a short script or plain documentation.",
+    "The file is self-contained and can be understood by reading it alone.",
+    "Understanding the file requires reading a few other files of the project.",
+    "Understanding the file requires deep knowledge of the project's architecture or of an external system."
+   ]
+  }
+ },
+ "answers": {
+  "layer": {
+   "type": "choice",
+   "choice": "business_logic",
+   "probabilities": {
+    "ui": 0.0,
+    "api_routes": 0.0,
+    "business_logic": 0.9,
+    "data_access": 0.0,
+    "config_infra": 0.0,
+    "tests": 0.0,
+    "docs": 0.0,
+    "build_tooling": 0.0,
+    "generated_or_vendored": 0.0,
+    "other": 0.1
+   },
+   "confidence": 0.9
+  },
+  "role": {
+   "type": "choice",
+   "choice": "core_module",
+   "probabilities": {
+    "entry_point": 0.0,
+    "core_module": 0.8,
+    "helpers": 0.1,
+    "type_definitions": 0.1,
+    "example_or_fixture": 0.0,
+    "other": 0.0
+   },
+   "confidence": 0.8
+  },
+  "is_generated": {
+   "type": "noul",
+   "noul": 0.0
+  },
+  "exposes_public_api": {
+   "type": "noul",
+   "noul": 0.9
+  },
+  "newcomer_difficulty": {
+   "type": "score",
+   "score": 2.2,
+   "probabilities": {
+    "0": 0.0,
+    "1": 0.0,
+    "2": 0.8,
+    "3": 0.2
+   },
+   "confidence": 0.8
+  }
+ },
+ "model_returned": "qwen2.5-coder:7b",
+ "provider": "ollama",
+ "input_tokens": 1339,
+ "output_tokens": 311,
+ "latency_ms": 47859.526959000505,
+ "request_id": ""
+}

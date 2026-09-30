@@ -1,0 +1,45 @@
+{
+ "key": "3d21b5a21026b5f4f978200f051ba63d71e416670bdee28e7cc479b8d3e1e0f1",
+ "model_id": "jev-1.13.0",
+ "created_at": 1790784777.786888,
+ "state": {
+  "goal": "Why does the retry middleware lower the priority of retried requests?"
+ },
+ "questions": {
+  "in_scrapy_core_downloader": {
+   "type": "choice",
+   "instructions": "Which entry is most likely to contain the code that the goal is about?",
+   "criteria": {
+    "c0": "__init__.py: Defines Slot, Downloader, _default_jitter, _slot_jitter.",
+    "c1": "_idna_patch.py: Fallbacks for hostnames that the ``idna`` package rejects but that resolve fine. Defines _safe_hostname_bytes, _patched_idna_bytes, _patched_idna_text, _install_twisted_idna_fallbacks.",
+    "c2": "contextfactory.py: Defines BrowserLikeContextFactory, load_context_factory_from_settings, _ScrapyClientContextFactory, _get_creator_context, _AcceptableProtocolsContextFactory, _ScrapyCertificateOptions, _load_context_factory_from_settings.",
+    "c3": "handlers/: Download handlers for different schemes. Contains base.py, datauri.py, file.py, ftp.py, http.py, http11.py, http2.py, s3.py, __init__.py, _aiohttp.py, _base_http.py, _base_streaming.py and 1 more.",
+    "c4": "middleware.py: Downloader Middleware manager. Defines DownloaderMiddlewareManager.",
+    "c5": "tls.py: Defines __getattr__, _ScrapyClientTLSOptions, _ScrapyClientTLSOptions26.",
+    "none": "None of the listed entries is related to the goal."
+   }
+  }
+ },
+ "answers": {
+  "in_scrapy_core_downloader": {
+   "type": "choice",
+   "choice": "c4",
+   "probabilities": {
+    "c0": 0.05,
+    "c1": 0.0,
+    "c2": 0.0,
+    "c3": 0.01,
+    "c4": 0.65,
+    "c5": 0.0,
+    "none": 0.29
+   },
+   "confidence": 0.59
+  }
+ },
+ "model_returned": "jev-1.13-free",
+ "provider": "beatapi",
+ "input_tokens": 658,
+ "output_tokens": 80,
+ "latency_ms": 414.9720409986912,
+ "request_id": "task_FW0Ps2XzFMNYQWe5GwcgZoOseoTKgZQt"
+}

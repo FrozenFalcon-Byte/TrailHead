@@ -1,0 +1,111 @@
+{
+ "key": "bb161c929dc073bee1f833c0242654a0266a3647f6b88e85eb6fb9c7946ac17c",
+ "model_id": "llm:qwen2.5-coder:7b:1f2e0674",
+ "created_at": 1790783969.080527,
+ "state": "path: scrapy/crawler.py\nlanguage: python\nsymbols:\n- class _LateAttribute(Generic[_T])  # Descriptor for a :class:`Crawler` attribute that only gets a value once the crawl starts.\n- def __set_name__(self, owner: type[Crawler], name: str) -> None\n- def __get__(self, instance: None, owner: type[Crawler]) -> _LateAttribute[_T]\n- def __get__(self, instance: Crawler, owner: type[Crawler]) -> _T\n- def __get__( self, instance: Crawler | None, owner: type[Crawler] ) -> _LateAttribute[_T] | _T\n- def __set__(self, instance: Crawler, value: _T) -> None\n- class Crawler\n- def __init__( self, spidercls: type[Spider], settings: dict[str, Any] | Settings | None = None, init_reactor: bool = False, )\n- def _set_force_stop_callback( self, callback: Callable[[], Awaitable[None] | Deferred[None] | None] | None, ) -> None\n- def _update_root_log_handler(self) -> None\n- def _apply_settings(self) -> None\n- def _apply_deprecated_spider_attr(self, attr: str, setting: str) -> None  # Bridge a deprecated spider attribute onto *setting*, warning about the deprecation (and about being \n- def _apply_reactorless_default_settings(self) -> None  # Change some setting defaults when not using a Twisted reactor.\n- def crawl(self, *args: Any, **kwargs: Any) -> Generator[Deferred[Any], Any, None]  # Start the crawler by instantiating its spider class with the given *args* and *kwargs* arguments, wh\n- async def crawl_async(self, *args: Any, **kwargs: Any) -> None  # Start the crawler by instantiating its spider class with the given *args* and *kwargs* arguments, wh\n- def _create_spider(self, *args: Any, **kwargs: Any) -> Spider\n- def stop(self, *, mode: _StopMode = \"graceful\") -> Deferred[None]  # Stop the crawler.\n- async def stop_async(self, *, mode: _StopMode = \"graceful\") -> None  # Stop the crawler.\n- def _get_component( component_class: type[_T], components: Iterable[object] ) -> _T | None\n- def get_addon(self, cls: type[_T]) -> _T | None  # Return the run-time instance of an :ref:`add-on <topics-addons>` of the specified class or a subclas\n- def get_downloader_middleware(self, cls: type[_T]) -> _T | None  # Return the run-time instance of a :ref:`downloader middleware <topics-downloader-middleware>` of the\n- def get_extension(self, cls: type[_T]) -> _T | None  # Return the run-time instance of an :ref:`extension <topics-extensions>` of the specified class or a \n- def get_item_pipeline(self, cls: type[_T]) -> _T | None  # Return the run-time instance of a :ref:`item pipeline <topics-item-pipeline>` of the specified class\n- def get_spider_middleware(self, cls: type[_T]) -> _T | None  # Return the run-time instance of a :ref:`spider middleware <topics-spider-middleware>` of the specifi\n- class CrawlerRunnerBase(ABC)\n- def __init__(self, settings: dict[str, Any] | Settings | None = None)\n- def crawlers(self) -> set[Crawler]  # Set of :class:`crawlers <scrapy.crawler.Crawler>` started by :meth:`crawl` and managed by this class\n- def create_crawler( self, crawler_or_spidercls: type[Spider] | str | Crawler ) -> Crawler  # Return a :class:`~scrapy.crawler.Crawler` object.\n- def _create_crawler(self, spidercls: str | type[Spider]) -> Crawler\n- def crawl( self, crawler_or_spidercls: type[Spider] | str | Crawler, *args: Any, **kwargs: Any, ) -> Awaitable[None]\n- class CrawlerRunner(CrawlerRunnerBase)  # This is a convenient helper class that keeps track of, manages and runs crawlers inside an already s\n- def __init__(self, settings: dict[str, Any] | Settings | None = None)\n- def crawl( self, crawler_or_spidercls: type[Spider] | str | Crawler, *args: Any, **kwargs: Any, ) -> Deferred[None]  # Run a crawler with the provided arguments.\n- def _crawl( self, crawler: Crawler, *args: Any, **kwargs: Any ) -> Generator[Deferred[Any], Any, None]\n- def stop(self, *, mode: _StopMode = \"graceful\") -> Deferred[Any]  # Stops simultaneously all the crawling jobs taking place.\n- def join(self) -> Generator[Deferred[Any], Any, None]  # join()\n- class AsyncCrawlerRunner(CrawlerRunnerBase)  # This is a convenient helper class that keeps track of, manages and runs crawlers inside an already s\n- def __init__(self, settings: dict[str, Any] | Settings | None = None)\n- def crawl( self, crawler_or_spidercls: type[Spider] | str | Crawler, *args: Any, **kwargs: Any, ) -> asyncio.Task[None]  # Run a crawler with the provided arguments.\n- async def _crawl_and_track( self, crawler: Crawler, *args: Any, **kwargs: Any ) -> None\n- def _done(self, task: asyncio.Task[None], crawler: Crawler) -> None\n- def _crawl(self, crawler: Crawler, *args: Any, **kwargs: Any) -> asyncio.Task[None]: # At this point the asyncio loop has been installed either by the user # or by AsyncCrawlerProcess (but it isn't r…\n- async def stop(self, *, mode: _StopMode = \"graceful\") -> None  # Stops simultaneously all the crawling jobs taking place.\n- async def join(self) -> None  # Completes when all managed :attr:`crawlers` have completed their executions.\n- class CrawlerProcessBase(CrawlerRunnerBase)\n- def __init__( self, settings: dict[str, Any] | Settings | None = None, install_root_handler: bool | None = None, )\n- def _create_crawler(self, spidercls: str | type[Spider]) -> Crawler\n- def _force_stop(self) -> None\n- def start( self, stop_after_crawl: bool = True, install_signal_handlers: bool = True ) -> None\n- def create_crawler( self, crawler_or_spidercls: type[Spider] | str | Crawler ) -> Crawler\n- def _signal_shutdown(self, signum: int, _: FrameType | None) -> None\n- def _signal_fast_shutdown(self, signum: int, _: FrameType | None) -> None\n- def _signal_kill(self, signum: int, _: FrameType | None) -> None\n- def _log_shutdown(signum: int) -> None\n- def _log_fast_shutdown(signum: int) -> None\n- def _log_kill(signum: int) -> None\n- def _setup_reactor(self, install_signal_handlers: bool) -> None\n- def _stop_dfd(self, *, mode: _StopMode = \"graceful\") -> Deferred[Any]\n- def _join_dfd(self) -> Deferred[Any]\n- def _graceful_stop_reactor(self) -> Generator[Deferred[Any], Any, None]\n- def _fast_sto\n[truncated]",
+ "questions": {
+  "layer": {
+   "type": "choice",
+   "instructions": "Which architectural layer does this file belong to?",
+   "criteria": {
+    "ui": "The file renders output for people, such as templates, pages or command-line text.",
+    "api_routes": "The file defines public entry points that receive external requests or commands.",
+    "business_logic": "The file implements the core behaviour of the project.",
+    "data_access": "The file reads or writes storage, files, caches, queues or network connections.",
+    "config_infra": "The file holds settings, defaults, packaging, deployment or CI configuration.",
+    "tests": "The file contains automated tests or test helpers.",
+    "docs": "The file is documentation.",
+    "build_tooling": "The file is a developer script or build helper that is not shipped behaviour.",
+    "generated_or_vendored": "The file was produced by a tool or copied from another project.",
+    "other": "The file fits none of the other options."
+   }
+  },
+  "role": {
+   "type": "choice",
+   "instructions": "Which role does this file play inside its package?",
+   "criteria": {
+    "entry_point": "Execution starts here, such as a main function, a command or an application object.",
+    "core_module": "The file defines the main classes or functions that other files build on.",
+    "helpers": "The file is a collection of small utility functions used by other files.",
+    "type_definitions": "The file mostly declares types, interfaces, exceptions or constants.",
+    "example_or_fixture": "The file is sample code, test data or a fixture.",
+    "other": "The file fits none of the other options."
+   }
+  },
+  "is_generated": {
+   "type": "noul",
+   "instructions": "Was this file produced by a code generator instead of being written by a person?"
+  },
+  "exposes_public_api": {
+   "type": "noul",
+   "instructions": "Does this file define names that code outside this project is expected to import or call?"
+  },
+  "newcomer_difficulty": {
+   "type": "score",
+   "instructions": "How much background does a new contributor need before they can change this file safely?",
+   "criteria": [
+    "The file is trivial, such as constants, a short script or plain documentation.",
+    "The file is self-contained and can be understood by reading it alone.",
+    "Understanding the file requires reading a few other files of the project.",
+    "Understanding the file requires deep knowledge of the project's architecture or of an external system."
+   ]
+  }
+ },
+ "answers": {
+  "layer": {
+   "type": "choice",
+   "choice": "business_logic",
+   "probabilities": {
+    "ui": 0.0,
+    "api_routes": 0.05,
+    "business_logic": 0.9,
+    "data_access": 0.05,
+    "config_infra": 0.0,
+    "tests": 0.0,
+    "docs": 0.0,
+    "build_tooling": 0.0,
+    "generated_or_vendored": 0.0,
+    "other": 0.0
+   },
+   "confidence": 0.9
+  },
+  "role": {
+   "type": "choice",
+   "choice": "core_module",
+   "probabilities": {
+    "entry_point": 0.0,
+    "core_module": 0.8,
+    "helpers": 0.15,
+    "type_definitions": 0.05,
+    "example_or_fixture": 0.0,
+    "other": 0.0
+   },
+   "confidence": 0.8
+  },
+  "is_generated": {
+   "type": "noul",
+   "noul": 0.0
+  },
+  "exposes_public_api": {
+   "type": "noul",
+   "noul": 0.9
+  },
+  "newcomer_difficulty": {
+   "type": "score",
+   "score": 2.2,
+   "probabilities": {
+    "0": 0.0,
+    "1": 0.0,
+    "2": 0.8,
+    "3": 0.2
+   },
+   "confidence": 0.8
+  }
+ },
+ "model_returned": "qwen2.5-coder:7b",
+ "provider": "ollama",
+ "input_tokens": 2523,
+ "output_tokens": 305,
+ "latency_ms": 86587.72895799848,
+ "request_id": ""
+}

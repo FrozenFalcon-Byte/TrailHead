@@ -1,0 +1,111 @@
+{
+ "key": "9238c2fc81352ddb2e3019e3ac0fc7e7bea913f8ba489babd8c11fb2f88495d2",
+ "model_id": "llm:qwen2.5-coder:7b:1f2e0674",
+ "created_at": 1790784294.044728,
+ "state": "path: scrapy/downloadermiddlewares/retry.py\nlanguage: python\nheader: An extension to retry failed requests that are potentially caused by temporary problems such as a connection timeout or HTTP 500 error.\nsymbols:\n- def get_retry_request( request: Request, *, spider: scrapy.Spider, reason: str | Exception | type[Exception] = \"unspecified\", max_retry_times: int | None = None, priority_adjust: int | None = None, l…  # Returns a new :class:`~scrapy.Request` object to retry the specified request, or ``None`` if retries\n- class RetryMiddleware\n- def __init__(self, settings: BaseSettings)\n- def from_crawler(cls, crawler: Crawler) -> Self\n- def process_response( self, request: Request, response: Response, spider: scrapy.Spider | None = None, ) -> Request | Response\n- def process_exception( self, request: Request, exception: Exception, spider: scrapy.Spider | None = None, ) -> Request | Response | None\n- def _retry( self, request: Request, reason: str | Exception | type[Exception] ) -> Request | None",
+ "questions": {
+  "layer": {
+   "type": "choice",
+   "instructions": "Which architectural layer does this file belong to?",
+   "criteria": {
+    "ui": "The file renders output for people, such as templates, pages or command-line text.",
+    "api_routes": "The file defines public entry points that receive external requests or commands.",
+    "business_logic": "The file implements the core behaviour of the project.",
+    "data_access": "The file reads or writes storage, files, caches, queues or network connections.",
+    "config_infra": "The file holds settings, defaults, packaging, deployment or CI configuration.",
+    "tests": "The file contains automated tests or test helpers.",
+    "docs": "The file is documentation.",
+    "build_tooling": "The file is a developer script or build helper that is not shipped behaviour.",
+    "generated_or_vendored": "The file was produced by a tool or copied from another project.",
+    "other": "The file fits none of the other options."
+   }
+  },
+  "role": {
+   "type": "choice",
+   "instructions": "Which role does this file play inside its package?",
+   "criteria": {
+    "entry_point": "Execution starts here, such as a main function, a command or an application object.",
+    "core_module": "The file defines the main classes or functions that other files build on.",
+    "helpers": "The file is a collection of small utility functions used by other files.",
+    "type_definitions": "The file mostly declares types, interfaces, exceptions or constants.",
+    "example_or_fixture": "The file is sample code, test data or a fixture.",
+    "other": "The file fits none of the other options."
+   }
+  },
+  "is_generated": {
+   "type": "noul",
+   "instructions": "Was this file produced by a code generator instead of being written by a person?"
+  },
+  "exposes_public_api": {
+   "type": "noul",
+   "instructions": "Does this file define names that code outside this project is expected to import or call?"
+  },
+  "newcomer_difficulty": {
+   "type": "score",
+   "instructions": "How much background does a new contributor need before they can change this file safely?",
+   "criteria": [
+    "The file is trivial, such as constants, a short script or plain documentation.",
+    "The file is self-contained and can be understood by reading it alone.",
+    "Understanding the file requires reading a few other files of the project.",
+    "Understanding the file requires deep knowledge of the project's architecture or of an external system."
+   ]
+  }
+ },
+ "answers": {
+  "layer": {
+   "type": "choice",
+   "choice": "business_logic",
+   "probabilities": {
+    "ui": 0.0,
+    "api_routes": 0.05,
+    "business_logic": 0.9,
+    "data_access": 0.05,
+    "config_infra": 0.0,
+    "tests": 0.0,
+    "docs": 0.0,
+    "build_tooling": 0.0,
+    "generated_or_vendored": 0.0,
+    "other": 0.0
+   },
+   "confidence": 0.9
+  },
+  "role": {
+   "type": "choice",
+   "choice": "core_module",
+   "probabilities": {
+    "entry_point": 0.0,
+    "core_module": 0.8,
+    "helpers": 0.15,
+    "type_definitions": 0.05,
+    "example_or_fixture": 0.0,
+    "other": 0.0
+   },
+   "confidence": 0.85
+  },
+  "is_generated": {
+   "type": "noul",
+   "noul": 0.0
+  },
+  "exposes_public_api": {
+   "type": "noul",
+   "noul": 0.9
+  },
+  "newcomer_difficulty": {
+   "type": "score",
+   "score": 2.2,
+   "probabilities": {
+    "0": 0.0,
+    "1": 0.0,
+    "2": 0.8,
+    "3": 0.2
+   },
+   "confidence": 0.8
+  }
+ },
+ "model_returned": "qwen2.5-coder:7b",
+ "provider": "ollama",
+ "input_tokens": 1076,
+ "output_tokens": 316,
+ "latency_ms": 56480.964624999615,
+ "request_id": ""
+}

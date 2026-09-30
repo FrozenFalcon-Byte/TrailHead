@@ -1,0 +1,111 @@
+{
+ "key": "87748f979b7547b9222f8d545af11a639ea9830f5918e3db3f85e20a2c93b806",
+ "model_id": "llm:qwen2.5-coder:7b:1f2e0674",
+ "created_at": 1790786317.764044,
+ "state": "path: scrapy/settings/__init__.py\nlanguage: python\nsymbols:\n- def get_settings_priority(priority: int | str) -> int  # Small helper function that looks up a given string priority in the :attr:`~scrapy.settings.SETTINGS_\n- class SettingsAttribute  # Class for storing data related to settings attributes.\n- def __init__(self, value: Any, priority: int)\n- def set(self, value: Any, priority: int) -> None  # Sets value if priority is higher or equal than current priority.\n- def __repr__(self) -> str\n- class BaseSettings(MutableMapping[str, Any])  # Instances of this class behave like dictionaries, but store priorities along with their ``(key, valu\n- def __init__(self, values: _SettingsInput = None, priority: int | str = \"project\")\n- def __getitem__(self, opt_name: str) -> Any\n- def __contains__(self, name: object) -> bool\n- def add_to_list(self, name: str, item: Any) -> None  # Append *item* to the :class:`list` setting with the specified *name* if *item* is not already in tha\n- def remove_from_list(self, name: str, item: Any) -> None  # Remove *item* from the :class:`list` setting with the specified *name*.\n- def get(self, name: str, default: Any = None) -> Any: # pylint: disable=arguments-renamed  # Get a setting value without affecting its original type.\n- def getbool(self, name: str, default: bool = False) -> bool  # Get a setting value as a boolean.\n- def getint(self, name: str, default: int = 0) -> int  # Get a setting value as an int.\n- def getfloat(self, name: str, default: float = 0.0) -> float  # Get a setting value as a float.\n- def getlist(self, name: str, default: list[Any] | None = None) -> list[Any]  # Get a setting value as a list. If the setting original type is a list, a copy of it will be returned\n- def getdict( self, name: str, default: dict[Any, Any] | None = None ) -> dict[Any, Any]  # Get a setting value as a dictionary. If the setting original type is a dictionary, a copy of it will\n- def getdictorlist( self, name: str, default: dict[Any, Any] | list[Any] | tuple[Any, ...] | None = None, ) -> dict[Any, Any] | list[Any]  # Get a setting value as either a :class:`dict` or a :class:`list`.\n- def getwithbase(self, name: str) -> BaseSettings  # Get a composition of a dictionary-like setting and its ``_BASE`` counterpart.\n- def get_component_priority_dict_with_base(self, name: str) -> BaseSettings  # Get a composition of a component priority dictionary setting and its ``_BASE`` counterpart.\n- def getpriority(self, name: str) -> int | None  # Return the current numerical priority value of a setting, or ``None`` if the given ``name`` does not\n- def maxpriority(self) -> int  # Return the numerical value of the highest priority present throughout all settings, or the numerical\n- def replace_in_component_priority_dict( self, name: str, old_cls: type, new_cls: type, priority: int | None = None, ) -> None  # Replace *old_cls* with *new_cls* in the *name* :ref:`component priority dictionary <component-priori\n- def __setitem__(self, name: str, value: Any) -> None\n- def set(self, name: str, value: Any, priority: int | str = \"project\") -> None  # Store a key/value attribute with a given priority.\n- def set_in_component_priority_dict( self, name: str, cls: type, priority: int | None ) -> None  # Set the *cls* component in the *name* :ref:`component priority dictionary <component-priority-dictio\n- def setdefault( # pylint: disable=arguments-renamed self, name: str, default: Any = None, priority: int | str = \"project\", ) -> Any\n- def setdefault_in_component_priority_dict( self, name: str, cls: type, priority: int | None ) -> None  # Set the *cls* component in the *name* :ref:`component priority dictionary <component-priority-dictio\n- def setdict(self, values: _SettingsInput, priority: int | str = \"project\") -> None\n- def setmodule( self, module: ModuleType | str, priority: int | str = \"project\" ) -> None  # Store settings from a module with a given priority.\n- def update(self, values: _SettingsInput, priority: int | str = \"project\") -> None: # type: ignore[override]  # Store key/value pairs with a given priority.\n- def delete(self, name: str, priority: int | str = \"project\") -> None\n- def __delitem__(self, name: str) -> None\n- def _assert_mutability(self) -> None\n- def copy(self) -> Self  # Make a deep copy of current settings.\n- def freeze(self) -> None  # Disable further changes to the current settings.\n- def frozencopy(self) -> Self  # Return an immutable copy of the current settings.\n- def __iter__(self) -> Iterator[str]\n- def __len__(self) -> int\n- def _to_dict(self) -> dict[str, Any]\n- def copy_to_dict(self) -> dict[str, Any]  # Make a copy of current settings and convert to a dict.\n- def _repr_pretty_(self, p: Any, cycle: bool) -> None\n- def pop(self, name: str, default: Any = __default) -> Any: # pylint: disable=arguments-renamed\n- class Settings(BaseSettings)  # This object stores Scrapy settings for the configuration of internal components, and can be used for\n- def __init__(self, values: _SettingsInput = None, priority: int | str = \"project\"): # Do not pass kwarg values here. We don't want to promote user-defined # dicts, and we want to update, not replace,…\n- def iter_default_settings() -> Iterable[tuple[str, Any]]  # Return the default settings as an iterator of (name, value) tuples\n- def overridden_settings( settings: Mapping[str, Any], ) -> Iterable[tuple[str, Any]]  # Return an iterable of the settings that have been overridden",
+ "questions": {
+  "layer": {
+   "type": "choice",
+   "instructions": "Which architectural layer does this file belong to?",
+   "criteria": {
+    "ui": "The file renders output for people, such as templates, pages or command-line text.",
+    "api_routes": "The file defines public entry points that receive external requests or commands.",
+    "business_logic": "The file implements the core behaviour of the project.",
+    "data_access": "The file reads or writes storage, files, caches, queues or network connections.",
+    "config_infra": "The file holds settings, defaults, packaging, deployment or CI configuration.",
+    "tests": "The file contains automated tests or test helpers.",
+    "docs": "The file is documentation.",
+    "build_tooling": "The file is a developer script or build helper that is not shipped behaviour.",
+    "generated_or_vendored": "The file was produced by a tool or copied from another project.",
+    "other": "The file fits none of the other options."
+   }
+  },
+  "role": {
+   "type": "choice",
+   "instructions": "Which role does this file play inside its package?",
+   "criteria": {
+    "entry_point": "Execution starts here, such as a main function, a command or an application object.",
+    "core_module": "The file defines the main classes or functions that other files build on.",
+    "helpers": "The file is a collection of small utility functions used by other files.",
+    "type_definitions": "The file mostly declares types, interfaces, exceptions or constants.",
+    "example_or_fixture": "The file is sample code, test data or a fixture.",
+    "other": "The file fits none of the other options."
+   }
+  },
+  "is_generated": {
+   "type": "noul",
+   "instructions": "Was this file produced by a code generator instead of being written by a person?"
+  },
+  "exposes_public_api": {
+   "type": "noul",
+   "instructions": "Does this file define names that code outside this project is expected to import or call?"
+  },
+  "newcomer_difficulty": {
+   "type": "score",
+   "instructions": "How much background does a new contributor need before they can change this file safely?",
+   "criteria": [
+    "The file is trivial, such as constants, a short script or plain documentation.",
+    "The file is self-contained and can be understood by reading it alone.",
+    "Understanding the file requires reading a few other files of the project.",
+    "Understanding the file requires deep knowledge of the project's architecture or of an external system."
+   ]
+  }
+ },
+ "answers": {
+  "layer": {
+   "type": "choice",
+   "choice": "config_infra",
+   "probabilities": {
+    "ui": 0.037037037037037035,
+    "api_routes": 0.037037037037037035,
+    "business_logic": 0.037037037037037035,
+    "data_access": 0.037037037037037035,
+    "config_infra": 0.6666666666666666,
+    "tests": 0.037037037037037035,
+    "docs": 0.037037037037037035,
+    "build_tooling": 0.037037037037037035,
+    "generated_or_vendored": 0.037037037037037035,
+    "other": 0.037037037037037035
+   },
+   "confidence": 0.9
+  },
+  "role": {
+   "type": "choice",
+   "choice": "core_module",
+   "probabilities": {
+    "entry_point": 0.09090909090909091,
+    "core_module": 0.7272727272727273,
+    "helpers": 0.045454545454545456,
+    "type_definitions": 0.045454545454545456,
+    "example_or_fixture": 0.045454545454545456,
+    "other": 0.045454545454545456
+   },
+   "confidence": 0.8
+  },
+  "is_generated": {
+   "type": "noul",
+   "noul": 0.05
+  },
+  "exposes_public_api": {
+   "type": "noul",
+   "noul": 0.9
+  },
+  "newcomer_difficulty": {
+   "type": "score",
+   "score": 1.7,
+   "probabilities": {
+    "0": 0.1,
+    "1": 0.2,
+    "2": 0.6,
+    "3": 0.1
+   },
+   "confidence": 0.8
+  }
+ },
+ "model_returned": "qwen2.5-coder:7b",
+ "provider": "ollama",
+ "input_tokens": 2276,
+ "output_tokens": 334,
+ "latency_ms": 84527.04883299884,
+ "request_id": ""
+}

@@ -96,3 +96,23 @@ Running notes where observed behaviour differs from the project brief. Newest la
 ### Cache
 - Every model call (Jev, fallback engine, prose LLM) is cached under `cache/`, which is tracked
   in git, so evals replay without keys (`TRAILHEAD_OFFLINE=1` turns a cache miss into an error).
+
+### Question independence and question ids (verified with live calls, 2026-09-30)
+- Packing is safe: the same Choice asked alone and asked next to two other Choices in one
+  request returned the same distribution to within 0.01 (0.66 / 0.25 "none" both times).
+  Fan-out questions are answered independently of each other.
+- The question id is part of the input: the identical Choice under the id `pick_00` instead of
+  `pick_01` moved the top option from 0.66 to 0.74. Ids are therefore descriptive and stable
+  (`in_scrapy_core`, not a beam position), so a node gets the same answer wherever it sits.
+- Cost shape: about 170 input tokens of fixed overhead per request plus the question text;
+  three 10-to-17-option Choices cost 1,591 tokens together, one of them alone 643.
+
+### Groq free tier (observed 2026-09-30)
+- `openai/gpt-oss-120b`: 8,000 tokens per minute, 1,000 requests and 200,000 tokens per day.
+  The grep-agent baseline alone used the whole daily allowance after 30 of 45 questions
+  (about 4,000 input tokens per question). `LLM_FALLBACK_MODEL` takes over when the daily
+  quota is spent; eval items record which model actually answered.
+- In JSON mode the model sometimes returns an empty completion with the answer left in its
+  reasoning channel, which Groq rejects with `json_validate_failed`. The client now retries
+  without strict JSON mode and takes the last JSON object from content or reasoning.
+  `LLM_REASONING_EFFORT=low` makes this rare.

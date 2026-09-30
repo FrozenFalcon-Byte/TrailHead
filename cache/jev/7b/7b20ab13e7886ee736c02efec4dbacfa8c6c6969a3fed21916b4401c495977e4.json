@@ -1,0 +1,67 @@
+{
+ "key": "7b20ab13e7886ee736c02efec4dbacfa8c6c6969a3fed21916b4401c495977e4",
+ "model_id": "jev-1.13.0",
+ "created_at": 1790785692.109704,
+ "state": {
+  "goal": "Where are scraped items written out to JSON, CSV or XML?"
+ },
+ "questions": {
+  "in_scrapy_extensions": {
+   "type": "choice",
+   "instructions": "Which entry is most likely to contain the code that the goal is about?",
+   "criteria": {
+    "c0": "__init__.py",
+    "c1": "closespider.py: CloseSpider is an extension that forces spiders to be closed after certain conditions are met. Defines CloseSpider.",
+    "c2": "corestats.py: Extension for collecting core stats like items scraped and start/finish times. Defines CoreStats.",
+    "c3": "debug.py: Extensions for debugging Scrapy. Defines StackTraceDump, Debugger.",
+    "c4": "feedexport.py: Feed Exports extension. Defines apply_uri_params, ItemFilter, FeedStorageProtocol, BlockingFeedStorage, StdoutFeedStorage, FileFeedStorage, S3FeedStorage, GCSFeedStorage and more.",
+    "c5": "httpcache.py: Defines DummyPolicy, RFC2616Policy, DbmCacheStorage, FilesystemCacheStorage, parse_cachecontrol, rfc1123_to_epoch.",
+    "c6": "logcount.py: Defines LogCount.",
+    "c7": "logstats.py: Defines LogStats.",
+    "c8": "memdebug.py: MemoryDebugger extension. Defines MemoryDebugger.",
+    "c9": "memusage.py: MemoryUsage extension. Defines MemoryUsage.",
+    "c10": "periodic_log.py: Defines PeriodicLog.",
+    "c11": "postprocessing.py: Extension for processing data before they are exported to feeds. Defines GzipPlugin, Bz2Plugin, LZMAPlugin, PostProcessingManager.",
+    "c12": "remote_control.py: Defines RemoteControl, _cap, _compile, _effective_timeout.",
+    "c13": "spiderstate.py: Defines SpiderState.",
+    "c14": "statsmailer.py: StatsMailer extension sends an email when a spider finishes scraping. Defines StatsMailer.",
+    "c15": "telnet.py: Scrapy Telnet Console extension. Defines TelnetConsole, _get_manhole_class.",
+    "c16": "throttle.py: Defines AutoThrottle.",
+    "none": "None of the listed entries is related to the goal."
+   }
+  }
+ },
+ "answers": {
+  "in_scrapy_extensions": {
+   "type": "choice",
+   "choice": "c4",
+   "probabilities": {
+    "c0": 0.0,
+    "c1": 0.0,
+    "c10": 0.0,
+    "c11": 0.0,
+    "c12": 0.0,
+    "c13": 0.0,
+    "c14": 0.0,
+    "c15": 0.0,
+    "c16": 0.0,
+    "c2": 0.0,
+    "c3": 0.0,
+    "c4": 1.0,
+    "c5": 0.0,
+    "c6": 0.0,
+    "c7": 0.0,
+    "c8": 0.0,
+    "c9": 0.0,
+    "none": 0.0
+   },
+   "confidence": 1.0
+  }
+ },
+ "model_returned": "jev-1.13-free",
+ "provider": "beatapi",
+ "input_tokens": 928,
+ "output_tokens": 171,
+ "latency_ms": 1696.7077500012238,
+ "request_id": "task_84HEYvFvKIxoM730C1oVeumZFKIJtTYO"
+}

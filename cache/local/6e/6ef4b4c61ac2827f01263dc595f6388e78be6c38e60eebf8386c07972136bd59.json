@@ -1,0 +1,111 @@
+{
+ "key": "6ef4b4c61ac2827f01263dc595f6388e78be6c38e60eebf8386c07972136bd59",
+ "model_id": "llm:qwen2.5-coder:7b:1f2e0674",
+ "created_at": 1790787123.81565,
+ "state": "path: scrapy/statscollectors.py\nlanguage: python\nheader: Scrapy extension for collecting scraping stats\nsymbols:\n- class StatsCollector(MutableMapping[str, Any])  # The base stats collector that other stats collectors are based on.\n- def __init__(self, crawler: Crawler)\n- def get_value( self, key: str, default: Any = None, spider: Spider | None = None ) -> Any  # Return the value of the *key* stat, or *default* if it is not set.\n- def get_stats(self, spider: Spider | None = None) -> StatsT  # Return all stats as a dict.\n- def set_value(self, key: str, value: Any, spider: Spider | None = None) -> None  # Set the *key* stat to *value*.\n- def set_stats(self, stats: StatsT, spider: Spider | None = None) -> None  # Replace all stats with *stats*.\n- def inc_value( self, key: str, count: int = 1, start: int = 0, spider: Spider | None = None ) -> None  # Increment the *key* stat by *count*, or set it to *start* if it is not set.\n- def max_value(self, key: str, value: Any, spider: Spider | None = None) -> None  # Set the *key* stat to *value* if it is not set or lower than *value*.\n- def min_value(self, key: str, value: Any, spider: Spider | None = None) -> None  # Set the *key* stat to *value* if it is not set or higher than *value*.\n- def clear_stats(self, spider: Spider | None = None) -> None  # Clear all stats.\n- def open_spider(self, spider: Spider | None = None) -> None  # Called when the spider is opened.\n- def close_spider( self, spider: Spider | None = None, reason: str | None = None ) -> None  # Called when the spider is closed.\n- def _persist_stats(self, stats: StatsT) -> None\n- def __str__(self) -> str\n- def __bool__(self) -> bool\n- def __getitem__(self, key: str) -> Any\n- def __setitem__(self, key: str, value: Any) -> None\n- def __delitem__(self, key: str) -> None\n- def __iter__(self) -> Iterator[str]\n- def __len__(self) -> int\n- class MemoryStatsCollector(StatsCollector)  # A simple stats collector that keeps the stats of the last scraping run (for each spider) in memory, \n- def __init__(self, crawler: Crawler)\n- def _persist_stats(self, stats: StatsT) -> None\n- class DummyStatsCollector(StatsCollector)  # A stats collector which does nothing but is very efficient (because it does nothing). This stats col\n- def get_value( self, key: str, default: Any = None, spider: Spider | None = None ) -> Any\n- def set_value(self, key: str, value: Any, spider: Spider | None = None) -> None\n- def set_stats(self, stats: StatsT, spider: Spider | None = None) -> None\n- def inc_value( self, key: str, count: int = 1, start: int = 0, spider: Spider | None = None ) -> None\n- def max_value(self, key: str, value: Any, spider: Spider | None = None) -> None\n- def min_value(self, key: str, value: Any, spider: Spider | None = None) -> None",
+ "questions": {
+  "layer": {
+   "type": "choice",
+   "instructions": "Which architectural layer does this file belong to?",
+   "criteria": {
+    "ui": "The file renders output for people, such as templates, pages or command-line text.",
+    "api_routes": "The file defines public entry points that receive external requests or commands.",
+    "business_logic": "The file implements the core behaviour of the project.",
+    "data_access": "The file reads or writes storage, files, caches, queues or network connections.",
+    "config_infra": "The file holds settings, defaults, packaging, deployment or CI configuration.",
+    "tests": "The file contains automated tests or test helpers.",
+    "docs": "The file is documentation.",
+    "build_tooling": "The file is a developer script or build helper that is not shipped behaviour.",
+    "generated_or_vendored": "The file was produced by a tool or copied from another project.",
+    "other": "The file fits none of the other options."
+   }
+  },
+  "role": {
+   "type": "choice",
+   "instructions": "Which role does this file play inside its package?",
+   "criteria": {
+    "entry_point": "Execution starts here, such as a main function, a command or an application object.",
+    "core_module": "The file defines the main classes or functions that other files build on.",
+    "helpers": "The file is a collection of small utility functions used by other files.",
+    "type_definitions": "The file mostly declares types, interfaces, exceptions or constants.",
+    "example_or_fixture": "The file is sample code, test data or a fixture.",
+    "other": "The file fits none of the other options."
+   }
+  },
+  "is_generated": {
+   "type": "noul",
+   "instructions": "Was this file produced by a code generator instead of being written by a person?"
+  },
+  "exposes_public_api": {
+   "type": "noul",
+   "instructions": "Does this file define names that code outside this project is expected to import or call?"
+  },
+  "newcomer_difficulty": {
+   "type": "score",
+   "instructions": "How much background does a new contributor need before they can change this file safely?",
+   "criteria": [
+    "The file is trivial, such as constants, a short script or plain documentation.",
+    "The file is self-contained and can be understood by reading it alone.",
+    "Understanding the file requires reading a few other files of the project.",
+    "Understanding the file requires deep knowledge of the project's architecture or of an external system."
+   ]
+  }
+ },
+ "answers": {
+  "layer": {
+   "type": "choice",
+   "choice": "business_logic",
+   "probabilities": {
+    "ui": 0.0,
+    "api_routes": 0.0,
+    "business_logic": 0.9,
+    "data_access": 0.05,
+    "config_infra": 0.05,
+    "tests": 0.0,
+    "docs": 0.0,
+    "build_tooling": 0.0,
+    "generated_or_vendored": 0.0,
+    "other": 0.0
+   },
+   "confidence": 0.9
+  },
+  "role": {
+   "type": "choice",
+   "choice": "core_module",
+   "probabilities": {
+    "entry_point": 0.0,
+    "core_module": 0.8,
+    "helpers": 0.15,
+    "type_definitions": 0.05,
+    "example_or_fixture": 0.0,
+    "other": 0.0
+   },
+   "confidence": 0.8
+  },
+  "is_generated": {
+   "type": "noul",
+   "noul": 0.0
+  },
+  "exposes_public_api": {
+   "type": "noul",
+   "noul": 1.0
+  },
+  "newcomer_difficulty": {
+   "type": "score",
+   "score": 2.2,
+   "probabilities": {
+    "0": 0.0,
+    "1": 0.0,
+    "2": 0.8,
+    "3": 0.2
+   },
+   "confidence": 0.8
+  }
+ },
+ "model_returned": "qwen2.5-coder:7b",
+ "provider": "ollama",
+ "input_tokens": 1629,
+ "output_tokens": 295,
+ "latency_ms": 85269.23766699838,
+ "request_id": ""
+}

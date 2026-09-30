@@ -22,6 +22,8 @@ def build_llm(settings: Settings) -> LLMClient:
             base_url=settings.llm_base_url,
             model=settings.llm_model,
             requests_per_minute=settings.llm_rpm,
+            reasoning_effort=settings.llm_reasoning_effort,
+            fallback_model=settings.llm_fallback_model,
         )
     return CachedLLM(inner, settings.cache_dir / "llm_text", model=settings.llm_model)
 
@@ -60,6 +62,7 @@ def _build(settings: Settings, kind: str, log: DecisionLog) -> DecisionEngine:
             log=log,
             max_concurrency=settings.jev_max_concurrency,
             max_attempts=settings.jev_max_attempts,
+            shared_state_dir=settings.data_dir / "ratelimit",
         )
     if kind == "llm":
         return LLMFallbackEngine(build_llm(settings), cache=DecisionCache(settings.cache_dir / "llm"), log=log, provider="hosted")

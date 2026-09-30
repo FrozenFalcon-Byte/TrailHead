@@ -1,0 +1,111 @@
+{
+ "key": "d37017c3067ec9953d1859a3e3fd3f45f36253b26543517564f2c8390f378dcf",
+ "model_id": "llm:qwen2.5-coder:7b:1f2e0674",
+ "created_at": 1790784479.567772,
+ "state": "path: scrapy/exporters.py\nlanguage: python\nheader: Item Exporters are used to export/serialize items into different formats.\nsymbols:\n- class BaseItemExporter(ABC)\n- def __init__(self, *, dont_fail: bool = False, **kwargs: Any)\n- def _configure(self, options: dict[str, Any], dont_fail: bool = False) -> None  # Configure the exporter by popping options from the ``options`` dict. If dont_fail is set, it won't r\n- def export_item(self, item: Any) -> None\n- def serialize_field( self, field: Mapping[str, Any] | Field, name: str, value: Any ) -> Any\n- def start_exporting(self) -> None: # noqa: B027\n- def finish_exporting(self) -> None: # noqa: B027\n- def _get_populated_field_names(adapter: ItemAdapter) -> Iterable[str]  # Return the populated field names of *adapter*, in declaration order.\n- def get_serialized_fields( self, item: Any, default_value: Any = None, include_empty: bool | None = None ) -> Iterable[tuple[str, Any]]  # Return the fields of *item* to export, as an iterable of ``(name, serialized_value)`` tuples, taking\n- class JsonLinesItemExporter(BaseItemExporter)\n- def __init__(self, file: BytesIO, **kwargs: Any)\n- def export_item(self, item: Any) -> None\n- class JsonItemExporter(BaseItemExporter)\n- def __init__(self, file: BytesIO, **kwargs: Any)\n- def _beautify_newline(self) -> None\n- def _add_comma_after_first(self) -> None\n- def start_exporting(self) -> None\n- def finish_exporting(self) -> None\n- def export_item(self, item: Any) -> None\n- class XmlItemExporter(BaseItemExporter)\n- def __init__(self, file: BytesIO, **kwargs: Any)\n- def _beautify_newline(self, new_item: bool = False) -> None\n- def _beautify_indent(self, depth: int = 1) -> None\n- def start_exporting(self) -> None\n- def export_item(self, item: Any) -> None\n- def finish_exporting(self) -> None\n- def _export_xml_field(self, name: str, serialized_value: Any, depth: int) -> None\n- class CsvItemExporter(BaseItemExporter)\n- def __init__( self, file: BytesIO, include_headers_line: bool = True, join_multivalued: str = \",\", errors: str | None = None, **kwargs: Any, )\n- def serialize_field( self, field: Mapping[str, Any] | Field, name: str, value: Any ) -> Any\n- def _join_if_needed(self, value: Any) -> Any\n- def export_item(self, item: Any) -> None\n- def finish_exporting(self) -> None\n- def _build_row(self, values: Iterable[Any]) -> Iterable[Any]\n- def _write_headers_and_set_fields_to_export(self, item: Any) -> None\n- class PickleItemExporter(BaseItemExporter)\n- def __init__(self, file: BytesIO, protocol: int = 4, **kwargs: Any)\n- def export_item(self, item: Any) -> None\n- class MarshalItemExporter(BaseItemExporter)  # Exports items in a Python-specific binary format (see :mod:`marshal`).\n- def __init__(self, file: BytesIO, **kwargs: Any)\n- def export_item(self, item: Any) -> None\n- class PprintItemExporter(BaseItemExporter)\n- def __init__(self, file: BytesIO, **kwargs: Any)\n- def export_item(self, item: Any) -> None\n- class PythonItemExporter(BaseItemExporter)  # This is a base class for item exporters that extends :class:`BaseItemExporter` with support for nest\n- def _configure(self, options: dict[str, Any], dont_fail: bool = False) -> None\n- def serialize_field( self, field: Mapping[str, Any] | Field, name: str, value: Any ) -> Any\n- def _serialize_value(self, value: Any) -> Any\n- def _serialize_item(self, item: Any) -> Iterable[tuple[str | bytes, Any]]\n- def export_item(self, item: Any) -> dict[str | bytes, Any]: # type: ignore[override]",
+ "questions": {
+  "layer": {
+   "type": "choice",
+   "instructions": "Which architectural layer does this file belong to?",
+   "criteria": {
+    "ui": "The file renders output for people, such as templates, pages or command-line text.",
+    "api_routes": "The file defines public entry points that receive external requests or commands.",
+    "business_logic": "The file implements the core behaviour of the project.",
+    "data_access": "The file reads or writes storage, files, caches, queues or network connections.",
+    "config_infra": "The file holds settings, defaults, packaging, deployment or CI configuration.",
+    "tests": "The file contains automated tests or test helpers.",
+    "docs": "The file is documentation.",
+    "build_tooling": "The file is a developer script or build helper that is not shipped behaviour.",
+    "generated_or_vendored": "The file was produced by a tool or copied from another project.",
+    "other": "The file fits none of the other options."
+   }
+  },
+  "role": {
+   "type": "choice",
+   "instructions": "Which role does this file play inside its package?",
+   "criteria": {
+    "entry_point": "Execution starts here, such as a main function, a command or an application object.",
+    "core_module": "The file defines the main classes or functions that other files build on.",
+    "helpers": "The file is a collection of small utility functions used by other files.",
+    "type_definitions": "The file mostly declares types, interfaces, exceptions or constants.",
+    "example_or_fixture": "The file is sample code, test data or a fixture.",
+    "other": "The file fits none of the other options."
+   }
+  },
+  "is_generated": {
+   "type": "noul",
+   "instructions": "Was this file produced by a code generator instead of being written by a person?"
+  },
+  "exposes_public_api": {
+   "type": "noul",
+   "instructions": "Does this file define names that code outside this project is expected to import or call?"
+  },
+  "newcomer_difficulty": {
+   "type": "score",
+   "instructions": "How much background does a new contributor need before they can change this file safely?",
+   "criteria": [
+    "The file is trivial, such as constants, a short script or plain documentation.",
+    "The file is self-contained and can be understood by reading it alone.",
+    "Understanding the file requires reading a few other files of the project.",
+    "Understanding the file requires deep knowledge of the project's architecture or of an external system."
+   ]
+  }
+ },
+ "answers": {
+  "layer": {
+   "type": "choice",
+   "choice": "business_logic",
+   "probabilities": {
+    "ui": 0.0,
+    "api_routes": 0.05,
+    "business_logic": 0.9,
+    "data_access": 0.05,
+    "config_infra": 0.0,
+    "tests": 0.0,
+    "docs": 0.0,
+    "build_tooling": 0.0,
+    "generated_or_vendored": 0.0,
+    "other": 0.0
+   },
+   "confidence": 0.9
+  },
+  "role": {
+   "type": "choice",
+   "choice": "core_module",
+   "probabilities": {
+    "entry_point": 0.0,
+    "core_module": 0.8,
+    "helpers": 0.15,
+    "type_definitions": 0.05,
+    "example_or_fixture": 0.0,
+    "other": 0.0
+   },
+   "confidence": 0.8
+  },
+  "is_generated": {
+   "type": "noul",
+   "noul": 0.0
+  },
+  "exposes_public_api": {
+   "type": "noul",
+   "noul": 0.9
+  },
+  "newcomer_difficulty": {
+   "type": "score",
+   "score": 2.2,
+   "probabilities": {
+    "0": 0.0,
+    "1": 0.0,
+    "2": 0.8,
+    "3": 0.2
+   },
+   "confidence": 0.8
+  }
+ },
+ "model_returned": "qwen2.5-coder:7b",
+ "provider": "ollama",
+ "input_tokens": 1796,
+ "output_tokens": 305,
+ "latency_ms": 69955.24708299854,
+ "request_id": ""
+}

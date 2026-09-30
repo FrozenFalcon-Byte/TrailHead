@@ -1,0 +1,51 @@
+{
+ "key": "412f053d17b5e7f9e480e9314117a8734f356793c3990da9ff22a995affd25c7",
+ "model_id": "jev-1.13.0",
+ "created_at": 1790783412.277772,
+ "state": {
+  "goal": "Where are failed requests retried?"
+ },
+ "questions": {
+  "pick_00": {
+   "type": "choice",
+   "instructions": "Which entry is most likely to contain the code that the goal is about?",
+   "criteria": {
+    "c0": "__init__.py",
+    "c1": "base.py: Defines BaseSpiderMiddleware.",
+    "c2": "depth.py: Depth Spider Middleware. Defines DepthMiddleware.",
+    "c3": "httperror.py: HttpError Spider Middleware. Defines HttpError, HttpErrorMiddleware.",
+    "c4": "metacopy.py: Defines MetaCopyDetectionMiddleware.",
+    "c5": "referer.py: RefererMiddleware: populates Request referer field, based on the Response which originated it. Defines ReferrerPolicy, NoReferrerPolicy, NoReferrerWhenDowngradePolicy, SameOriginPolicy, OriginPolicy, StrictOriginPolicy, OriginWhenCrossOriginPolicy, StrictOrigi",
+    "c6": "start.py: Defines StartSpiderMiddleware.",
+    "c7": "stickymeta.py: Defines StickyMetaParamsMiddleware.",
+    "c8": "urllength.py: Url Length Spider Middleware. Defines UrlLengthMiddleware.",
+    "none": "None of the listed entries is related to the goal."
+   }
+  }
+ },
+ "answers": {
+  "pick_00": {
+   "type": "choice",
+   "choice": "c3",
+   "probabilities": {
+    "c0": 0.01,
+    "c1": 0.06,
+    "c2": 0.0,
+    "c3": 0.74,
+    "c4": 0.0,
+    "c5": 0.0,
+    "c6": 0.0,
+    "c7": 0.0,
+    "c8": 0.0,
+    "none": 0.19
+   },
+   "confidence": 0.7
+  }
+ },
+ "model_returned": "jev-1.13-free",
+ "provider": "beatapi",
+ "input_tokens": 643,
+ "output_tokens": 100,
+ "latency_ms": 638.8251249991299,
+ "request_id": "task_nQcgPDdmPx995PrAxeD9ZYYyhALrLd91"
+}

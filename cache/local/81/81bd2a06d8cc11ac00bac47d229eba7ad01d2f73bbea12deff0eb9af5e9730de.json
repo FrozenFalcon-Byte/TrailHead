@@ -1,0 +1,111 @@
+{
+ "key": "81bd2a06d8cc11ac00bac47d229eba7ad01d2f73bbea12deff0eb9af5e9730de",
+ "model_id": "llm:qwen2.5-coder:7b:1f2e0674",
+ "created_at": 1790784670.0811698,
+ "state": "path: scrapy/extensions/httpcache.py\nlanguage: python\nsymbols:\n- class DummyPolicy\n- def __init__(self, settings: BaseSettings)\n- def should_cache_request(self, request: Request) -> bool\n- def should_cache_response(self, response: Response, request: Request) -> bool\n- def is_cached_response_fresh( self, cachedresponse: Response, request: Request ) -> bool\n- def is_cached_response_valid( self, cachedresponse: Response, response: Response, request: Request ) -> bool\n- class RFC2616Policy\n- def __init__(self, settings: BaseSettings)\n- def _parse_cachecontrol(self, r: Request | Response) -> dict[bytes, bytes | None]\n- def should_cache_request(self, request: Request) -> bool\n- def should_cache_response(self, response: Response, request: Request) -> bool: # What is cacheable - https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.9.1 # Response cacheability - https:…\n- def is_cached_response_fresh( self, cachedresponse: Response, request: Request ) -> bool\n- def is_cached_response_valid( self, cachedresponse: Response, response: Response, request: Request ) -> bool: # Use the cached response if the new response is a server error, # as long as the old res…\n- def _set_conditional_validators( self, request: Request, cachedresponse: Response ) -> None\n- def _get_max_age(self, cc: dict[bytes, bytes | None]) -> int | None\n- def _compute_freshness_lifetime( self, response: Response, request: Request, now: float ) -> float: # Reference nsHttpResponseHead::ComputeFreshnessLifetime # https://dxr.mozilla.org/mozilla-central/…\n- def _compute_current_age( self, response: Response, request: Request, now: float ) -> float: # Reference nsHttpResponseHead::ComputeCurrentAge # https://dxr.mozilla.org/mozilla-central/source/netwerk…\n- class DbmCacheStorage\n- def __init__(self, settings: BaseSettings)\n- def open_spider(self, spider: Spider) -> None\n- def close_spider(self, spider: Spider) -> None\n- def retrieve_response(self, spider: Spider, request: Request) -> Response | None\n- def store_response( self, spider: Spider, request: Request, response: Response ) -> None\n- def _read_data( self, spider: Spider, request: Request ) -> tuple[dict[str, Any], float] | None\n- class FilesystemCacheStorage\n- def __init__(self, settings: BaseSettings)\n- def open_spider(self, spider: Spider) -> None\n- def close_spider(self, spider: Spider) -> None\n- def retrieve_response(self, spider: Spider, request: Request) -> Response | None  # Return response if present in cache, or None otherwise.\n- def store_response( self, spider: Spider, request: Request, response: Response ) -> None  # Store the given response in the cache.\n- def _get_request_path(self, spider: Spider, request: Request) -> str\n- def _read_meta(self, spider: Spider, request: Request) -> dict[str, Any] | None\n- def parse_cachecontrol(header: bytes) -> dict[bytes, bytes | None]  # Parse Cache-Control header\n- def rfc1123_to_epoch(date_str: str | bytes | None) -> int | None: # The HTTP time format (which is how we use this function) is actually in # RFC 7231 §7.1.1.1, it refers to RFC 5322 and also require…",
+ "questions": {
+  "layer": {
+   "type": "choice",
+   "instructions": "Which architectural layer does this file belong to?",
+   "criteria": {
+    "ui": "The file renders output for people, such as templates, pages or command-line text.",
+    "api_routes": "The file defines public entry points that receive external requests or commands.",
+    "business_logic": "The file implements the core behaviour of the project.",
+    "data_access": "The file reads or writes storage, files, caches, queues or network connections.",
+    "config_infra": "The file holds settings, defaults, packaging, deployment or CI configuration.",
+    "tests": "The file contains automated tests or test helpers.",
+    "docs": "The file is documentation.",
+    "build_tooling": "The file is a developer script or build helper that is not shipped behaviour.",
+    "generated_or_vendored": "The file was produced by a tool or copied from another project.",
+    "other": "The file fits none of the other options."
+   }
+  },
+  "role": {
+   "type": "choice",
+   "instructions": "Which role does this file play inside its package?",
+   "criteria": {
+    "entry_point": "Execution starts here, such as a main function, a command or an application object.",
+    "core_module": "The file defines the main classes or functions that other files build on.",
+    "helpers": "The file is a collection of small utility functions used by other files.",
+    "type_definitions": "The file mostly declares types, interfaces, exceptions or constants.",
+    "example_or_fixture": "The file is sample code, test data or a fixture.",
+    "other": "The file fits none of the other options."
+   }
+  },
+  "is_generated": {
+   "type": "noul",
+   "instructions": "Was this file produced by a code generator instead of being written by a person?"
+  },
+  "exposes_public_api": {
+   "type": "noul",
+   "instructions": "Does this file define names that code outside this project is expected to import or call?"
+  },
+  "newcomer_difficulty": {
+   "type": "score",
+   "instructions": "How much background does a new contributor need before they can change this file safely?",
+   "criteria": [
+    "The file is trivial, such as constants, a short script or plain documentation.",
+    "The file is self-contained and can be understood by reading it alone.",
+    "Understanding the file requires reading a few other files of the project.",
+    "Understanding the file requires deep knowledge of the project's architecture or of an external system."
+   ]
+  }
+ },
+ "answers": {
+  "layer": {
+   "type": "choice",
+   "choice": "business_logic",
+   "probabilities": {
+    "ui": 0.0,
+    "api_routes": 0.0,
+    "business_logic": 0.9,
+    "data_access": 0.1,
+    "config_infra": 0.0,
+    "tests": 0.0,
+    "docs": 0.0,
+    "build_tooling": 0.0,
+    "generated_or_vendored": 0.0,
+    "other": 0.0
+   },
+   "confidence": 0.9
+  },
+  "role": {
+   "type": "choice",
+   "choice": "core_module",
+   "probabilities": {
+    "entry_point": 0.0,
+    "core_module": 0.8,
+    "helpers": 0.1,
+    "type_definitions": 0.1,
+    "example_or_fixture": 0.0,
+    "other": 0.0
+   },
+   "confidence": 0.8
+  },
+  "is_generated": {
+   "type": "noul",
+   "noul": 0.0
+  },
+  "exposes_public_api": {
+   "type": "noul",
+   "noul": 0.9
+  },
+  "newcomer_difficulty": {
+   "type": "score",
+   "score": 1.7,
+   "probabilities": {
+    "0": 0.1,
+    "1": 0.2,
+    "2": 0.6,
+    "3": 0.1
+   },
+   "confidence": 0.7
+  }
+ },
+ "model_returned": "qwen2.5-coder:7b",
+ "provider": "ollama",
+ "input_tokens": 1636,
+ "output_tokens": 227,
+ "latency_ms": 66750.81675000183,
+ "request_id": ""
+}

@@ -1,0 +1,43 @@
+{
+ "key": "8b7e337d510295146fdf47074757f965ad764e7388faf83aa15e1291ba73785d",
+ "model_id": "jev-1.13.0",
+ "created_at": 1790787060.412627,
+ "state": {
+  "goal": "Where is the request fingerprint computed?"
+ },
+ "questions": {
+  "in_scrapy_http": {
+   "type": "choice",
+   "instructions": "Which entry is most likely to contain the code that the goal is about?",
+   "criteria": {
+    "c0": "__init__.py: Module containing all HTTP related classes.",
+    "c1": "cookies.py: Defines CookieJar, potential_domain_matches, WrappedRequest, WrappedResponse, _DummyLock.",
+    "c2": "headers.py: Defines Headers.",
+    "c3": "request/: This module implements the Request class which is used to represent HTTP requests in Scrapy. Contains form.py, json_request.py, rpc.py, __init__.py.",
+    "c4": "response/: This module implements the Response class which is used to represent HTTP responses in Scrapy. Contains html.py, json.py, text.py, xml.py, __init__.py.",
+    "none": "None of the listed entries is related to the goal."
+   }
+  }
+ },
+ "answers": {
+  "in_scrapy_http": {
+   "type": "choice",
+   "choice": "c3",
+   "probabilities": {
+    "c0": 0.02,
+    "c1": 0.0,
+    "c2": 0.0,
+    "c3": 0.97,
+    "c4": 0.0,
+    "none": 0.01
+   },
+   "confidence": 0.96
+  }
+ },
+ "model_returned": "jev-1.13-free",
+ "provider": "beatapi",
+ "input_tokens": 504,
+ "output_tokens": 68,
+ "latency_ms": 431.158499999583,
+ "request_id": "task_4FkpIToQvJSSqfmmf59ICkpnAm2sQqDU"
+}

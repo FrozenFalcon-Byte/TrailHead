@@ -1,0 +1,37 @@
+{
+ "key": "7108241202d02cdff76d28560f92d89f4a23059411ecdd13f623d0f850afdda9",
+ "model_id": "jev-1.13.0",
+ "created_at": 1790786669.448282,
+ "state": {
+  "goal": "Where are the default values of all settings defined?"
+ },
+ "questions": {
+  "in_scrapy_settings": {
+   "type": "choice",
+   "instructions": "Which entry is most likely to contain the code that the goal is about?",
+   "criteria": {
+    "c0": "__init__.py: Defines get_settings_priority, SettingsAttribute, BaseSettings, Settings, iter_default_settings, overridden_settings.",
+    "c1": "default_settings.py: This module contains the default values for all settings used by Scrapy. Defines __getattr__.",
+    "none": "None of the listed entries is related to the goal."
+   }
+  }
+ },
+ "answers": {
+  "in_scrapy_settings": {
+   "type": "choice",
+   "choice": "c1",
+   "probabilities": {
+    "c0": 0.01,
+    "c1": 0.99,
+    "none": 0.0
+   },
+   "confidence": 0.98
+  }
+ },
+ "model_returned": "jev-1.13-free",
+ "provider": "beatapi",
+ "input_tokens": 405,
+ "output_tokens": 44,
+ "latency_ms": 773.6300409997057,
+ "request_id": "task_KeDBHQxihs9PYOEcgaqodMeVdU27XZb3"
+}

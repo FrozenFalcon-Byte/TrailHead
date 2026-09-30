@@ -1,0 +1,111 @@
+{
+ "key": "bd187ef622968c777b2d7bca7291da844b87456f3e6c4570bb78c745a7027981",
+ "model_id": "llm:qwen2.5-coder:7b:1f2e0674",
+ "created_at": 1790786571.924421,
+ "state": "path: scrapy/spiderloader.py\nlanguage: python\nsymbols:\n- def get_spider_loader(settings: BaseSettings) -> SpiderLoaderProtocol  # Get SpiderLoader instance from settings\n- class SpiderLoaderProtocol(Protocol)  # Protocol for spider loader implementations.\n- def from_settings(cls, settings: BaseSettings) -> Self  # Return an instance of the class for the given settings.\n- def load(self, spider_name: str) -> type[Spider]  # Return the spider class for the given spider name. If the spider name is not found, it must raise a \n- def list(self) -> list[str]  # Return a list with the names of all spiders available in the project.\n- def find_by_request(self, request: Request) -> __builtins__.list[str]  # Return the list of spiders names that can handle the given request.\n- class SpiderLoader  # SpiderLoader is a class which locates and loads spiders in a Scrapy project.\n- def __init__(self, settings: BaseSettings)\n- def _check_name_duplicates(self) -> None\n- def _load_spiders(self, module: ModuleType) -> None\n- def _load_all_spiders(self) -> None\n- def from_settings(cls, settings: BaseSettings) -> Self  # Create an instance of the class.\n- def load(self, spider_name: str) -> type[Spider]  # Return the spider class for the given spider name.\n- def find_by_request(self, request: Request) -> list[str]  # Return the list of spider names that can handle the given request.\n- def list(self) -> list[str]  # Return a list with the names of all spiders available in the project.\n- class DummySpiderLoader  # A dummy spider loader that does not load any spiders.\n- def from_settings(cls, settings: BaseSettings) -> Self\n- def load(self, spider_name: str) -> type[Spider]\n- def list(self) -> list[str]\n- def find_by_request(self, request: Request) -> __builtins__.list[str]",
+ "questions": {
+  "layer": {
+   "type": "choice",
+   "instructions": "Which architectural layer does this file belong to?",
+   "criteria": {
+    "ui": "The file renders output for people, such as templates, pages or command-line text.",
+    "api_routes": "The file defines public entry points that receive external requests or commands.",
+    "business_logic": "The file implements the core behaviour of the project.",
+    "data_access": "The file reads or writes storage, files, caches, queues or network connections.",
+    "config_infra": "The file holds settings, defaults, packaging, deployment or CI configuration.",
+    "tests": "The file contains automated tests or test helpers.",
+    "docs": "The file is documentation.",
+    "build_tooling": "The file is a developer script or build helper that is not shipped behaviour.",
+    "generated_or_vendored": "The file was produced by a tool or copied from another project.",
+    "other": "The file fits none of the other options."
+   }
+  },
+  "role": {
+   "type": "choice",
+   "instructions": "Which role does this file play inside its package?",
+   "criteria": {
+    "entry_point": "Execution starts here, such as a main function, a command or an application object.",
+    "core_module": "The file defines the main classes or functions that other files build on.",
+    "helpers": "The file is a collection of small utility functions used by other files.",
+    "type_definitions": "The file mostly declares types, interfaces, exceptions or constants.",
+    "example_or_fixture": "The file is sample code, test data or a fixture.",
+    "other": "The file fits none of the other options."
+   }
+  },
+  "is_generated": {
+   "type": "noul",
+   "instructions": "Was this file produced by a code generator instead of being written by a person?"
+  },
+  "exposes_public_api": {
+   "type": "noul",
+   "instructions": "Does this file define names that code outside this project is expected to import or call?"
+  },
+  "newcomer_difficulty": {
+   "type": "score",
+   "instructions": "How much background does a new contributor need before they can change this file safely?",
+   "criteria": [
+    "The file is trivial, such as constants, a short script or plain documentation.",
+    "The file is self-contained and can be understood by reading it alone.",
+    "Understanding the file requires reading a few other files of the project.",
+    "Understanding the file requires deep knowledge of the project's architecture or of an external system."
+   ]
+  }
+ },
+ "answers": {
+  "layer": {
+   "type": "choice",
+   "choice": "business_logic",
+   "probabilities": {
+    "ui": 0.0,
+    "api_routes": 0.05,
+    "business_logic": 0.9,
+    "data_access": 0.05,
+    "config_infra": 0.0,
+    "tests": 0.0,
+    "docs": 0.0,
+    "build_tooling": 0.0,
+    "generated_or_vendored": 0.0,
+    "other": 0.0
+   },
+   "confidence": 0.9
+  },
+  "role": {
+   "type": "choice",
+   "choice": "core_module",
+   "probabilities": {
+    "entry_point": 0.0,
+    "core_module": 0.8,
+    "helpers": 0.15,
+    "type_definitions": 0.05,
+    "example_or_fixture": 0.0,
+    "other": 0.0
+   },
+   "confidence": 0.8
+  },
+  "is_generated": {
+   "type": "noul",
+   "noul": 0.0
+  },
+  "exposes_public_api": {
+   "type": "noul",
+   "noul": 0.9
+  },
+  "newcomer_difficulty": {
+   "type": "score",
+   "score": 2.2,
+   "probabilities": {
+    "0": 0.0,
+    "1": 0.0,
+    "2": 0.8,
+    "3": 0.2
+   },
+   "confidence": 0.8
+  }
+ },
+ "model_returned": "qwen2.5-coder:7b",
+ "provider": "ollama",
+ "input_tokens": 2542,
+ "output_tokens": 635,
+ "latency_ms": 153179.29187499976,
+ "request_id": ""
+}

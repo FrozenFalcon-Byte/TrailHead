@@ -1,0 +1,59 @@
+{
+ "key": "f8c41590d436be1c4e8977876e7dcc6012974a0a682a35522e82bd1c6e021910",
+ "model_id": "jev-1.13.0",
+ "created_at": 1790785300.604106,
+ "state": {
+  "goal": "Where is robots.txt fetched and enforced before a page is downloaded?"
+ },
+ "questions": {
+  "in_scrapy_core_downloader_handlers": {
+   "type": "choice",
+   "instructions": "Which entry is most likely to contain the code that the goal is about?",
+   "criteria": {
+    "c0": "__init__.py: Download handlers for different schemes. Defines DownloadHandlerProtocol, DownloadHandlers.",
+    "c1": "_aiohttp.py: Defines AiohttpDownloadHandler, _ClientResponse.",
+    "c2": "_base_http.py: Defines BaseHttpDownloadHandler.",
+    "c3": "_base_streaming.py: Defines BaseStreamingDownloadHandler, _BaseResponseArgs.",
+    "c4": "_httpx.py: ``httpx``-based HTTP(S) download handler. Currently not recommended for production use. Defines HttpxDownloadHandler.",
+    "c5": "base.py: Defines BaseDownloadHandler.",
+    "c6": "datauri.py: Defines DataURIDownloadHandler.",
+    "c7": "file.py: Defines FileDownloadHandler.",
+    "c8": "ftp.py: An asynchronous FTP file download handler for scrapy which somehow emulates an http response. Defines ReceivedDataProtocol, FTPDownloadHandler.",
+    "c9": "http.py",
+    "c10": "http11.py: Download handlers for http and https schemes. Defines HTTP11DownloadHandler, TunnelError, _ResultT, _TunnelingTCP4ClientEndpoint, _tunnel_request_data, _BindAddressAgent, _TunnelingAgent, _ScrapyProxyAgent and more.",
+    "c11": "http2.py: Defines H2DownloadHandler, _ScrapyH2Agent.",
+    "c12": "s3.py: Defines S3DownloadHandler.",
+    "none": "None of the listed entries is related to the goal."
+   }
+  }
+ },
+ "answers": {
+  "in_scrapy_core_downloader_handlers": {
+   "type": "choice",
+   "choice": "none",
+   "probabilities": {
+    "c0": 0.12,
+    "c1": 0.01,
+    "c10": 0.1,
+    "c11": 0.01,
+    "c12": 0.0,
+    "c2": 0.09,
+    "c3": 0.0,
+    "c4": 0.0,
+    "c5": 0.26,
+    "c6": 0.0,
+    "c7": 0.01,
+    "c8": 0.0,
+    "c9": 0.03,
+    "none": 0.37
+   },
+   "confidence": 0.31
+  }
+ },
+ "model_returned": "jev-1.13-free",
+ "provider": "beatapi",
+ "input_tokens": 799,
+ "output_tokens": 139,
+ "latency_ms": 1494.9379169993335,
+ "request_id": "task_6CAZUnZPqs8yHM5RjzpWQMINgWceb2te"
+}

@@ -47,6 +47,8 @@ class Settings:
     llm_base_url: str
     llm_model: str
     llm_rpm: float
+    llm_reasoning_effort: str
+    llm_fallback_model: str
     local_llm_base_url: str
     local_llm_model: str
     github_token: str
@@ -127,11 +129,13 @@ def load_settings(env: Mapping[str, str] | None = None, env_file: Path | str | N
         jev_model_id=get("JEV_MODEL_ID", "jev-1.13.0"),
         jev_providers=tuple(providers),
         jev_max_concurrency=int(get("JEV_MAX_CONCURRENCY", "8")),
-        jev_max_attempts=int(get("JEV_MAX_ATTEMPTS", "6")),
+        jev_max_attempts=int(get("JEV_MAX_ATTEMPTS", "8")),
         llm_api_key=get("LLM_API_KEY") or get("GROQ_API_KEY"),
         llm_base_url=get("LLM_BASE_URL", "https://api.groq.com/openai/v1").rstrip("/"),
         llm_model=get("LLM_MODEL", "openai/gpt-oss-120b"),
         llm_rpm=float(get("LLM_RPM", "20")),
+        llm_reasoning_effort=get("LLM_REASONING_EFFORT"),
+        llm_fallback_model=get("LLM_FALLBACK_MODEL"),
         local_llm_base_url=get("OLLAMA_BASE_URL", "http://localhost:11434/v1").rstrip("/"),
         local_llm_model=get("OLLAMA_MODEL", "qwen2.5-coder:7b"),
         github_token=get("GITHUB_TOKEN"),

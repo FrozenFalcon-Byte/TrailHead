@@ -1,0 +1,129 @@
+{
+ "key": "3a71b65b684a55f4f134cf136e9bb1ddd2953f645a59b0fb95b310fc1bb94ec9",
+ "model_id": "jev-1.13.0",
+ "created_at": 1790783281.641609,
+ "state": {
+  "goal": "Where are failed requests retried?"
+ },
+ "questions": {
+  "pick_00": {
+   "type": "choice",
+   "instructions": "Which entry is most likely to contain the code that the goal is about?",
+   "criteria": {
+    "c0": "__init__.py: Scrapy core library classes and functions.",
+    "c1": "_http2/: Contains agent.py, protocol.py, stream.py, __init__.py.",
+    "c2": "downloader/: Contains handlers/, contextfactory.py, middleware.py, tls.py, __init__.py, _idna_patch.py.",
+    "c3": "engine.py: This is the Scrapy engine which controls the Scheduler, Downloader and Spider. Defines EngineState, ExecutionEngine, _Slot.",
+    "c4": "scheduler.py: Defines BaseSchedulerMeta, BaseScheduler, Scheduler.",
+    "c5": "scraper.py: This module implements the Scraper component which parses responses and extracts information from them. Defines Slot, Scraper.",
+    "c6": "spidermw.py: Spider Middleware manager. Defines SpiderMiddlewareManager.",
+    "none": "None of the listed entries is related to the goal."
+   }
+  },
+  "pick_01": {
+   "type": "choice",
+   "instructions": "Which entry is most likely to contain the code that the goal is about?",
+   "criteria": {
+    "c0": "__init__.py",
+    "c1": "base.py: Defines BaseSpiderMiddleware.",
+    "c2": "depth.py: Depth Spider Middleware. Defines DepthMiddleware.",
+    "c3": "httperror.py: HttpError Spider Middleware. Defines HttpError, HttpErrorMiddleware.",
+    "c4": "metacopy.py: Defines MetaCopyDetectionMiddleware.",
+    "c5": "referer.py: RefererMiddleware: populates Request referer field, based on the Response which originated it. Defines ReferrerPolicy, NoReferrerPolicy, NoReferrerWhenDowngradePolicy, SameOriginPolicy, OriginPolicy, StrictOriginPolicy, OriginWhenCrossOriginPolicy, StrictOrigi",
+    "c6": "start.py: Defines StartSpiderMiddleware.",
+    "c7": "stickymeta.py: Defines StickyMetaParamsMiddleware.",
+    "c8": "urllength.py: Url Length Spider Middleware. Defines UrlLengthMiddleware.",
+    "none": "None of the listed entries is related to the goal."
+   }
+  },
+  "pick_02": {
+   "type": "choice",
+   "instructions": "Which entry is most likely to contain the code that the goal is about?",
+   "criteria": {
+    "c0": "__init__.py",
+    "c1": "closespider.py: CloseSpider is an extension that forces spiders to be closed after certain conditions are met. Defines CloseSpider.",
+    "c2": "corestats.py: Extension for collecting core stats like items scraped and start/finish times. Defines CoreStats.",
+    "c3": "debug.py: Extensions for debugging Scrapy. Defines StackTraceDump, Debugger.",
+    "c4": "feedexport.py: Feed Exports extension. Defines apply_uri_params, ItemFilter, FeedStorageProtocol, BlockingFeedStorage, StdoutFeedStorage, FileFeedStorage, S3FeedStorage, GCSFeedStorage and more.",
+    "c5": "httpcache.py: Defines DummyPolicy, RFC2616Policy, DbmCacheStorage, FilesystemCacheStorage, parse_cachecontrol, rfc1123_to_epoch.",
+    "c6": "logcount.py: Defines LogCount.",
+    "c7": "logstats.py: Defines LogStats.",
+    "c8": "memdebug.py: MemoryDebugger extension. Defines MemoryDebugger.",
+    "c9": "memusage.py: MemoryUsage extension. Defines MemoryUsage.",
+    "c10": "periodic_log.py: Defines PeriodicLog.",
+    "c11": "postprocessing.py: Extension for processing data before they are exported to feeds. Defines GzipPlugin, Bz2Plugin, LZMAPlugin, PostProcessingManager.",
+    "c12": "remote_control.py: Defines RemoteControl, _cap, _compile, _effective_timeout.",
+    "c13": "spiderstate.py: Defines SpiderState.",
+    "c14": "statsmailer.py: StatsMailer extension sends an email when a spider finishes scraping. Defines StatsMailer.",
+    "c15": "telnet.py: Scrapy Telnet Console extension. Defines TelnetConsole, _get_manhole_class.",
+    "c16": "throttle.py: Defines AutoThrottle.",
+    "none": "None of the listed entries is related to the goal."
+   }
+  }
+ },
+ "answers": {
+  "pick_00": {
+   "type": "choice",
+   "choice": "c2",
+   "probabilities": {
+    "c0": 0.01,
+    "c1": 0.02,
+    "c2": 0.75,
+    "c3": 0.19,
+    "c4": 0.02,
+    "c5": 0.0,
+    "c6": 0.0,
+    "none": 0.01
+   },
+   "confidence": 0.72
+  },
+  "pick_01": {
+   "type": "choice",
+   "choice": "c3",
+   "probabilities": {
+    "c0": 0.01,
+    "c1": 0.07,
+    "c2": 0.01,
+    "c3": 0.66,
+    "c4": 0.0,
+    "c5": 0.0,
+    "c6": 0.0,
+    "c7": 0.0,
+    "c8": 0.0,
+    "none": 0.25
+   },
+   "confidence": 0.62
+  },
+  "pick_02": {
+   "type": "choice",
+   "choice": "none",
+   "probabilities": {
+    "c0": 0.01,
+    "c1": 0.02,
+    "c10": 0.0,
+    "c11": 0.0,
+    "c12": 0.02,
+    "c13": 0.01,
+    "c14": 0.0,
+    "c15": 0.0,
+    "c16": 0.22,
+    "c2": 0.01,
+    "c3": 0.0,
+    "c4": 0.06,
+    "c5": 0.08,
+    "c6": 0.0,
+    "c7": 0.0,
+    "c8": 0.0,
+    "c9": 0.0,
+    "none": 0.57
+   },
+   "confidence": 0.55
+  }
+ },
+ "model_returned": "jev-1.13-free",
+ "provider": "beatapi",
+ "input_tokens": 1591,
+ "output_tokens": 348,
+ "latency_ms": 438.34295800115797,
+ "request_id": "task_KrE9yYe6z3iNTpiIireQqRp07Hf1WNZ9"
+}

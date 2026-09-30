@@ -22,6 +22,15 @@ class QuestionSet:
     def subset(self, *ids: str) -> dict[str, Question]:
         return {qid: self.questions[qid] for qid in ids}
 
+    def render(self, qid: str, **values: str) -> Question:
+        """A template question with {placeholders} filled in. Values come from code, never from repository text."""
+        question = self.questions[qid]
+        if isinstance(question, Choice):
+            return Choice(question.instructions.format(**values), {k: v.format(**values) for k, v in question.criteria.items()})
+        if isinstance(question, Score):
+            return Score(question.instructions.format(**values), tuple(level.format(**values) for level in question.criteria))
+        return Noul(question.instructions.format(**values))
+
 
 def _build(qid: str, raw: Mapping[str, Any]) -> Question:
     kind = raw.get("type")

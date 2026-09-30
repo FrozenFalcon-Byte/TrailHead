@@ -1,0 +1,41 @@
+{
+ "key": "f71d7b3249875ad78ec467bcca819ea793fba2e9e9015a591e84bd91230f6220",
+ "model_id": "jev-1.13.0",
+ "created_at": 1790787389.0125,
+ "state": {
+  "goal": "Where are cookies stored per session and added to outgoing requests?"
+ },
+ "questions": {
+  "in_scrapy_http_request": {
+   "type": "choice",
+   "instructions": "Which entry is most likely to contain the code that the goal is about?",
+   "criteria": {
+    "c0": "__init__.py: This module implements the Request class which is used to represent HTTP requests in Scrapy. Defines VerboseCookie, NO_CALLBACK, Request, _find_method.",
+    "c1": "form.py: This module implements the FormRequest class which is a more convenient class (than Request) to generate Requests based on form data. Defines FormRequest, _get_form_url, _urlencode, _get_form, _get_inputs, _value, _select_value, _get_clickable.",
+    "c2": "json_request.py: This module implements the JsonRequest class which is a more convenient class (than Request) to generate JSON Requests. Defines JsonRequest.",
+    "c3": "rpc.py: This module implements the XmlRpcRequest class which is a more convenient class (that Request) to generate xml-rpc requests. Defines XmlRpcRequest.",
+    "none": "None of the listed entries is related to the goal."
+   }
+  }
+ },
+ "answers": {
+  "in_scrapy_http_request": {
+   "type": "choice",
+   "choice": "c0",
+   "probabilities": {
+    "c0": 0.89,
+    "c1": 0.0,
+    "c2": 0.0,
+    "c3": 0.0,
+    "none": 0.11
+   },
+   "confidence": 0.86
+  }
+ },
+ "model_returned": "jev-1.13-free",
+ "provider": "beatapi",
+ "input_tokens": 553,
+ "output_tokens": 61,
+ "latency_ms": 2946.088624998083,
+ "request_id": "task_PGpNAdnl77boJ9IOFm9vM62tQesRlnVx"
+}

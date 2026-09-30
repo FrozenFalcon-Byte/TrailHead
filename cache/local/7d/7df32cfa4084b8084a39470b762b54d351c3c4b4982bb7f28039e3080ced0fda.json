@@ -1,0 +1,111 @@
+{
+ "key": "7df32cfa4084b8084a39470b762b54d351c3c4b4982bb7f28039e3080ced0fda",
+ "model_id": "llm:qwen2.5-coder:7b:1f2e0674",
+ "created_at": 1790783404.212899,
+ "state": "path: scrapy/core/downloader/handlers/_base_streaming.py\nlanguage: python\nsymbols:\n- class _BaseResponseArgs(TypedDict)\n- class BaseStreamingDownloadHandler(BaseHttpDownloadHandler, ABC, Generic[_ResponseT])  # A base class for HTTP download handlers that follow the streaming logic flow.\n- def __init__(self, crawler: Crawler)\n- def _make_request( self, request: Request, timeout: float ) -> AbstractAsyncContextManager[_ResponseT]  # Return an async context manager yielding the library-specific response.\n- def _extract_headers(response: _ResponseT) -> Headers  # Convert library-specific response headers to a :class:`~scrapy.http.headers.Headers` object.\n- def _build_base_response_args( response: _ResponseT, request: Request, headers: Headers ) -> _BaseResponseArgs  # Build kwargs for :func:`scrapy.utils._download_handlers.make_response`.\n- def _iter_body_chunks(response: _ResponseT) -> AsyncIterable[SizedBuffer]  # Return an async iterable yielding body chunks from the response.\n- def _is_dataloss_exception(exc: Exception) -> bool  # Return True if ``exc`` represents dataloss.\n- def _check_deps_installed() -> None  # Raise NotConfigured if the required deps are not installed.\n- def _log_tls_info(self, response: _ResponseT, request: Request) -> None  # Log TLS connection details, if possible.\n- async def download_request(self, request: Request) -> Response\n- async def _read_response(self, response: _ResponseT, request: Request) -> Response\n- def _request_headers(request: Request) -> Headers  # Get a prepared copy of the request headers.\n- def _get_bind_address_host(self) -> str | None  # Return the host portion of the bind address.\n- def _cancel_maxsize( size: int, limit: int, request: Request, *, expected: bool ) -> NoReturn\n- def _extract_proxy(request: Request) -> tuple[str | None, str | None]  # Return a tuple of the proxy URL with a scheme and the value of the Proxy-Authorization header.\n- def _extract_proxy_url_with_creds(self, request: Request) -> str | None  # Return the proxy URL with the userinfo added based on the Proxy-Authorization header.",
+ "questions": {
+  "layer": {
+   "type": "choice",
+   "instructions": "Which architectural layer does this file belong to?",
+   "criteria": {
+    "ui": "The file renders output for people, such as templates, pages or command-line text.",
+    "api_routes": "The file defines public entry points that receive external requests or commands.",
+    "business_logic": "The file implements the core behaviour of the project.",
+    "data_access": "The file reads or writes storage, files, caches, queues or network connections.",
+    "config_infra": "The file holds settings, defaults, packaging, deployment or CI configuration.",
+    "tests": "The file contains automated tests or test helpers.",
+    "docs": "The file is documentation.",
+    "build_tooling": "The file is a developer script or build helper that is not shipped behaviour.",
+    "generated_or_vendored": "The file was produced by a tool or copied from another project.",
+    "other": "The file fits none of the other options."
+   }
+  },
+  "role": {
+   "type": "choice",
+   "instructions": "Which role does this file play inside its package?",
+   "criteria": {
+    "entry_point": "Execution starts here, such as a main function, a command or an application object.",
+    "core_module": "The file defines the main classes or functions that other files build on.",
+    "helpers": "The file is a collection of small utility functions used by other files.",
+    "type_definitions": "The file mostly declares types, interfaces, exceptions or constants.",
+    "example_or_fixture": "The file is sample code, test data or a fixture.",
+    "other": "The file fits none of the other options."
+   }
+  },
+  "is_generated": {
+   "type": "noul",
+   "instructions": "Was this file produced by a code generator instead of being written by a person?"
+  },
+  "exposes_public_api": {
+   "type": "noul",
+   "instructions": "Does this file define names that code outside this project is expected to import or call?"
+  },
+  "newcomer_difficulty": {
+   "type": "score",
+   "instructions": "How much background does a new contributor need before they can change this file safely?",
+   "criteria": [
+    "The file is trivial, such as constants, a short script or plain documentation.",
+    "The file is self-contained and can be understood by reading it alone.",
+    "Understanding the file requires reading a few other files of the project.",
+    "Understanding the file requires deep knowledge of the project's architecture or of an external system."
+   ]
+  }
+ },
+ "answers": {
+  "layer": {
+   "type": "choice",
+   "choice": "business_logic",
+   "probabilities": {
+    "ui": 0.009615384615384616,
+    "api_routes": 0.019230769230769232,
+    "business_logic": 0.8653846153846154,
+    "data_access": 0.04807692307692308,
+    "config_infra": 0.009615384615384616,
+    "tests": 0.009615384615384616,
+    "docs": 0.009615384615384616,
+    "build_tooling": 0.009615384615384616,
+    "generated_or_vendored": 0.009615384615384616,
+    "other": 0.009615384615384616
+   },
+   "confidence": 0.9
+  },
+  "role": {
+   "type": "choice",
+   "choice": "core_module",
+   "probabilities": {
+    "entry_point": 0.00980392156862745,
+    "core_module": 0.7843137254901961,
+    "helpers": 0.14705882352941177,
+    "type_definitions": 0.029411764705882353,
+    "example_or_fixture": 0.0196078431372549,
+    "other": 0.00980392156862745
+   },
+   "confidence": 0.8
+  },
+  "is_generated": {
+   "type": "noul",
+   "noul": 0.05
+  },
+  "exposes_public_api": {
+   "type": "noul",
+   "noul": 0.9
+  },
+  "newcomer_difficulty": {
+   "type": "score",
+   "score": 1.95,
+   "probabilities": {
+    "0": 0.05,
+    "1": 0.1,
+    "2": 0.7,
+    "3": 0.15
+   },
+   "confidence": 0.7
+  }
+ },
+ "model_returned": "qwen2.5-coder:7b",
+ "provider": "ollama",
+ "input_tokens": 1323,
+ "output_tokens": 337,
+ "latency_ms": 61786.87937500035,
+ "request_id": ""
+}

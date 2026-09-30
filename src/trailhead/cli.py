@@ -92,6 +92,87 @@ async def _where(settings: Settings, args: argparse.Namespace) -> int:
     return 0
 
 
+async def _ask(settings: Settings, args: argparse.Namespace) -> int:
+    from .ask import ask
+    from .context import Context
+
+    ctx = Context(settings)
+
+    def emit(kind: str, payload: dict) -> None:
+        if kind == "route":
+            print(f"route: {payload['route']} ({payload['reason']}) code_alone={payload['code_alone']:.2f}", flush=True)
+        elif kind == "nav_depth":
+            for step in payload["steps"]:
+                top = ", ".join(f"{o['name']} {o['probability']:.2f}" for o in step["options"][:3])
+                print(f"  nav {step['node'] or '/':<30} {top}", flush=True)
+        elif kind == "evidence":
+            kept = [e for e in payload["evidence"] if e["kept"]]
+            print(f"evidence: kept {len(kept)} of {len(payload['evidence'])}", flush=True)
+
+    try:
+        out = await ask(ctx, args.query, engine_kind=args.engine, emit=emit, final_check=not args.no_final_check)
+    finally:
+        await ctx.aclose()
+    if args.json:
+        print(json.dumps(out, indent=1))
+        return 0
+    answer = out["answer"]
+    print(f"\n[{answer['status']}] confidence={answer['confidence']:.2f} rendered_by={answer['render'] or '-'}")
+    print(answer["text"])
+    if answer["abstain_reason"]:
+        print(f"(abstained: {answer['abstain_reason']})")
+    for claim in answer["claims"]:
+        print(f"  {claim['id']} {claim['status']:<9} p={claim['p_support']:.2f} direct={claim['directness']:.2f} addresses={claim['addresses']:.2f} {claim['evidence']} {claim['text'][:110]}")
+    for e in out.get("retrieval", {}).get("evidence", []):
+        if e["kept"] or answer["status"] == "abstained":
+            print(f"  {e['label']:<4} {'kept' if e['kept'] else 'drop'} rel={e['relevance']:.2f} {e['ref'][:24]:<24} {e['title'][:60]}  {e['url']}")
+    return 0
+
+
+async def _evidence(settings: Settings, args: argparse.Namespace) -> int:
+    from .retrieve import retrieve
+    from .store import Store
+
+    store = Store(settings.db_path)
+    engine = build_engine(settings, args.engine)
+    try:
+        result = await retrieve(store, engine, args.query, files=args.file or [], limit=args.limit)
+    finally:
+        await engine.aclose()
+    for e in result.candidates:
+        mark = "KEEP" if e.kept else "drop"
+        print(f"{mark} {e.label:<4} rel={e.relevance:.2f} direct={e.directness or 0:.2f} inj={e.injection:.2f} {e.source:<12} {e.ref:<20} {e.title[:70]}")
+    print(f"kept={len(result.kept)}/{len(result.candidates)} input_tokens={result.input_tokens} latency_ms={result.latency_ms:.0f} cached={result.cached}")
+    return 0
+
+
+async def _eval(settings: Settings, args: argparse.Namespace) -> int:
+    from . import evals
+
+    if args.name == "nav":
+        from .evals import nav
+
+        if not args.report_only:
+            methods = args.methods.split(",") if args.methods else list(nav.METHODS)
+            await nav.run(settings, methods, engine_kind=args.engine or "jev", limit=args.limit)
+        print(nav.report(evals.load_results("nav")))
+    elif args.name == "why":
+        from .context import Context
+        from .evals import why
+
+        kind = args.engine or "jev"
+        if not args.report_only:
+            ctx = Context(settings)
+            try:
+                await why.run(ctx, engine_kind=kind, limit=args.limit, progress=lambda line: print(line, flush=True))
+            finally:
+                await ctx.aclose()
+            if kind == "jev":
+                print("label sheets: %d claims, %d answers" % why.export_labels(evals.load_results("why_jev")))
+        print(why.report(evals.load_results(f"why_{kind}"), f"why_{kind}"))
+    return 0
+
+
 def _decisions(settings: Settings, limit: int) -> int:
     for row in reversed(DecisionLog(settings.db_path).recent(limit)):
         conf = "" if row["confidence"] is None else f" conf={row['confidence']:.2f}"
@@ -127,6 +208,22 @@ def main(argv: list[str] | None = None) -> int:
     where.add_argument("--greedy", action="store_true", help="follow only the best child at each node")
     where.add_argument("--tests", action="store_true", help="include test files")
     where.add_argument("--docs", action="store_true", help="include documentation files")
+    ask_cmd = sub.add_parser("ask", help="answer a question about the ingested repo with cited, verified claims")
+    ask_cmd.add_argument("query")
+    ask_cmd.add_argument("--engine", choices=list(ENGINE_KINDS))
+    ask_cmd.add_argument("--no-final-check", action="store_true", help="skip the Jev output check on the rendered prose")
+    ask_cmd.add_argument("--json", action="store_true")
+    evidence = sub.add_parser("evidence", help="retrieve and filter history evidence for a question")
+    evidence.add_argument("query")
+    evidence.add_argument("--file", action="append", help="also search the history of this file (repeatable)")
+    evidence.add_argument("--engine", choices=list(ENGINE_KINDS))
+    evidence.add_argument("--limit", type=int, default=20)
+    eval_cmd = sub.add_parser("eval", help="run an evaluation; replays from the call cache where it can")
+    eval_cmd.add_argument("name", choices=["nav", "why"])
+    eval_cmd.add_argument("--methods", help="comma-separated subset of methods")
+    eval_cmd.add_argument("--engine", choices=list(ENGINE_KINDS))
+    eval_cmd.add_argument("--limit", type=int)
+    eval_cmd.add_argument("--report-only", action="store_true", help="print tables from saved results without running anything")
     decisions = sub.add_parser("decisions", help="print the most recent logged decisions")
     decisions.add_argument("--limit", type=int, default=30)
     args = parser.parse_args(argv)
@@ -150,6 +247,12 @@ def main(argv: list[str] | None = None) -> int:
             return 0
         if args.command == "annotate":
             return asyncio.run(_annotate(settings, args))
+        if args.command == "ask":
+            return asyncio.run(_ask(settings, args))
+        if args.command == "evidence":
+            return asyncio.run(_evidence(settings, args))
+        if args.command == "eval":
+            return asyncio.run(_eval(settings, args))
         if args.command == "where":
             return asyncio.run(_where(settings, args))
         if args.command == "smoke":

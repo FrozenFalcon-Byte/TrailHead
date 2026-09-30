@@ -1,0 +1,111 @@
+{
+ "key": "81f4e3ade0e114f5be6ebb0f4b200a93f7d3f047dec32946228cea5d724f613e",
+ "model_id": "llm:qwen2.5-coder:7b:1f2e0674",
+ "created_at": 1790784445.9792871,
+ "state": "path: scrapy/exceptions.py\nlanguage: python\nheader: Scrapy core exceptions\nsymbols:\n- class NotConfigured(Exception)  # Raised by a :ref:`component <topics-components>` from its ``__init__()`` or :meth:`from_crawler` met\n- class _InvalidOutput(TypeError)  # Indicates an invalid value has been returned by a middleware's processing method. Internal and undoc\n- class IgnoreRequest(Exception)  # Raised to indicate that a request should be ignored.\n- class DontCloseSpider(Exception)  # Raised in a :signal:`spider_idle` signal handler to prevent the spider from being closed.\n- class CloseSpider(Exception)  # Raised from a :ref:`spider callback <topics-spiders>`, a :ref:`downloader middleware <topics-downloa\n- def __init__(self, reason: str = \"cancelled\", *, error: bool = False)\n- class StopDownload(Exception)  # Raised from a :class:`~scrapy.signals.bytes_received` or :class:`~scrapy.signals.headers_received` s\n- def __init__(self, *, fail: bool = True)\n- class DownloadConnectionRefusedError(Exception)  # Indicates that a connection was refused by the server.\n- class CannotResolveHostError(Exception)  # Indicates that the provided hostname cannot be resolved.\n- class DownloadTimeoutError(Exception)  # Indicates that a request download has timed out.\n- class DownloadCancelledError(Exception)  # Indicates that a request download was cancelled.\n- class DownloadFailedError(Exception)  # Indicates that a request download has failed.\n- class ResponseDataLossError(Exception)  # Indicates that Scrapy couldn't get a complete response.\n- class DecompressionError(Exception)  # Raised by :class:`~scrapy.downloadermiddlewares.httpcompression.HttpCompressionMiddleware` when a re\n- class UnsupportedURLSchemeError(Exception)  # Indicates that the URL scheme is not supported.\n- class DropItem(Exception)  # Raised from the :meth:`process_item` method of an :ref:`item pipeline <topics-item-pipeline>` to sto\n- def __init__(self, message: str, log_level: str | None = None)\n- class NotSupported(Exception)  # Raised to indicate that a requested feature is not supported.\n- class UsageError(Exception)  # To indicate a command-line usage error\n- def __init__(self, *a: Any, **kw: Any)\n- class ScrapyDeprecationWarning(Warning)  # Warning category for deprecated features, since the default :exc:`DeprecationWarning` is silenced.\n- class ContractFail(AssertionError)  # Error raised in case of a failing contract",
+ "questions": {
+  "layer": {
+   "type": "choice",
+   "instructions": "Which architectural layer does this file belong to?",
+   "criteria": {
+    "ui": "The file renders output for people, such as templates, pages or command-line text.",
+    "api_routes": "The file defines public entry points that receive external requests or commands.",
+    "business_logic": "The file implements the core behaviour of the project.",
+    "data_access": "The file reads or writes storage, files, caches, queues or network connections.",
+    "config_infra": "The file holds settings, defaults, packaging, deployment or CI configuration.",
+    "tests": "The file contains automated tests or test helpers.",
+    "docs": "The file is documentation.",
+    "build_tooling": "The file is a developer script or build helper that is not shipped behaviour.",
+    "generated_or_vendored": "The file was produced by a tool or copied from another project.",
+    "other": "The file fits none of the other options."
+   }
+  },
+  "role": {
+   "type": "choice",
+   "instructions": "Which role does this file play inside its package?",
+   "criteria": {
+    "entry_point": "Execution starts here, such as a main function, a command or an application object.",
+    "core_module": "The file defines the main classes or functions that other files build on.",
+    "helpers": "The file is a collection of small utility functions used by other files.",
+    "type_definitions": "The file mostly declares types, interfaces, exceptions or constants.",
+    "example_or_fixture": "The file is sample code, test data or a fixture.",
+    "other": "The file fits none of the other options."
+   }
+  },
+  "is_generated": {
+   "type": "noul",
+   "instructions": "Was this file produced by a code generator instead of being written by a person?"
+  },
+  "exposes_public_api": {
+   "type": "noul",
+   "instructions": "Does this file define names that code outside this project is expected to import or call?"
+  },
+  "newcomer_difficulty": {
+   "type": "score",
+   "instructions": "How much background does a new contributor need before they can change this file safely?",
+   "criteria": [
+    "The file is trivial, such as constants, a short script or plain documentation.",
+    "The file is self-contained and can be understood by reading it alone.",
+    "Understanding the file requires reading a few other files of the project.",
+    "Understanding the file requires deep knowledge of the project's architecture or of an external system."
+   ]
+  }
+ },
+ "answers": {
+  "layer": {
+   "type": "choice",
+   "choice": "business_logic",
+   "probabilities": {
+    "ui": 0.0,
+    "api_routes": 0.038461538461538464,
+    "business_logic": 0.6923076923076923,
+    "data_access": 0.038461538461538464,
+    "config_infra": 0.038461538461538464,
+    "tests": 0.038461538461538464,
+    "docs": 0.038461538461538464,
+    "build_tooling": 0.038461538461538464,
+    "generated_or_vendored": 0.038461538461538464,
+    "other": 0.038461538461538464
+   },
+   "confidence": 0.9
+  },
+  "role": {
+   "type": "choice",
+   "choice": "core_module",
+   "probabilities": {
+    "entry_point": 0.0,
+    "core_module": 0.7272727272727273,
+    "helpers": 0.13636363636363635,
+    "type_definitions": 0.045454545454545456,
+    "example_or_fixture": 0.045454545454545456,
+    "other": 0.045454545454545456
+   },
+   "confidence": 0.8
+  },
+  "is_generated": {
+   "type": "noul",
+   "noul": 0.05
+  },
+  "exposes_public_api": {
+   "type": "noul",
+   "noul": 0.9
+  },
+  "newcomer_difficulty": {
+   "type": "score",
+   "score": 1.7,
+   "probabilities": {
+    "0": 0.1,
+    "1": 0.2,
+    "2": 0.6,
+    "3": 0.1
+   },
+   "confidence": 0.8
+  }
+ },
+ "model_returned": "qwen2.5-coder:7b",
+ "provider": "ollama",
+ "input_tokens": 1387,
+ "output_tokens": 314,
+ "latency_ms": 66171.58212499999,
+ "request_id": ""
+}

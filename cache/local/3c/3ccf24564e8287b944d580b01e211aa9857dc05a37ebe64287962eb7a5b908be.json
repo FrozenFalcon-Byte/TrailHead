@@ -1,0 +1,111 @@
+{
+ "key": "3ccf24564e8287b944d580b01e211aa9857dc05a37ebe64287962eb7a5b908be",
+ "model_id": "llm:qwen2.5-coder:7b:1f2e0674",
+ "created_at": 1790785934.886513,
+ "state": "path: scrapy/pipelines/files.py\nlanguage: python\nheader: Files Pipeline\nsymbols:\n- def _to_string(path: str | PathLike[str]) -> str\n- def _md5sum(file: IO[bytes]) -> str  # Calculate the md5 checksum of a file-like object without reading its whole content in memory.\n- class StatInfo(TypedDict, total=False)\n- class FilesStoreProtocol(Protocol)\n- def __init__(self, basedir: str)\n- def persist_file( self, path: str, buf: BytesIO, info: MediaPipeline.SpiderInfo, meta: dict[str, Any] | None = None, headers: dict[str, str] | None = None, ) -> Deferred[Any] | None\n- def stat_file( self, path: str, info: MediaPipeline.SpiderInfo ) -> StatInfo | Deferred[StatInfo]\n- class FSFilesStore\n- def __init__(self, basedir: str | PathLike[str])\n- def persist_file( self, path: str | PathLike[str], buf: BytesIO, info: MediaPipeline.SpiderInfo, meta: dict[str, Any] | None = None, headers: dict[str, str] | None = None, ) -> None\n- def stat_file( self, path: str | PathLike[str], info: MediaPipeline.SpiderInfo ) -> StatInfo\n- def _get_filesystem_path(self, path: str | PathLike[str]) -> Path\n- def _mkdir( self, dirname: Path, domain: MediaPipeline.SpiderInfo | None = None ) -> None\n- class S3FilesStore\n- def __init__(self, uri: str)\n- def _onsuccess(boto_key: dict[str, Any]) -> StatInfo\n- def stat_file( self, path: str, info: MediaPipeline.SpiderInfo ) -> Deferred[StatInfo]\n- def _get_boto_key(self, path: str) -> Deferred[dict[str, Any]]\n- def persist_file( self, path: str, buf: BytesIO, info: MediaPipeline.SpiderInfo, meta: dict[str, Any] | None = None, headers: dict[str, str] | None = None, ) -> Deferred[Any]  # Upload file to S3 storage\n- def _headers_to_botocore_kwargs(self, headers: dict[str, str]) -> dict[str, str]  # Convert headers to botocore keyword arguments.\n- class GCSFilesStore\n- def __init__(self, uri: str)\n- def _onsuccess(blob: Any) -> StatInfo\n- def stat_file( self, path: str, info: MediaPipeline.SpiderInfo ) -> Deferred[StatInfo]\n- def _get_content_type(self, headers: dict[str, str] | None) -> str\n- def _get_blob_path(self, path: str) -> str\n- def persist_file( self, path: str, buf: BytesIO, info: MediaPipeline.SpiderInfo, meta: dict[str, Any] | None = None, headers: dict[str, str] | None = None, ) -> Deferred[Any]\n- class FTPFilesStore\n- def __init__(self, uri: str)\n- def persist_file( self, path: str, buf: BytesIO, info: MediaPipeline.SpiderInfo, meta: dict[str, Any] | None = None, headers: dict[str, str] | None = None, ) -> Deferred[Any]\n- def _stat_file(self, path: str) -> StatInfo\n- def stat_file( self, path: str, info: MediaPipeline.SpiderInfo ) -> Deferred[StatInfo]\n- class FilesPipeline(MediaPipeline)  # Pipeline that implements file downloading.\n- def __init__( self, store_uri: str | PathLike[str], download_func: None = None, *, crawler: Crawler, )\n- def from_crawler(cls, crawler: Crawler) -> Self\n- def _update_stores(cls, settings: BaseSettings) -> None\n- def _get_store(self, uri: str) -> FilesStoreProtocol: # to support win32 paths like: C:\\\\some\\dir\n- def _onsuccess( self, result: StatInfo, request: Request, info: MediaPipeline.SpiderInfo, path: str, ) -> FileInfo | None\n- def media_to_download( self, request: Request, info: MediaPipeline.SpiderInfo, *, item: Any = None ) -> Deferred[FileInfo | None] | None\n- def media_failed( self, failure: Failure, request: Request, info: MediaPipeline.SpiderInfo ) -> NoReturn\n- async def media_downloaded( self, response: Response, request: Request, info: MediaPipeline.SpiderInfo, *, item: Any = None, ) -> FileInfo\n- def inc_stats(self, status: str) -> None\n- async def _file_downloaded( self, response: Response, request: Request, info: MediaPipeline.SpiderInfo, *, item: Any = None, ) -> str\n- def get_media_requests( self, item: Any, info: MediaPipeline.SpiderInfo ) -> list[Request]\n- def file_downloaded( self, response: Response, request: Request, info: MediaPipeline.SpiderInfo, *, item: Any = None, ) -> str | Awaitable[str]\n- def item_completed( self, results: list[FileInfoOrError], item: Any, info: MediaPipeline.SpiderInfo ) -> Any\n- def file_path( self, request: Request, response: Response | None = None, info: MediaPipeline.SpiderInfo | None = None, *, item: Any = None, ) -> str\n- def __getattr__(name: str) -> Any",
+ "questions": {
+  "layer": {
+   "type": "choice",
+   "instructions": "Which architectural layer does this file belong to?",
+   "criteria": {
+    "ui": "The file renders output for people, such as templates, pages or command-line text.",
+    "api_routes": "The file defines public entry points that receive external requests or commands.",
+    "business_logic": "The file implements the core behaviour of the project.",
+    "data_access": "The file reads or writes storage, files, caches, queues or network connections.",
+    "config_infra": "The file holds settings, defaults, packaging, deployment or CI configuration.",
+    "tests": "The file contains automated tests or test helpers.",
+    "docs": "The file is documentation.",
+    "build_tooling": "The file is a developer script or build helper that is not shipped behaviour.",
+    "generated_or_vendored": "The file was produced by a tool or copied from another project.",
+    "other": "The file fits none of the other options."
+   }
+  },
+  "role": {
+   "type": "choice",
+   "instructions": "Which role does this file play inside its package?",
+   "criteria": {
+    "entry_point": "Execution starts here, such as a main function, a command or an application object.",
+    "core_module": "The file defines the main classes or functions that other files build on.",
+    "helpers": "The file is a collection of small utility functions used by other files.",
+    "type_definitions": "The file mostly declares types, interfaces, exceptions or constants.",
+    "example_or_fixture": "The file is sample code, test data or a fixture.",
+    "other": "The file fits none of the other options."
+   }
+  },
+  "is_generated": {
+   "type": "noul",
+   "instructions": "Was this file produced by a code generator instead of being written by a person?"
+  },
+  "exposes_public_api": {
+   "type": "noul",
+   "instructions": "Does this file define names that code outside this project is expected to import or call?"
+  },
+  "newcomer_difficulty": {
+   "type": "score",
+   "instructions": "How much background does a new contributor need before they can change this file safely?",
+   "criteria": [
+    "The file is trivial, such as constants, a short script or plain documentation.",
+    "The file is self-contained and can be understood by reading it alone.",
+    "Understanding the file requires reading a few other files of the project.",
+    "Understanding the file requires deep knowledge of the project's architecture or of an external system."
+   ]
+  }
+ },
+ "answers": {
+  "layer": {
+   "type": "choice",
+   "choice": "data_access",
+   "probabilities": {
+    "ui": 0.009615384615384616,
+    "api_routes": 0.019230769230769232,
+    "business_logic": 0.04807692307692308,
+    "data_access": 0.8653846153846154,
+    "config_infra": 0.009615384615384616,
+    "tests": 0.009615384615384616,
+    "docs": 0.009615384615384616,
+    "build_tooling": 0.009615384615384616,
+    "generated_or_vendored": 0.009615384615384616,
+    "other": 0.009615384615384616
+   },
+   "confidence": 0.9
+  },
+  "role": {
+   "type": "choice",
+   "choice": "core_module",
+   "probabilities": {
+    "entry_point": 0.00980392156862745,
+    "core_module": 0.7843137254901961,
+    "helpers": 0.14705882352941177,
+    "type_definitions": 0.029411764705882353,
+    "example_or_fixture": 0.0196078431372549,
+    "other": 0.00980392156862745
+   },
+   "confidence": 0.8
+  },
+  "is_generated": {
+   "type": "noul",
+   "noul": 0.05
+  },
+  "exposes_public_api": {
+   "type": "noul",
+   "noul": 0.9
+  },
+  "newcomer_difficulty": {
+   "type": "score",
+   "score": 1.7,
+   "probabilities": {
+    "0": 0.1,
+    "1": 0.2,
+    "2": 0.6,
+    "3": 0.1
+   },
+   "confidence": 0.8
+  }
+ },
+ "model_returned": "qwen2.5-coder:7b",
+ "provider": "ollama",
+ "input_tokens": 2039,
+ "output_tokens": 335,
+ "latency_ms": 91466.745583999,
+ "request_id": ""
+}

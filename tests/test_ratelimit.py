@@ -32,3 +32,15 @@ async def test_pool_skips_penalized_and_disabled_providers(clock):
     pool.disable(0, "a: auth")
     with pytest.raises(NoProviderAvailable, match="a: auth"):
         await pool.acquire()
+
+
+def test_shared_limiter_paces_across_instances(tmp_path):
+    from trailhead.decisions.ratelimit import SharedSlotLimiter
+
+    a = SharedSlotLimiter(1, tmp_path / "p.slot")
+    b = SharedSlotLimiter(1, tmp_path / "p.slot")  # stands in for a second process
+    assert a.reserve(1000.0) == 1000.0
+    assert b.peek(1000.0) == 1060.0 and b.reserve(1001.0) == 1060.0
+    assert a.reserve(1002.0) == 1120.0
+    b.penalize(1002.0, 500.0)
+    assert a.peek(1003.0) == 1502.0

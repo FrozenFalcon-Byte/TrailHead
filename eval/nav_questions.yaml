@@ -1,0 +1,47 @@
+# Where-is questions for scrapy/scrapy, written by hand without naming the target file.
+# `files` lists every acceptable answer; `symbol` is grep-checked by tests so the set stays valid as the repo moves.
+- {id: n01, q: "Where are failed requests retried?", files: [scrapy/downloadermiddlewares/retry.py], symbol: "class RetryMiddleware"}
+- {id: n02, q: "Where does the crawler decide that a request was already seen and should be dropped as a duplicate?", files: [scrapy/dupefilters.py], symbol: "class RFPDupeFilter"}
+- {id: n03, q: "Where is the delay between requests adjusted automatically based on server latency?", files: [scrapy/extensions/throttle.py], symbol: "class AutoThrottle"}
+- {id: n04, q: "Where are HTTP redirects followed?", files: [scrapy/downloadermiddlewares/redirect.py], symbol: "class RedirectMiddleware"}
+- {id: n05, q: "Where is robots.txt fetched and enforced before a page is downloaded?", files: [scrapy/downloadermiddlewares/robotstxt.py], symbol: "class RobotsTxtMiddleware"}
+- {id: n06, q: "Where are the different robots.txt parser backends wrapped behind a common interface?", files: [scrapy/robotstxt.py], symbol: "class RobotParser"}
+- {id: n07, q: "Where are scraped items written out to JSON, CSV or XML?", files: [scrapy/exporters.py], symbol: "class JsonLinesItemExporter"}
+- {id: n08, q: "Where are output feeds stored to destinations such as S3, FTP or local files?", files: [scrapy/extensions/feedexport.py], symbol: "class FeedExporter"}
+- {id: n09, q: "Where does the engine pull the next request and hand it to the downloader?", files: [scrapy/core/engine.py], symbol: "class ExecutionEngine"}
+- {id: n10, q: "Where are pending requests stored in memory and on disk queues and handed back in priority order?", files: [scrapy/core/scheduler.py, scrapy/pqueues.py], symbol: "class Scheduler"}
+- {id: n11, q: "Where are spider callbacks invoked with a response and their output routed to item pipelines?", files: [scrapy/core/scraper.py], symbol: "class Scraper"}
+- {id: n12, q: "Where are the default values of all settings defined?", files: [scrapy/settings/default_settings.py], symbol: "DOWNLOAD_DELAY"}
+- {id: n13, q: "Where are setting priorities such as project, spider and command line compared when a setting is set?", files: [scrapy/settings/__init__.py], symbol: "SETTINGS_PRIORITIES"}
+- {id: n14, q: "Where is the request fingerprint computed?", files: [scrapy/utils/request.py], symbol: "def fingerprint"}
+- {id: n15, q: "Where are cookies stored per session and added to outgoing requests?", files: [scrapy/downloadermiddlewares/cookies.py, scrapy/http/cookies.py], symbol: "class CookiesMiddleware"}
+- {id: n16, q: "Where are gzip, brotli and deflate response bodies decompressed?", files: [scrapy/downloadermiddlewares/httpcompression.py, scrapy/utils/_compression.py], symbol: "class HttpCompressionMiddleware"}
+- {id: n17, q: "Where are proxies read from environment variables and applied to requests?", files: [scrapy/downloadermiddlewares/httpproxy.py], symbol: "class HttpProxyMiddleware"}
+- {id: n18, q: "Where are responses with non-2xx status codes filtered out before reaching spider callbacks?", files: [scrapy/spidermiddlewares/httperror.py], symbol: "class HttpErrorMiddleware"}
+- {id: n19, q: "Where is the maximum crawl depth enforced?", files: [scrapy/spidermiddlewares/depth.py], symbol: "class DepthMiddleware"}
+- {id: n20, q: "Where is the Referer header and the referrer policy computed?", files: [scrapy/spidermiddlewares/referer.py], symbol: "class RefererMiddleware"}
+- {id: n21, q: "Where are requests to domains outside the spider's allowed domains dropped?", files: [scrapy/downloadermiddlewares/offsite.py], symbol: "class OffsiteMiddleware"}
+- {id: n22, q: "Where are links extracted from HTML pages with allow and deny patterns?", files: [scrapy/linkextractors/lxmlhtml.py], symbol: "class LxmlLinkExtractor"}
+- {id: n23, q: "Where is the spider that follows links according to a list of rules implemented?", files: [scrapy/spiders/crawl.py], symbol: "class CrawlSpider"}
+- {id: n24, q: "Where are sitemaps parsed and their URLs turned into requests?", files: [scrapy/spiders/sitemap.py, scrapy/utils/sitemap.py, scrapy/utils/_sitemap.py], symbol: "class SitemapSpider"}
+- {id: n25, q: "Where are images downloaded, converted and thumbnailed?", files: [scrapy/pipelines/images.py], symbol: "class ImagesPipeline"}
+- {id: n26, q: "Where are downloaded files stored to the filesystem, S3 or Google Cloud Storage by the files pipeline?", files: [scrapy/pipelines/files.py], symbol: "class FilesPipeline"}
+- {id: n27, q: "Where are HTML forms located in a response and turned into a submit request?", files: [scrapy/http/request/form.py], symbol: "class FormRequest"}
+- {id: n28, q: "Where is the encoding of a text response detected?", files: [scrapy/http/response/text.py], symbol: "class TextResponse"}
+- {id: n29, q: "Where is the right response class chosen from the content type, headers or body?", files: [scrapy/responsetypes.py], symbol: "class ResponseTypes"}
+- {id: n30, q: "Where is the telnet console for inspecting a running crawl set up?", files: [scrapy/extensions/telnet.py], symbol: "class TelnetConsole"}
+- {id: n31, q: "Where is the crawl stopped after a number of items, pages, errors or a timeout?", files: [scrapy/extensions/closespider.py], symbol: "class CloseSpider"}
+- {id: n32, q: "Where is memory usage monitored and the crawl shut down when it exceeds a limit?", files: [scrapy/extensions/memusage.py], symbol: "class MemoryUsage"}
+- {id: n33, q: "Where are HTTP responses cached on disk and cache policies such as RFC 2616 implemented?", files: [scrapy/extensions/httpcache.py, scrapy/downloadermiddlewares/httpcache.py], symbol: "class RFC2616Policy"}
+- {id: n34, q: "Where are spiders discovered and loaded by name from the project's modules?", files: [scrapy/spiderloader.py], symbol: "class SpiderLoader"}
+- {id: n35, q: "Where is a new project directory generated from templates?", files: [scrapy/commands/startproject.py], symbol: "TEMPLATES_TO_RENDER"}
+- {id: n36, q: "Where is the interactive shell for trying selectors against a fetched page implemented?", files: [scrapy/shell.py, scrapy/commands/shell.py], symbol: "class Shell"}
+- {id: n37, q: "Where is a curl command converted into request arguments?", files: [scrapy/utils/curl.py], symbol: "def curl_to_request_kwargs"}
+- {id: n38, q: "Where are the messages logged for crawled pages, scraped items and dropped items formatted?", files: [scrapy/logformatter.py], symbol: "class LogFormatter"}
+- {id: n39, q: "Where is the asyncio reactor installed and verified?", files: [scrapy/utils/reactor.py], symbol: "def install_reactor"}
+- {id: n40, q: "Where are the per-domain concurrency slots and download delays applied when fetching?", files: [scrapy/core/downloader/__init__.py], symbol: "class Slot"}
+- {id: n41, q: "Where are item pipelines, extensions and middlewares instantiated from the settings and ordered by priority?", files: [scrapy/middleware.py, scrapy/utils/conf.py], symbol: "class MiddlewareManager"}
+- {id: n42, q: "Where is crawl state persisted between runs so that a paused job can be resumed?", files: [scrapy/extensions/spiderstate.py, scrapy/utils/job.py], symbol: "class SpiderState"}
+- {id: n43, q: "Where are crawl statistics collected and stored?", files: [scrapy/statscollectors.py], symbol: "class StatsCollector"}
+- {id: n44, q: "Where are contracts in callback docstrings checked?", files: [scrapy/contracts/__init__.py, scrapy/contracts/default.py, scrapy/commands/check.py], symbol: "class ContractsManager"}
+- {id: n45, q: "Where are input and output processors applied when populating an item through a loader?", files: [scrapy/loader/__init__.py], symbol: "class ItemLoader"}

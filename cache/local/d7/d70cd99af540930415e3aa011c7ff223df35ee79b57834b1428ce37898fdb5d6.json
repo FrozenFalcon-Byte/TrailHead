@@ -1,0 +1,111 @@
+{
+ "key": "d70cd99af540930415e3aa011c7ff223df35ee79b57834b1428ce37898fdb5d6",
+ "model_id": "llm:qwen2.5-coder:7b:1f2e0674",
+ "created_at": 1790787693.863391,
+ "state": "path: scrapy/utils/asyncio.py\nlanguage: python\nheader: Utilities related to asyncio and its support in Scrapy.\nsymbols:\n- def _has_running_loop() -> bool  # Check if there is a running asyncio event loop in the current thread.\n- def is_asyncio_available() -> bool  # Check if it's possible to call asyncio code that relies on the asyncio event loop.\n- async def _parallel_asyncio( iterable: Iterable[_T] | AsyncIterator[_T], count: int, callable_: Callable[Concatenate[_T, _P], Coroutine[Any, Any, None]], *args: _P.args, **kwargs: _P.kwargs, ) -> None  # Execute a callable over the objects in the given iterable, in parallel, using no more than ``count``\n- class AsyncioLoopingCall(Generic[_P, _T])  # A simple implementation of a periodic call using asyncio, keeping some API and behavior compatibilit\n- def __init__(self, func: Callable[_P, _T], *args: _P.args, **kwargs: _P.kwargs)\n- def running(self) -> bool\n- def start(self, interval: float, now: bool = True) -> None  # Start calling the function every *interval* seconds.\n- def _to_sleep(self) -> float  # Return the time to sleep until the next call.\n- async def _loop(self) -> None  # Run an infinite loop that calls the function periodically.\n- def stop(self) -> None  # Stop the periodic calls.\n- def _call(self) -> None  # Execute the function.\n- def create_looping_call( func: Callable[_P, _T], *args: _P.args, **kwargs: _P.kwargs ) -> AsyncioLoopingCall[_P, _T] | LoopingCall  # Create an instance of a looping call class.\n- def call_later( delay: float, func: Callable[[Unpack[_Ts]], object], *args: Unpack[_Ts] ) -> CallLaterResult  # Schedule a function to be called after a delay.\n- class CallLaterResult  # An universal result for :func:`call_later`, wrapping either :class:`asyncio.TimerHandle` or :class:`\n- def from_asyncio(cls, timer_handle: asyncio.TimerHandle) -> Self  # Create a CallLaterResult from an asyncio TimerHandle.\n- def from_twisted(cls, delayed_call: DelayedCall) -> Self  # Create a CallLaterResult from a Twisted DelayedCall.\n- def cancel(self) -> None  # Cancel the underlying delayed call.\n- async def sleep(seconds: float) -> None  # Sleep for *seconds*.\n- async def run_in_thread( func: Callable[_P, _T], *args: _P.args, **kwargs: _P.kwargs ) -> _T  # Call a function in a thread and return its result as a coroutine.",
+ "questions": {
+  "layer": {
+   "type": "choice",
+   "instructions": "Which architectural layer does this file belong to?",
+   "criteria": {
+    "ui": "The file renders output for people, such as templates, pages or command-line text.",
+    "api_routes": "The file defines public entry points that receive external requests or commands.",
+    "business_logic": "The file implements the core behaviour of the project.",
+    "data_access": "The file reads or writes storage, files, caches, queues or network connections.",
+    "config_infra": "The file holds settings, defaults, packaging, deployment or CI configuration.",
+    "tests": "The file contains automated tests or test helpers.",
+    "docs": "The file is documentation.",
+    "build_tooling": "The file is a developer script or build helper that is not shipped behaviour.",
+    "generated_or_vendored": "The file was produced by a tool or copied from another project.",
+    "other": "The file fits none of the other options."
+   }
+  },
+  "role": {
+   "type": "choice",
+   "instructions": "Which role does this file play inside its package?",
+   "criteria": {
+    "entry_point": "Execution starts here, such as a main function, a command or an application object.",
+    "core_module": "The file defines the main classes or functions that other files build on.",
+    "helpers": "The file is a collection of small utility functions used by other files.",
+    "type_definitions": "The file mostly declares types, interfaces, exceptions or constants.",
+    "example_or_fixture": "The file is sample code, test data or a fixture.",
+    "other": "The file fits none of the other options."
+   }
+  },
+  "is_generated": {
+   "type": "noul",
+   "instructions": "Was this file produced by a code generator instead of being written by a person?"
+  },
+  "exposes_public_api": {
+   "type": "noul",
+   "instructions": "Does this file define names that code outside this project is expected to import or call?"
+  },
+  "newcomer_difficulty": {
+   "type": "score",
+   "instructions": "How much background does a new contributor need before they can change this file safely?",
+   "criteria": [
+    "The file is trivial, such as constants, a short script or plain documentation.",
+    "The file is self-contained and can be understood by reading it alone.",
+    "Understanding the file requires reading a few other files of the project.",
+    "Understanding the file requires deep knowledge of the project's architecture or of an external system."
+   ]
+  }
+ },
+ "answers": {
+  "layer": {
+   "type": "choice",
+   "choice": "business_logic",
+   "probabilities": {
+    "ui": 0.0,
+    "api_routes": 0.07692307692307693,
+    "business_logic": 0.6153846153846154,
+    "data_access": 0.07692307692307693,
+    "config_infra": 0.038461538461538464,
+    "tests": 0.038461538461538464,
+    "docs": 0.038461538461538464,
+    "build_tooling": 0.038461538461538464,
+    "generated_or_vendored": 0.038461538461538464,
+    "other": 0.038461538461538464
+   },
+   "confidence": 0.9
+  },
+  "role": {
+   "type": "choice",
+   "choice": "core_module",
+   "probabilities": {
+    "entry_point": 0.0,
+    "core_module": 0.7,
+    "helpers": 0.2,
+    "type_definitions": 0.1,
+    "example_or_fixture": 0.0,
+    "other": 0.0
+   },
+   "confidence": 0.8
+  },
+  "is_generated": {
+   "type": "noul",
+   "noul": 0.05
+  },
+  "exposes_public_api": {
+   "type": "noul",
+   "noul": 0.9
+  },
+  "newcomer_difficulty": {
+   "type": "score",
+   "score": 1.7,
+   "probabilities": {
+    "0": 0.1,
+    "1": 0.2,
+    "2": 0.6,
+    "3": 0.1
+   },
+   "confidence": 0.8
+  }
+ },
+ "model_returned": "qwen2.5-coder:7b",
+ "provider": "ollama",
+ "input_tokens": 1444,
+ "output_tokens": 308,
+ "latency_ms": 60999.67108400233,
+ "request_id": ""
+}

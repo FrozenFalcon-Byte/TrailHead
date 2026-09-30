@@ -1,0 +1,47 @@
+{
+ "key": "0e6d899e15b4d81d9c20c8803c038d83aa26ffb6169299ed2937c0f531d499e4",
+ "model_id": "jev-1.13.0",
+ "created_at": 1790786278.161364,
+ "state": {
+  "goal": "Where are pending requests stored in memory and on disk queues and handed back in priority order?"
+ },
+ "questions": {
+  "in_scrapy_core": {
+   "type": "choice",
+   "instructions": "Which entry is most likely to contain the code that the goal is about?",
+   "criteria": {
+    "c0": "__init__.py: Scrapy core library classes and functions.",
+    "c1": "_http2/: Contains agent.py, protocol.py, stream.py, __init__.py.",
+    "c2": "downloader/: Contains handlers/, contextfactory.py, middleware.py, tls.py, __init__.py, _idna_patch.py.",
+    "c3": "engine.py: This is the Scrapy engine which controls the Scheduler, Downloader and Spider. Defines EngineState, ExecutionEngine, _Slot.",
+    "c4": "scheduler.py: Defines BaseSchedulerMeta, BaseScheduler, Scheduler.",
+    "c5": "scraper.py: This module implements the Scraper component which parses responses and extracts information from them. Defines Slot, Scraper.",
+    "c6": "spidermw.py: Spider Middleware manager. Defines SpiderMiddlewareManager.",
+    "none": "None of the listed entries is related to the goal."
+   }
+  }
+ },
+ "answers": {
+  "in_scrapy_core": {
+   "type": "choice",
+   "choice": "c4",
+   "probabilities": {
+    "c0": 0.0,
+    "c1": 0.01,
+    "c2": 0.01,
+    "c3": 0.01,
+    "c4": 0.95,
+    "c5": 0.0,
+    "c6": 0.0,
+    "none": 0.02
+   },
+   "confidence": 0.94
+  }
+ },
+ "model_returned": "jev-1.13-free",
+ "provider": "beatapi",
+ "input_tokens": 581,
+ "output_tokens": 84,
+ "latency_ms": 790.6462079990888,
+ "request_id": "task_6tubZGMPZ69g6uYkihcJplUCz1JrMlgs"
+}

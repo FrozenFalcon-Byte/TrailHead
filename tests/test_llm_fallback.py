@@ -89,3 +89,11 @@ async def test_openai_compat_client_errors():
     client = OpenAICompatClient(api_key="k", base_url="https://x.test", model="m", transport=httpx.MockTransport(lambda r: httpx.Response(401, text="no")))
     with pytest.raises(LLMError, match="401"):
         await client.complete("s", "u")
+
+
+def test_last_json_object_salvages_trailing_json():
+    from trailhead.llm.client import last_json_object
+
+    assert last_json_object('thinking {not json} then {"action":"ls","input":""}') == '{"action":"ls","input":""}'
+    assert last_json_object('{"a": {"b": 1}} trailing words') == '{"a": {"b": 1}}'
+    assert last_json_object("no braces") is None and last_json_object("{broken") is None

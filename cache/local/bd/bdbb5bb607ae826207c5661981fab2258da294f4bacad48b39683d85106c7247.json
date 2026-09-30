@@ -1,0 +1,111 @@
+{
+ "key": "bdbb5bb607ae826207c5661981fab2258da294f4bacad48b39683d85106c7247",
+ "model_id": "llm:qwen2.5-coder:7b:1f2e0674",
+ "created_at": 1790783797.44007,
+ "state": "path: scrapy/core/engine.py\nlanguage: python\nheader: This is the Scrapy engine which controls the Scheduler, Downloader and Spider.\nsymbols:\n- class EngineState(Enum)  # The lifecycle state of :class:`ExecutionEngine`.\n- class _Slot\n- def __init__( self, close_if_idle: bool, nextcall: CallLaterOnce[[], None], scheduler: BaseScheduler, ) -> None\n- def add_request(self, request: Request) -> None\n- def remove_request(self, request: Request) -> None\n- async def close(self) -> None\n- def _maybe_fire_closing(self) -> None\n- class ExecutionEngine\n- def __init__( self, crawler: Crawler, spider_closed_callback: ( Callable[[Spider], Coroutine[Any, Any, None] | Deferred[None] | None] | None ) = None, ) -> None\n- def _get_scheduler_class(self, settings: BaseSettings) -> type[BaseScheduler]\n- def scheduler(self) -> BaseScheduler | None  # The scheduler in use, or ``None`` before the spider has started.\n- def state(self) -> EngineState  # The current lifecycle state of the engine.\n- def running(self) -> bool  # Whether the engine is in the :attr:`EngineState.RUNNING` state.\n- def running(self, value: bool) -> None\n- def _transition_to(self, state: EngineState) -> None  # Set the state, validating the transition.\n- def start( self, _start_request_processing: bool = True ) -> Deferred[None]: # pragma: no cover\n- async def start_async(self) -> None  # Start the execution engine.\n- def stop( self, *, mode: _StopMode = \"graceful\" ) -> Deferred[None]: # pragma: no cover\n- async def stop_async(self, *, mode: _StopMode = \"graceful\") -> None  # Stop the execution engine by closing the spider with the ``shutdown`` reason.\n- def close(self) -> Deferred[None]: # pragma: no cover\n- async def close_async( self, *, reason: str = \"shutdown\", error: bool = False ) -> None  # Stop the execution engine.\n- def pause(self) -> None\n- def unpause(self) -> None\n- async def _process_start_next(self) -> None  # Processes the next item or request from Spider.start().\n- async def _start_request_processing(self) -> None  # Starts consuming Spider.start() output and sending scheduled requests.\n- def _start_scheduled_requests(self) -> None\n- def needs_backout(self) -> bool  # Returns ``True`` if no more requests can be sent at the moment, or ``False`` otherwise.\n- def _remove_request(self, _: Any, request: Request) -> None\n- def _start_scheduled_request(self) -> bool\n- def _handle_downloader_output( self, result: Request | Response | Failure, request: Request ) -> Generator[Deferred[Any], Any, None]\n- def spider_is_idle(self) -> bool\n- def crawl(self, request: Request) -> None  # Inject the request into the spider <-> downloader pipeline\n- def _schedule_request(self, request: Request) -> None\n- def download(self, request: Request) -> Deferred[Response]  # Return a Deferred which fires with a Response as result, only downloader middlewares are applied\n- async def download_async(self, request: Request) -> Response  # Return a coroutine which fires with a Response as result.\n- def _download( self, request: Request ) -> Generator[Deferred[Any], Any, Response | Request]\n- def open_spider( self, spider: Spider, close_if_idle: bool = True ) -> Deferred[None]: # pragma: no cover\n- async def open_spider_async(self, *, close_if_idle: bool = True) -> None  # Open the spider.\n- async def _close_spider_if_pending(self) -> None  # Perform a close requested while the spider was opening.\n- def _spider_idle(self) -> None  # Called when a spider gets idle, i.e. when there are no remaining requests to download or schedule. I\n- def close_spider( self, spider: Spider, reason: str = \"cancelled\", mode: _StopMode = \"graceful\", ) -> Deferred[None]: # pragma: no cover\n- async def _fast_stop_downloader(self) -> None\n- async def close_spider_async( # noqa: PLR0912, PLR0915 self, *, reason: str = \"cancelled\", mode: _StopMode = \"graceful\", error: bool = False, ) -> None  # Close (cancel) spider and clear all its outstanding requests, and stop the engine.\n- async def _finish_stop(self) -> None  # Send :signal:`engine_stopped` and mark the engine as stopped.",
+ "questions": {
+  "layer": {
+   "type": "choice",
+   "instructions": "Which architectural layer does this file belong to?",
+   "criteria": {
+    "ui": "The file renders output for people, such as templates, pages or command-line text.",
+    "api_routes": "The file defines public entry points that receive external requests or commands.",
+    "business_logic": "The file implements the core behaviour of the project.",
+    "data_access": "The file reads or writes storage, files, caches, queues or network connections.",
+    "config_infra": "The file holds settings, defaults, packaging, deployment or CI configuration.",
+    "tests": "The file contains automated tests or test helpers.",
+    "docs": "The file is documentation.",
+    "build_tooling": "The file is a developer script or build helper that is not shipped behaviour.",
+    "generated_or_vendored": "The file was produced by a tool or copied from another project.",
+    "other": "The file fits none of the other options."
+   }
+  },
+  "role": {
+   "type": "choice",
+   "instructions": "Which role does this file play inside its package?",
+   "criteria": {
+    "entry_point": "Execution starts here, such as a main function, a command or an application object.",
+    "core_module": "The file defines the main classes or functions that other files build on.",
+    "helpers": "The file is a collection of small utility functions used by other files.",
+    "type_definitions": "The file mostly declares types, interfaces, exceptions or constants.",
+    "example_or_fixture": "The file is sample code, test data or a fixture.",
+    "other": "The file fits none of the other options."
+   }
+  },
+  "is_generated": {
+   "type": "noul",
+   "instructions": "Was this file produced by a code generator instead of being written by a person?"
+  },
+  "exposes_public_api": {
+   "type": "noul",
+   "instructions": "Does this file define names that code outside this project is expected to import or call?"
+  },
+  "newcomer_difficulty": {
+   "type": "score",
+   "instructions": "How much background does a new contributor need before they can change this file safely?",
+   "criteria": [
+    "The file is trivial, such as constants, a short script or plain documentation.",
+    "The file is self-contained and can be understood by reading it alone.",
+    "Understanding the file requires reading a few other files of the project.",
+    "Understanding the file requires deep knowledge of the project's architecture or of an external system."
+   ]
+  }
+ },
+ "answers": {
+  "layer": {
+   "type": "choice",
+   "choice": "business_logic",
+   "probabilities": {
+    "ui": 0.0,
+    "api_routes": 0.038461538461538464,
+    "business_logic": 0.6923076923076923,
+    "data_access": 0.038461538461538464,
+    "config_infra": 0.038461538461538464,
+    "tests": 0.038461538461538464,
+    "docs": 0.038461538461538464,
+    "build_tooling": 0.038461538461538464,
+    "generated_or_vendored": 0.038461538461538464,
+    "other": 0.038461538461538464
+   },
+   "confidence": 0.9
+  },
+  "role": {
+   "type": "choice",
+   "choice": "core_module",
+   "probabilities": {
+    "entry_point": 0.045454545454545456,
+    "core_module": 0.7272727272727273,
+    "helpers": 0.09090909090909091,
+    "type_definitions": 0.045454545454545456,
+    "example_or_fixture": 0.045454545454545456,
+    "other": 0.045454545454545456
+   },
+   "confidence": 0.8
+  },
+  "is_generated": {
+   "type": "noul",
+   "noul": 0.05
+  },
+  "exposes_public_api": {
+   "type": "noul",
+   "noul": 0.9
+  },
+  "newcomer_difficulty": {
+   "type": "score",
+   "score": 1.894736842105263,
+   "probabilities": {
+    "0": 0.052631578947368425,
+    "1": 0.10526315789473685,
+    "2": 0.7368421052631579,
+    "3": 0.10526315789473685
+   },
+   "confidence": 0.7
+  }
+ },
+ "model_returned": "qwen2.5-coder:7b",
+ "provider": "ollama",
+ "input_tokens": 1867,
+ "output_tokens": 325,
+ "latency_ms": 71420.85029199734,
+ "request_id": ""
+}

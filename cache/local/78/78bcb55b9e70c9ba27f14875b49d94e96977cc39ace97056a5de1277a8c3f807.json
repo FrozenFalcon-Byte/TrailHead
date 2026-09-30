@@ -1,0 +1,111 @@
+{
+ "key": "78bcb55b9e70c9ba27f14875b49d94e96977cc39ace97056a5de1277a8c3f807",
+ "model_id": "llm:qwen2.5-coder:7b:1f2e0674",
+ "created_at": 1790784644.141012,
+ "state": "path: scrapy/extensions/feedexport.py\nlanguage: python\nheader: Feed Exports extension\nsymbols:\n- def apply_uri_params(uri_template: str, uri_params: dict[str, Any]) -> str  # Return *uri_template* with its ``%(...)s`` placeholders replaced using *uri_params*, leaving any oth\n- class ItemFilter  # This will be used by FeedExporter to decide if an item should be allowed to be exported to a particu\n- def __init__(self, feed_options: dict[str, Any] | None) -> None\n- def accepts(self, item: Any) -> bool  # Return ``True`` if `item` should be exported or ``False`` otherwise.\n- class _IFeedStorage(Interface): # type: ignore[misc] # pragma: no cover # pylint: disable=no-self-argument\n- def __init__(uri, *, feed_options=None)\n- def open(spider)\n- def store(file)\n- class FeedStorageProtocol(Protocol)  # Protocol that all Feed Storages must follow.\n- def __init__(self, uri: str, *, feed_options: dict[str, Any] | None = None)  # Initialize the storage with the parameters given in the URI and the feed-specific options (see :sett\n- def open(self, spider: Spider) -> IO[bytes]  # Open the storage for the given spider. It must return a file-like object that will be used for the e\n- def store(self, file: IO[bytes]) -> Deferred[None] | None  # Store the given file stream\n- class BlockingFeedStorage(ABC)\n- def open(self, spider: Spider) -> IO[bytes]\n- def store(self, file: IO[bytes]) -> Deferred[None]\n- def _store_in_thread(self, file: IO[bytes]) -> None\n- class StdoutFeedStorage\n- def __init__( self, uri: str, _stdout: IO[bytes] | None = None, *, feed_options: dict[str, Any] | None = None, )\n- def open(self, spider: Spider) -> IO[bytes]\n- def store(self, file: IO[bytes]) -> Deferred[None] | None\n- class FileFeedStorage\n- def __init__(self, uri: str, *, feed_options: dict[str, Any] | None = None)\n- def open(self, spider: Spider) -> IO[bytes]\n- def store(self, file: IO[bytes]) -> Deferred[None] | None\n- class S3FeedStorage(BlockingFeedStorage)\n- def __init__( self, uri: str, access_key: str | None = None, secret_key: str | None = None, acl: str | None = None, endpoint_url: str | None = None, *, feed_options: dict[str, Any] | None = None, ses…\n- def from_crawler( cls, crawler: Crawler, uri: str, *, feed_options: dict[str, Any] | None = None, ) -> Self\n- def _store_in_thread(self, file: IO[bytes]) -> None\n- class GCSFeedStorage(BlockingFeedStorage)\n- def __init__( self, uri: str, project_id: str | None, acl: str | None, *, feed_options: dict[str, Any] | None = None, timeout: float | None = None, )\n- def from_crawler( cls, crawler: Crawler, uri: str, *, feed_options: dict[str, Any] | None = None, ) -> Self\n- def _store_in_thread(self, file: IO[bytes]) -> None\n- class FTPFeedStorage(BlockingFeedStorage)\n- def __init__( self, uri: str, use_active_mode: bool = False, *, feed_options: dict[str, Any] | None = None, timeout: float | None = None, )\n- def from_crawler( cls, crawler: Crawler, uri: str, *, feed_options: dict[str, Any] | None = None, ) -> Self\n- def _store_in_thread(self, file: IO[bytes]) -> None\n- class FeedSlot\n- def __init__( self, storage: FeedStorageProtocol, uri: str, format: str, # noqa: A002 store_empty: bool, batch_id: int, uri_template: str, filter: ItemFilter, # noqa: A002 feed_options: dict[str, Any…\n- def start_exporting(self) -> None\n- def _get_exporter( self, file: IO[bytes], format_: str, *args: Any, **kwargs: Any ) -> BaseItemExporter\n- def finish_exporting(self) -> None\n- class FeedExporter\n- def from_crawler(cls, crawler: Crawler) -> Self\n- def __init__(self, crawler: Crawler)\n- def open_spider(self, spider: Spider) -> None\n- async def close_spider(self, spider: Spider) -> None\n- def _schedule_slot_close( self, slot: FeedSlot, spider: Spider ) -> asyncio.Task[None] | Deferred[None]  # Start closing the slot without waiting for it to finish, keeping track of the pending work so that i\n- def _untrack_pending_close_task(self, result: Any, aw: Deferred[None]) -> Any\n- def _get_file(slot_: FeedSlot) -> IO[bytes]\n- async def _close_slot(self, slot: FeedSlot, spider: Spider) -> None\n- def _start_new_batch( self, batch_id: int, uri: str, feed_options: dict[str, Any], spider: Spider, uri_template: str, ) -> FeedSlot  # Redirect the output data stream to a new file. Execute multiple times if FEED_EXPORT_BATCH_ITEM_COUN\n- def item_scraped(self, item: Any, spider: Spider) -> None\n- def _load_components(self, setting_prefix: str) -> dict[str, Any]\n- def _exporter_supported(self, format_: str) -> bool\n- def _settings_are_valid(self) -> bool  # If FEED_EXPORT_BATCH_ITEM_COUNT setting or FEEDS.batch_item_count is specified uri has to contain %(\n- def _storage_supported(self, uri: str, feed_options: dict[str, Any]) -> bool\n- def _get_storage( self, uri: str, feed_options: dict[str, Any] ) -> FeedStorageProtocol  # Build a storage object for the specified *uri* with the specified *feed_options*.\n- def _get_uri_params( self, spider: Spider, uri_params_function: str | UriParamsCallableT | None, slot: FeedSlot | None = None, ) -> dict[str, Any]\n- def _load_filter(self, feed_options: dict[str, Any]) -> ItemFilter: # load the item filter if declared else load the default filter class\n- def _load_processor(self, feed_options: dict[str, Any]) -> _ItemProcessor | None\n- def __getattr__(name: str) -> Any: # pragma: no cover",
+ "questions": {
+  "layer": {
+   "type": "choice",
+   "instructions": "Which architectural layer does this file belong to?",
+   "criteria": {
+    "ui": "The file renders output for people, such as templates, pages or command-line text.",
+    "api_routes": "The file defines public entry points that receive external requests or commands.",
+    "business_logic": "The file implements the core behaviour of the project.",
+    "data_access": "The file reads or writes storage, files, caches, queues or network connections.",
+    "config_infra": "The file holds settings, defaults, packaging, deployment or CI configuration.",
+    "tests": "The file contains automated tests or test helpers.",
+    "docs": "The file is documentation.",
+    "build_tooling": "The file is a developer script or build helper that is not shipped behaviour.",
+    "generated_or_vendored": "The file was produced by a tool or copied from another project.",
+    "other": "The file fits none of the other options."
+   }
+  },
+  "role": {
+   "type": "choice",
+   "instructions": "Which role does this file play inside its package?",
+   "criteria": {
+    "entry_point": "Execution starts here, such as a main function, a command or an application object.",
+    "core_module": "The file defines the main classes or functions that other files build on.",
+    "helpers": "The file is a collection of small utility functions used by other files.",
+    "type_definitions": "The file mostly declares types, interfaces, exceptions or constants.",
+    "example_or_fixture": "The file is sample code, test data or a fixture.",
+    "other": "The file fits none of the other options."
+   }
+  },
+  "is_generated": {
+   "type": "noul",
+   "instructions": "Was this file produced by a code generator instead of being written by a person?"
+  },
+  "exposes_public_api": {
+   "type": "noul",
+   "instructions": "Does this file define names that code outside this project is expected to import or call?"
+  },
+  "newcomer_difficulty": {
+   "type": "score",
+   "instructions": "How much background does a new contributor need before they can change this file safely?",
+   "criteria": [
+    "The file is trivial, such as constants, a short script or plain documentation.",
+    "The file is self-contained and can be understood by reading it alone.",
+    "Understanding the file requires reading a few other files of the project.",
+    "Understanding the file requires deep knowledge of the project's architecture or of an external system."
+   ]
+  }
+ },
+ "answers": {
+  "layer": {
+   "type": "choice",
+   "choice": "data_access",
+   "probabilities": {
+    "ui": 0.038461538461538464,
+    "api_routes": 0.07692307692307693,
+    "business_logic": 0.038461538461538464,
+    "data_access": 0.6153846153846154,
+    "config_infra": 0.038461538461538464,
+    "tests": 0.038461538461538464,
+    "docs": 0.038461538461538464,
+    "build_tooling": 0.038461538461538464,
+    "generated_or_vendored": 0.038461538461538464,
+    "other": 0.038461538461538464
+   },
+   "confidence": 0.9
+  },
+  "role": {
+   "type": "choice",
+   "choice": "core_module",
+   "probabilities": {
+    "entry_point": 0.047619047619047616,
+    "core_module": 0.7619047619047619,
+    "helpers": 0.047619047619047616,
+    "type_definitions": 0.047619047619047616,
+    "example_or_fixture": 0.047619047619047616,
+    "other": 0.047619047619047616
+   },
+   "confidence": 0.9
+  },
+  "is_generated": {
+   "type": "noul",
+   "noul": 0.05
+  },
+  "exposes_public_api": {
+   "type": "noul",
+   "noul": 0.8
+  },
+  "newcomer_difficulty": {
+   "type": "score",
+   "score": 1.7,
+   "probabilities": {
+    "0": 0.1,
+    "1": 0.2,
+    "2": 0.6,
+    "3": 0.1
+   },
+   "confidence": 0.9
+  }
+ },
+ "model_returned": "qwen2.5-coder:7b",
+ "provider": "ollama",
+ "input_tokens": 2323,
+ "output_tokens": 334,
+ "latency_ms": 66124.78479200217,
+ "request_id": ""
+}

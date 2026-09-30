@@ -1,0 +1,63 @@
+{
+ "key": "6fc0bcefbecd7b6e33cb6276998a1e620a04347024c3f209cfbb2e849a7a5805",
+ "model_id": "jev-1.13.0",
+ "created_at": 1790785495.429655,
+ "state": {
+  "goal": "Where are the different robots.txt parser backends wrapped behind a common interface?"
+ },
+ "questions": {
+  "in_scrapy_downloadermiddlewares": {
+   "type": "choice",
+   "instructions": "Which entry is most likely to contain the code that the goal is about?",
+   "criteria": {
+    "c0": "__init__.py",
+    "c1": "cookies.py: Defines CookiesMiddleware, _is_public_domain.",
+    "c2": "defaultheaders.py: DefaultHeaders downloader middleware. Defines DefaultHeadersMiddleware.",
+    "c3": "downloadtimeout.py: Download timeout middleware. Defines DownloadTimeoutMiddleware.",
+    "c4": "httpauth.py: HTTP basic auth downloader middleware. Defines HttpAuthMiddleware.",
+    "c5": "httpcache.py: Defines HttpCacheMiddleware.",
+    "c6": "httpcompression.py: Defines HttpCompressionMiddleware.",
+    "c7": "httpproxy.py: Defines HttpProxyMiddleware.",
+    "c8": "jsonvalidation.py: Defines JsonValidationMiddleware.",
+    "c9": "offsite.py: Defines OffsiteMiddleware.",
+    "c10": "redirect.py: Defines BaseRedirectMiddleware, RedirectMiddleware, MetaRefreshMiddleware.",
+    "c11": "retry.py: An extension to retry failed requests that are potentially caused by temporary problems such as a connection timeout or HTTP 500 error. Defines get_retry_request, RetryMiddleware.",
+    "c12": "robotstxt.py: This is a middleware to respect robots.txt policies. To activate it you must enable this middleware and enable the ROBOTSTXT_OBEY setting. Defines RobotsTxtMiddleware.",
+    "c13": "stats.py: Defines get_header_size, get_status_size, DownloaderStats.",
+    "c14": "useragent.py: Set User-Agent header per spider or use a default value from settings. Defines UserAgentMiddleware.",
+    "none": "None of the listed entries is related to the goal."
+   }
+  }
+ },
+ "answers": {
+  "in_scrapy_downloadermiddlewares": {
+   "type": "choice",
+   "choice": "c12",
+   "probabilities": {
+    "c0": 0.01,
+    "c1": 0.0,
+    "c10": 0.0,
+    "c11": 0.0,
+    "c12": 0.92,
+    "c13": 0.0,
+    "c14": 0.0,
+    "c2": 0.0,
+    "c3": 0.0,
+    "c4": 0.0,
+    "c5": 0.0,
+    "c6": 0.0,
+    "c7": 0.0,
+    "c8": 0.0,
+    "c9": 0.0,
+    "none": 0.07
+   },
+   "confidence": 0.9
+  }
+ },
+ "model_returned": "jev-1.13-free",
+ "provider": "beatapi",
+ "input_tokens": 841,
+ "output_tokens": 161,
+ "latency_ms": 667.0583750019432,
+ "request_id": "task_gr5KEN7F2z3bSsnzGi1xnvN0dUnZgZqs"
+}

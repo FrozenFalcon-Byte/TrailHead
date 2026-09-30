@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import asyncio
+import fcntl
 import logging
 import time
+from pathlib import Path
 from typing import Awaitable, Callable, Generic, Sequence, TypeVar
 
 logger = logging.getLogger(__name__)
@@ -35,6 +37,41 @@ class SlotLimiter:
         self._next = max(self._next, now + seconds)
 
 
+class SharedSlotLimiter(SlotLimiter):
+    """A SlotLimiter whose next-slot time lives in a locked file, so several processes (the web app,
+    a background eval, the CLI) share one provider allowance. Needs a wall clock."""
+
+    def __init__(self, requests_per_minute: float, path: Path) -> None:
+        super().__init__(requests_per_minute)
+        self._path = Path(path)
+        self._path.parent.mkdir(parents=True, exist_ok=True)
+
+    def _update(self, change: Callable[[float], float | None]) -> float:
+        with open(self._path, "a+", encoding="utf-8") as handle:
+            fcntl.flock(handle, fcntl.LOCK_EX)
+            handle.seek(0)
+            try:
+                current = float(handle.read().strip() or 0.0)
+            except ValueError:
+                current = 0.0
+            updated = change(current)
+            if updated is not None:
+                handle.seek(0)
+                handle.truncate()
+                handle.write(repr(updated))
+            return current
+
+    def peek(self, now: float) -> float:
+        return max(self._update(lambda current: None), now)
+
+    def reserve(self, now: float) -> float:
+        slot = max(self._update(lambda current: max(current, now) + self.interval), now)
+        return slot
+
+    def penalize(self, now: float, seconds: float) -> None:
+        self._update(lambda current: max(current, now + seconds))
+
+
 T = TypeVar("T")
 
 
@@ -51,9 +88,13 @@ class ProviderPool(Generic[T]):
         *,
         clock: Clock = time.monotonic,
         sleep: Sleep = asyncio.sleep,
+        shared_paths: Sequence[Path] | None = None,
     ) -> None:
         self._providers = [p for p, _ in providers]
-        self._limiters = [SlotLimiter(rpm) for _, rpm in providers]
+        if shared_paths is not None:
+            self._limiters: list[SlotLimiter] = [SharedSlotLimiter(rpm, path) for (_, rpm), path in zip(providers, shared_paths)]
+        else:
+            self._limiters = [SlotLimiter(rpm) for _, rpm in providers]
         self._disabled: dict[int, str] = {}
         self._clock = clock
         self._sleep = sleep

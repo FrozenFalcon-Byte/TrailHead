@@ -1,0 +1,111 @@
+{
+ "key": "e3825046be72cb198e1bf30a0d876911106a42a270f41baff5bba8530b7e0604",
+ "model_id": "llm:qwen2.5-coder:7b:1f2e0674",
+ "created_at": 1790785139.334198,
+ "state": "path: scrapy/http/headers.py\nlanguage: python\nsymbols:\n- class Headers(dict): # type: ignore[type-arg]  # Case insensitive http headers dictionary\n- def __init__( self, seq: Mapping[str, Any] | Mapping[bytes, Any] | Iterable[tuple[str | bytes, Any]] | None = None, encoding: str = \"utf-8\", )\n- def __setitem__(self, key: str | bytes, value: Any) -> None\n- def __delitem__(self, key: str | bytes) -> None\n- def __contains__(self, key: str | bytes) -> bool: # type: ignore[override]\n- def setdefault(self, key: str | bytes, def_val: Any = None) -> Any\n- def fromkeys( # type: ignore[override] cls, keys: Iterable[str | bytes], value: Any = None ) -> Self\n- def pop(self, key: str | bytes, *args: Any) -> Any\n- def update( # type: ignore[override] self, seq: Mapping[str, Any] | Mapping[bytes, Any] | Iterable[tuple[str | bytes, Any]], ) -> None\n- def normkey(self, key: str | bytes) -> bytes  # Normalize key to bytes\n- def normvalue(self, value: _RawValue | Iterable[_RawValue]) -> list[bytes]  # Normalize values to bytes\n- def _tobytes(self, x: _RawValue) -> bytes\n- def __getitem__(self, key: str | bytes) -> bytes | None\n- def get(self, key: str | bytes, def_val: Any = None) -> bytes | None\n- def getlist( self, key: str | bytes, def_val: _RawValue | Iterable[_RawValue] | None = None ) -> list[bytes]\n- def setlist(self, key: str | bytes, list_: Iterable[_RawValue]) -> None\n- def setlistdefault( self, key: str | bytes, default_list: Iterable[_RawValue] = () ) -> Any\n- def appendlist(self, key: str | bytes, value: Iterable[_RawValue]) -> None\n- def items(self) -> Iterable[tuple[bytes, list[bytes]]]: # type: ignore[override]\n- def values(self) -> list[bytes | None]: # type: ignore[override]\n- def to_string(self) -> bytes\n- def to_unicode_dict(self) -> CaseInsensitiveDict  # Return headers as a CaseInsensitiveDict with str keys and str values. Multiple values are joined wit\n- def to_tuple_list(self) -> list[tuple[str, str]]  # Return headers as a list of ``(key, value)`` tuples.\n- def __copy__(self) -> Self",
+ "questions": {
+  "layer": {
+   "type": "choice",
+   "instructions": "Which architectural layer does this file belong to?",
+   "criteria": {
+    "ui": "The file renders output for people, such as templates, pages or command-line text.",
+    "api_routes": "The file defines public entry points that receive external requests or commands.",
+    "business_logic": "The file implements the core behaviour of the project.",
+    "data_access": "The file reads or writes storage, files, caches, queues or network connections.",
+    "config_infra": "The file holds settings, defaults, packaging, deployment or CI configuration.",
+    "tests": "The file contains automated tests or test helpers.",
+    "docs": "The file is documentation.",
+    "build_tooling": "The file is a developer script or build helper that is not shipped behaviour.",
+    "generated_or_vendored": "The file was produced by a tool or copied from another project.",
+    "other": "The file fits none of the other options."
+   }
+  },
+  "role": {
+   "type": "choice",
+   "instructions": "Which role does this file play inside its package?",
+   "criteria": {
+    "entry_point": "Execution starts here, such as a main function, a command or an application object.",
+    "core_module": "The file defines the main classes or functions that other files build on.",
+    "helpers": "The file is a collection of small utility functions used by other files.",
+    "type_definitions": "The file mostly declares types, interfaces, exceptions or constants.",
+    "example_or_fixture": "The file is sample code, test data or a fixture.",
+    "other": "The file fits none of the other options."
+   }
+  },
+  "is_generated": {
+   "type": "noul",
+   "instructions": "Was this file produced by a code generator instead of being written by a person?"
+  },
+  "exposes_public_api": {
+   "type": "noul",
+   "instructions": "Does this file define names that code outside this project is expected to import or call?"
+  },
+  "newcomer_difficulty": {
+   "type": "score",
+   "instructions": "How much background does a new contributor need before they can change this file safely?",
+   "criteria": [
+    "The file is trivial, such as constants, a short script or plain documentation.",
+    "The file is self-contained and can be understood by reading it alone.",
+    "Understanding the file requires reading a few other files of the project.",
+    "Understanding the file requires deep knowledge of the project's architecture or of an external system."
+   ]
+  }
+ },
+ "answers": {
+  "layer": {
+   "type": "choice",
+   "choice": "data_access",
+   "probabilities": {
+    "ui": 0.038461538461538464,
+    "api_routes": 0.038461538461538464,
+    "business_logic": 0.07692307692307693,
+    "data_access": 0.6153846153846154,
+    "config_infra": 0.038461538461538464,
+    "tests": 0.038461538461538464,
+    "docs": 0.038461538461538464,
+    "build_tooling": 0.038461538461538464,
+    "generated_or_vendored": 0.038461538461538464,
+    "other": 0.038461538461538464
+   },
+   "confidence": 0.9
+  },
+  "role": {
+   "type": "choice",
+   "choice": "core_module",
+   "probabilities": {
+    "entry_point": 0.043478260869565216,
+    "core_module": 0.6956521739130435,
+    "helpers": 0.13043478260869562,
+    "type_definitions": 0.043478260869565216,
+    "example_or_fixture": 0.043478260869565216,
+    "other": 0.043478260869565216
+   },
+   "confidence": 0.9
+  },
+  "is_generated": {
+   "type": "noul",
+   "noul": 0.05
+  },
+  "exposes_public_api": {
+   "type": "noul",
+   "noul": 0.9
+  },
+  "newcomer_difficulty": {
+   "type": "score",
+   "score": 1.7,
+   "probabilities": {
+    "0": 0.1,
+    "1": 0.2,
+    "2": 0.6,
+    "3": 0.1
+   },
+   "confidence": 0.8
+  }
+ },
+ "model_returned": "qwen2.5-coder:7b",
+ "provider": "ollama",
+ "input_tokens": 1425,
+ "output_tokens": 334,
+ "latency_ms": 77792.39595800027,
+ "request_id": ""
+}

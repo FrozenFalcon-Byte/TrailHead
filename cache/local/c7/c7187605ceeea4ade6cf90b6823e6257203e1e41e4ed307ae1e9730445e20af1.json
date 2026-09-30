@@ -1,0 +1,111 @@
+{
+ "key": "c7187605ceeea4ade6cf90b6823e6257203e1e41e4ed307ae1e9730445e20af1",
+ "model_id": "llm:qwen2.5-coder:7b:1f2e0674",
+ "created_at": 1790785097.9627059,
+ "state": "path: scrapy/http/cookies.py\nlanguage: python\nsymbols:\n- class CookieJar\n- def __init__( self, policy: CookiePolicy | None = None, check_expired_frequency: int = 10000, )\n- def extract_cookies(self, response: Response, request: Request) -> None\n- def add_cookie_header(self, request: Request) -> None\n- def _cookies(self) -> dict[str, dict[str, dict[str, Cookie]]]\n- def clear_session_cookies(self) -> None\n- def clear( self, domain: str | None = None, path: str | None = None, name: str | None = None, ) -> None\n- def __iter__(self) -> Iterator[Cookie]\n- def __len__(self) -> int\n- def set_policy(self, pol: CookiePolicy) -> None\n- def make_cookies(self, response: Response, request: Request) -> Sequence[Cookie]\n- def set_cookie(self, cookie: Cookie) -> None\n- def set_cookie_if_ok(self, cookie: Cookie, request: Request) -> None\n- def potential_domain_matches(domain: str) -> list[str]  # Potential domain matches for a cookie\n- class _DummyLock\n- def acquire(self) -> None\n- def release(self) -> None\n- class WrappedRequest  # Wraps a :class:`scrapy.Request` class with methods defined by the :class:`urllib.request.Request` cl\n- def __init__(self, request: Request)\n- def get_full_url(self) -> str\n- def get_host(self) -> str\n- def get_type(self) -> str\n- def is_unverifiable(self) -> bool  # Return ``False``, as Scrapy does not track whether the user had the option to approve the URL of a r\n- def full_url(self) -> str\n- def host(self) -> str\n- def type(self) -> str\n- def unverifiable(self) -> bool\n- def origin_req_host(self) -> str\n- def has_header(self, name: str) -> bool\n- def get_header(self, name: str, default: str | None = None) -> str | None\n- def header_items(self) -> list[tuple[str, list[str]]]\n- def add_unredirected_header(self, name: str, value: str) -> None\n- class WrappedResponse\n- def __init__(self, response: Response)\n- def info(self) -> Self\n- def get_all(self, name: str, default: object = None) -> list[str]",
+ "questions": {
+  "layer": {
+   "type": "choice",
+   "instructions": "Which architectural layer does this file belong to?",
+   "criteria": {
+    "ui": "The file renders output for people, such as templates, pages or command-line text.",
+    "api_routes": "The file defines public entry points that receive external requests or commands.",
+    "business_logic": "The file implements the core behaviour of the project.",
+    "data_access": "The file reads or writes storage, files, caches, queues or network connections.",
+    "config_infra": "The file holds settings, defaults, packaging, deployment or CI configuration.",
+    "tests": "The file contains automated tests or test helpers.",
+    "docs": "The file is documentation.",
+    "build_tooling": "The file is a developer script or build helper that is not shipped behaviour.",
+    "generated_or_vendored": "The file was produced by a tool or copied from another project.",
+    "other": "The file fits none of the other options."
+   }
+  },
+  "role": {
+   "type": "choice",
+   "instructions": "Which role does this file play inside its package?",
+   "criteria": {
+    "entry_point": "Execution starts here, such as a main function, a command or an application object.",
+    "core_module": "The file defines the main classes or functions that other files build on.",
+    "helpers": "The file is a collection of small utility functions used by other files.",
+    "type_definitions": "The file mostly declares types, interfaces, exceptions or constants.",
+    "example_or_fixture": "The file is sample code, test data or a fixture.",
+    "other": "The file fits none of the other options."
+   }
+  },
+  "is_generated": {
+   "type": "noul",
+   "instructions": "Was this file produced by a code generator instead of being written by a person?"
+  },
+  "exposes_public_api": {
+   "type": "noul",
+   "instructions": "Does this file define names that code outside this project is expected to import or call?"
+  },
+  "newcomer_difficulty": {
+   "type": "score",
+   "instructions": "How much background does a new contributor need before they can change this file safely?",
+   "criteria": [
+    "The file is trivial, such as constants, a short script or plain documentation.",
+    "The file is self-contained and can be understood by reading it alone.",
+    "Understanding the file requires reading a few other files of the project.",
+    "Understanding the file requires deep knowledge of the project's architecture or of an external system."
+   ]
+  }
+ },
+ "answers": {
+  "layer": {
+   "type": "choice",
+   "choice": "data_access",
+   "probabilities": {
+    "ui": 0.009615384615384616,
+    "api_routes": 0.019230769230769232,
+    "business_logic": 0.04807692307692308,
+    "data_access": 0.8653846153846154,
+    "config_infra": 0.009615384615384616,
+    "tests": 0.009615384615384616,
+    "docs": 0.009615384615384616,
+    "build_tooling": 0.009615384615384616,
+    "generated_or_vendored": 0.009615384615384616,
+    "other": 0.009615384615384616
+   },
+   "confidence": 0.9
+  },
+  "role": {
+   "type": "choice",
+   "choice": "core_module",
+   "probabilities": {
+    "entry_point": 0.00980392156862745,
+    "core_module": 0.7843137254901961,
+    "helpers": 0.14705882352941177,
+    "type_definitions": 0.029411764705882353,
+    "example_or_fixture": 0.0196078431372549,
+    "other": 0.00980392156862745
+   },
+   "confidence": 0.8
+  },
+  "is_generated": {
+   "type": "noul",
+   "noul": 0.05
+  },
+  "exposes_public_api": {
+   "type": "noul",
+   "noul": 0.9
+  },
+  "newcomer_difficulty": {
+   "type": "score",
+   "score": 1.95,
+   "probabilities": {
+    "0": 0.05,
+    "1": 0.1,
+    "2": 0.7,
+    "3": 0.15
+   },
+   "confidence": 0.7
+  }
+ },
+ "model_returned": "qwen2.5-coder:7b",
+ "provider": "ollama",
+ "input_tokens": 1372,
+ "output_tokens": 337,
+ "latency_ms": 69256.20437500038,
+ "request_id": ""
+}

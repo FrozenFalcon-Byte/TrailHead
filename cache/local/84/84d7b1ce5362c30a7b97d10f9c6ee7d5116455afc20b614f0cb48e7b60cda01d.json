@@ -1,0 +1,111 @@
+{
+ "key": "84d7b1ce5362c30a7b97d10f9c6ee7d5116455afc20b614f0cb48e7b60cda01d",
+ "model_id": "llm:qwen2.5-coder:7b:1f2e0674",
+ "created_at": 1790787376.04304,
+ "state": "path: scrapy/utils/_download_handlers.py\nlanguage: python\nheader: Utils for built-in HTTP download handlers.\nsymbols:\n- class NullCookieJar(CookieJar): # pragma: no cover  # A CookieJar that rejects all cookies.\n- def extract_cookies(self, response: HTTPResponse, request: ULRequest) -> None\n- def set_cookie(self, cookie: Cookie) -> None\n- def wrap_twisted_exceptions() -> Iterator[None]  # Context manager that wraps Twisted exceptions into Scrapy exceptions.\n- def check_stop_download( signal: object, crawler: Crawler, request: Request, **kwargs: Any ) -> StopDownload | None  # Send the given signal and check if any of its handlers raised :exc:`~scrapy.exceptions.StopDownload`\n- def make_response( url: str, status: int, headers: Headers, body: bytes = b\"\", flags: list[str] | None = None, certificate: Any = None, ip_address: IPv4Address | IPv6Address | None = None, protocol:…\n- def get_maxsize_msg(size: int, limit: int, request: Request, *, expected: bool) -> str\n- def get_warnsize_msg(size: int, limit: int, request: Request, *, expected: bool) -> str\n- def get_dataloss_msg(url: str) -> str\n- def normalize_bind_address( value: str | tuple[str, int] | None, ) -> tuple[str, int] | None",
+ "questions": {
+  "layer": {
+   "type": "choice",
+   "instructions": "Which architectural layer does this file belong to?",
+   "criteria": {
+    "ui": "The file renders output for people, such as templates, pages or command-line text.",
+    "api_routes": "The file defines public entry points that receive external requests or commands.",
+    "business_logic": "The file implements the core behaviour of the project.",
+    "data_access": "The file reads or writes storage, files, caches, queues or network connections.",
+    "config_infra": "The file holds settings, defaults, packaging, deployment or CI configuration.",
+    "tests": "The file contains automated tests or test helpers.",
+    "docs": "The file is documentation.",
+    "build_tooling": "The file is a developer script or build helper that is not shipped behaviour.",
+    "generated_or_vendored": "The file was produced by a tool or copied from another project.",
+    "other": "The file fits none of the other options."
+   }
+  },
+  "role": {
+   "type": "choice",
+   "instructions": "Which role does this file play inside its package?",
+   "criteria": {
+    "entry_point": "Execution starts here, such as a main function, a command or an application object.",
+    "core_module": "The file defines the main classes or functions that other files build on.",
+    "helpers": "The file is a collection of small utility functions used by other files.",
+    "type_definitions": "The file mostly declares types, interfaces, exceptions or constants.",
+    "example_or_fixture": "The file is sample code, test data or a fixture.",
+    "other": "The file fits none of the other options."
+   }
+  },
+  "is_generated": {
+   "type": "noul",
+   "instructions": "Was this file produced by a code generator instead of being written by a person?"
+  },
+  "exposes_public_api": {
+   "type": "noul",
+   "instructions": "Does this file define names that code outside this project is expected to import or call?"
+  },
+  "newcomer_difficulty": {
+   "type": "score",
+   "instructions": "How much background does a new contributor need before they can change this file safely?",
+   "criteria": [
+    "The file is trivial, such as constants, a short script or plain documentation.",
+    "The file is self-contained and can be understood by reading it alone.",
+    "Understanding the file requires reading a few other files of the project.",
+    "Understanding the file requires deep knowledge of the project's architecture or of an external system."
+   ]
+  }
+ },
+ "answers": {
+  "layer": {
+   "type": "choice",
+   "choice": "data_access",
+   "probabilities": {
+    "ui": 0.0,
+    "api_routes": 0.0,
+    "business_logic": 0.1,
+    "data_access": 0.8,
+    "config_infra": 0.0,
+    "tests": 0.0,
+    "docs": 0.0,
+    "build_tooling": 0.0,
+    "generated_or_vendored": 0.0,
+    "other": 0.1
+   },
+   "confidence": 0.9
+  },
+  "role": {
+   "type": "choice",
+   "choice": "core_module",
+   "probabilities": {
+    "entry_point": 0.0,
+    "core_module": 0.7,
+    "helpers": 0.2,
+    "type_definitions": 0.0,
+    "example_or_fixture": 0.0,
+    "other": 0.1
+   },
+   "confidence": 0.8
+  },
+  "is_generated": {
+   "type": "noul",
+   "noul": 0.3
+  },
+  "exposes_public_api": {
+   "type": "noul",
+   "noul": 0.6
+  },
+  "newcomer_difficulty": {
+   "type": "score",
+   "score": 1.7,
+   "probabilities": {
+    "0": 0.1,
+    "1": 0.2,
+    "2": 0.6,
+    "3": 0.1
+   },
+   "confidence": 0.8
+  }
+ },
+ "model_returned": "qwen2.5-coder:7b",
+ "provider": "ollama",
+ "input_tokens": 1140,
+ "output_tokens": 217,
+ "latency_ms": 45522.73525000055,
+ "request_id": ""
+}

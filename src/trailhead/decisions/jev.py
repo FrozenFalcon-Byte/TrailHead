@@ -10,6 +10,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import time
+from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 import httpx
@@ -61,10 +62,13 @@ class JevEngine(DecisionEngine):
         transport: httpx.AsyncBaseTransport | None = None,
         clock: Clock = time.monotonic,
         sleep: Sleep = asyncio.sleep,
+        shared_state_dir: Path | None = None,
     ) -> None:
         super().__init__(model_id, cache=cache, log=log)
+        # With a shared state directory the pace is kept across processes, which needs a wall clock.
+        shared = [Path(shared_state_dir) / f"{p.name}.slot" for p in providers] if shared_state_dir else None
         self._pool: ProviderPool[JevProvider] = ProviderPool(
-            [(p, p.requests_per_minute) for p in providers], clock=clock, sleep=sleep
+            [(p, p.requests_per_minute) for p in providers], clock=time.time if shared else clock, sleep=sleep, shared_paths=shared
         )
         self._semaphore = asyncio.Semaphore(max_concurrency)
         self._max_attempts = max_attempts

@@ -1,0 +1,111 @@
+{
+ "key": "01b91cb5e114451df8a2cd327e89b32191400b9c3f5e511a47e937ac528c1d4a",
+ "model_id": "llm:qwen2.5-coder:7b:1f2e0674",
+ "created_at": 1790783920.963525,
+ "state": "path: scrapy/core/spidermw.py\nlanguage: python\nheader: Spider Middleware manager\nsymbols:\n- class SpiderMiddlewareManager(MiddlewareManager)\n- def _get_mwlist_from_settings(cls, settings: BaseSettings) -> list[Any]\n- def _add_middleware(self, mw: Any) -> None\n- async def _process_spider_input( self, scrape_func: ScrapeFunc[_T], response: Response, request: Request, ) -> Iterable[_T] | AsyncIterator[_T]\n- async def _evaluate_iterable( self, response: Response, iterable: AsyncIterator[_T], exception_processor_index: int, recover_to: MutableAsyncChain[_T], ) -> AsyncIterator[_T]\n- def _process_spider_exception( self, response: Response, exception: Exception, start_index: int = 0, ) -> MutableAsyncChain[_T]: # don't handle _InvalidOutput exception\n- def _process_spider_output( self, response: Response, result: AsyncIterator[_T], start_index: int = 0, ) -> MutableAsyncChain[_T]: # items in this iterable do not need to go through the process_spide…\n- async def _process_callback_output( self, response: Response, result: AsyncIterator[_T] ) -> MutableAsyncChain[_T]\n- def scrape_response( self, scrape_func: Callable[ [Response | Failure, Request], Deferred[Iterable[_T] | AsyncIterator[_T]], ], response: Response, request: Request, spider: Spider, ) -> Deferred[Mut…\n- async def scrape_response_async( self, scrape_func: ScrapeFunc[_T], response: Response, request: Request, ) -> MutableAsyncChain[_T]\n- async def process_start( self, spider: Spider | None = None ) -> AsyncIterator[Any] | None\n- async def _reject_start(self, start: Any) -> AsyncIterator[Any]\n- def _get_process_spider_output(mw: Any) -> Callable[..., Any] | None",
+ "questions": {
+  "layer": {
+   "type": "choice",
+   "instructions": "Which architectural layer does this file belong to?",
+   "criteria": {
+    "ui": "The file renders output for people, such as templates, pages or command-line text.",
+    "api_routes": "The file defines public entry points that receive external requests or commands.",
+    "business_logic": "The file implements the core behaviour of the project.",
+    "data_access": "The file reads or writes storage, files, caches, queues or network connections.",
+    "config_infra": "The file holds settings, defaults, packaging, deployment or CI configuration.",
+    "tests": "The file contains automated tests or test helpers.",
+    "docs": "The file is documentation.",
+    "build_tooling": "The file is a developer script or build helper that is not shipped behaviour.",
+    "generated_or_vendored": "The file was produced by a tool or copied from another project.",
+    "other": "The file fits none of the other options."
+   }
+  },
+  "role": {
+   "type": "choice",
+   "instructions": "Which role does this file play inside its package?",
+   "criteria": {
+    "entry_point": "Execution starts here, such as a main function, a command or an application object.",
+    "core_module": "The file defines the main classes or functions that other files build on.",
+    "helpers": "The file is a collection of small utility functions used by other files.",
+    "type_definitions": "The file mostly declares types, interfaces, exceptions or constants.",
+    "example_or_fixture": "The file is sample code, test data or a fixture.",
+    "other": "The file fits none of the other options."
+   }
+  },
+  "is_generated": {
+   "type": "noul",
+   "instructions": "Was this file produced by a code generator instead of being written by a person?"
+  },
+  "exposes_public_api": {
+   "type": "noul",
+   "instructions": "Does this file define names that code outside this project is expected to import or call?"
+  },
+  "newcomer_difficulty": {
+   "type": "score",
+   "instructions": "How much background does a new contributor need before they can change this file safely?",
+   "criteria": [
+    "The file is trivial, such as constants, a short script or plain documentation.",
+    "The file is self-contained and can be understood by reading it alone.",
+    "Understanding the file requires reading a few other files of the project.",
+    "Understanding the file requires deep knowledge of the project's architecture or of an external system."
+   ]
+  }
+ },
+ "answers": {
+  "layer": {
+   "type": "choice",
+   "choice": "business_logic",
+   "probabilities": {
+    "ui": 0.0,
+    "api_routes": 0.038461538461538464,
+    "business_logic": 0.6923076923076923,
+    "data_access": 0.038461538461538464,
+    "config_infra": 0.038461538461538464,
+    "tests": 0.038461538461538464,
+    "docs": 0.038461538461538464,
+    "build_tooling": 0.038461538461538464,
+    "generated_or_vendored": 0.038461538461538464,
+    "other": 0.038461538461538464
+   },
+   "confidence": 0.9
+  },
+  "role": {
+   "type": "choice",
+   "choice": "core_module",
+   "probabilities": {
+    "entry_point": 0.0,
+    "core_module": 0.7272727272727273,
+    "helpers": 0.13636363636363635,
+    "type_definitions": 0.045454545454545456,
+    "example_or_fixture": 0.045454545454545456,
+    "other": 0.045454545454545456
+   },
+   "confidence": 0.8
+  },
+  "is_generated": {
+   "type": "noul",
+   "noul": 0.05
+  },
+  "exposes_public_api": {
+   "type": "noul",
+   "noul": 0.9
+  },
+  "newcomer_difficulty": {
+   "type": "score",
+   "score": 1.95,
+   "probabilities": {
+    "0": 0.05,
+    "1": 0.1,
+    "2": 0.7,
+    "3": 0.15
+   },
+   "confidence": 0.7
+  }
+ },
+ "model_returned": "qwen2.5-coder:7b",
+ "provider": "ollama",
+ "input_tokens": 1249,
+ "output_tokens": 316,
+ "latency_ms": 79544.02570800085,
+ "request_id": ""
+}

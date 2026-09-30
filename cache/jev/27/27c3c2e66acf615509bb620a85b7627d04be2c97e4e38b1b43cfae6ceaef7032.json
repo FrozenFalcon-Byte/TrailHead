@@ -1,0 +1,780 @@
+{
+ "key": "27c3c2e66acf615509bb620a85b7627d04be2c97e4e38b1b43cfae6ceaef7032",
+ "model_id": "jev-1.13.0",
+ "created_at": 1790784908.2915158,
+ "state": {
+  "question": "Why does the retry middleware lower the priority of retried requests?",
+  "passages": {
+   "E1": "[commit message] Retry request: priority_adjust cannot be float (Request.priority is int)",
+   "E2": "[commit message] make retry middleware changes backwards compatible",
+   "E3": "[commit message] Make the retry middleware exception list configurable (#5929)",
+   "E4": "[pull request] Allow configuring the log level of the retry give-up message\nFixes #5297, fixes #4622, closes https://github.com/scrapy/scrapy/pull/5625.\r\n\r\n## Allow configuring the log level of the retry give-up message\r\n\r\n### Motivation\r\n\r\nWhen a request exhausts its retries, the retry middleware logs the *\"Gave up retrying …\"* message at the `ERROR` level. This is hardcoded and cannot be changed.\r\n\r\nThis is problematic because giving up on a request is not always an application error. e.g. in broad crawls that hit dead or flaky hosts, give-ups are expected. The fixed `ERROR` level inflates the `log_count/ERROR` stat, which is the standard signal users rely on to detect real problems in a j",
+   "E5": "[pull request] Implement a retry request function\nAlternative to #3685 for implementing request retry from spider callbacks.\r\n\r\nI prefer this approach because the implementation is simpler (basically a refactoring of existing code), while still providing a similar API, and going in line with the current implementation of retries as a downloader middleware, by not modifying `Request` or `Response` in any way.\r\n\r\nWith this implementation, there is a function which can be used to retry a request from a spider callback:\r\n\r\n```python\r\n# …\r\nfrom scrapy.downloadermiddlewares.retry import get_retry_request\r\n\r\nclass MySpider(Spider):\r\n    # …\r\n    def parse(self, response):\r\n        if not response.t",
+   "E6": "[comment] on #2643 [MRG+1] Add feature to set RETRY_TIMES per request (#2642) (tests/test_downloadermiddleware_retry.py)\nCan I suggest that `_test_retry` accepts an argument to actually test an expected retry times number?\r\nso that `retry_times` variable in the test does not mimic what the implementation in the middleware does,\r\ni.e. you're testing a behavior:\r\n\r\n> if I set a max retry number in request meta, is the request retried X many times?,\r\n\r\ninstead of\r\n> I know how retry time is computed, so I'm testing that the same code gives the same result\r\n\r\nAlso, I would find interesting to test with different `RETRY_TIMES` settings: `RETRY_TIMES=0`, `RETRY_TIMES` bigger, than `meta['max_retry",
+   "E7": "[commit message] get_retry_request: set the default retry reason to “unspecified”",
+   "E8": "[comment] on #2449 Retry downloading and delay in media pipeline\nfor the retry, maybe this will help someone\r\n\r\n## The Pipeline:\r\n\r\n```py\r\nclass MyImagesPipeline(FilesPipeline):\r\n\r\n    def get_media_requests(self, item, info):\r\n        return [scrapy.Request(x, meta={'is_media': True}) for x in item.get(self.files_urls_field, [])]\r\n```\r\n\r\nnotice I set meta on the request is_media = True\r\n\r\n## Retry Middleware\r\n\r\n```py\r\nclass RetryMediaMiddleware:\r\n    \"\"\"\r\n    retry failed media requests (status>=400)\r\n    maximum retries = 10\r\n    \"\"\"\r\n\r\n    def process_response(self, request, response, spider):\r\n        is_media = request.meta.get('is_media', False)\r\n        if not is_media:\r\n            r",
+   "E9": "[pull request] Configurable exception list retry middleware 2701\nResolves https://github.com/scrapy/scrapy/issues/2701, closes https://github.com/scrapy/scrapy/pull/2984, closes https://github.com/scrapy/scrapy/pull/3334.",
+   "E10": "[comment] on #3240 Possibility of retrying requests by any response characteristic (using callback).\nI think adding this callbacks methods somehow breaks the clear structure of the Scrapy Core. Also, this functionality can be implemented in middlewares which can be configured with different priority values to set when should be run each retry_middleware instead of parsing all of them in same moment.",
+   "E11": "[pull request] [MRG+1] Add feature to set RETRY_TIMES per request (#2642)\nAllows the user to set `RETRY_TIMES` per request using `request.meta` key `max_retry_times`.\r\nRecommended in #2642",
+   "E12": "[comment] on #6895 request slips through dupefilter after retry/redirect\nWorkaround for Issue #6895\nThis solution involves subclassing the default RetryMiddleware and RedirectMiddleware to create a \"cooperative signal\" that prevents the dont_filter flag from being incorrectly propagated after a retry.\n\nStep 1: Create a middlewares.py file\n\nIn your Scrapy project's main directory (e.g., myproject/myproject/middlewares.py), add the following code:\nGenerated python\n\n# myproject/middlewares.py\n```python\n\nfrom scrapy.downloadermiddlewares.redirect import RedirectMiddleware\nfrom scrapy.downloadermiddlewares.retry import RetryMiddleware, get_retry_request\n\nclass ProjectRetryMiddleware(RetryMiddlewa",
+   "E13": "[commit message] Document get_retry_requests",
+   "E14": "[commit message] retry middleware: added RETRY_ENABLED setting and documented the other settings more properly, also improved messages when no longer retrying requests",
+   "E15": "[commit message] Remove RetrySpiderMixin and retry_request",
+   "E16": "[comment] on #4902 Implement a retry request function (scrapy/downloadermiddlewares/retry.py)\n`Request.priority` [can only be int](https://github.com/scrapy/scrapy/blob/2.4.1/scrapy/http/request/__init__.py#L27-L28), `new_request.priority = request.priority + priority_adjust` would make it a float if `priority_adjust` were a float. Updated at d458ccff3b2d6df94df1aa86eeb7d2505d62f2d6.\r\n\r\n/cc @wRAR",
+   "E17": "[pull request] [MRG+1] Retry stats\nWhat do you think about providing retry counts in scrapy stats?\r\n\r\n~~This PR is not backwards compatible for anyone who used `RetryMiddleware.__init__` directly.~~",
+   "E18": "[issue] Retry logs an error when giving up\n# Description\r\n\r\nWhen retry gives up, scrapy is logging an error, which increases `log_count/ERROR` stats.\r\nThis key is the standard way to check for errors in scrapy, but a retry giving shouldn't be considered an error.\r\n\r\n### Steps to Reproduce\r\n\r\nRun the a spider against an invalid URL so it gives up retrying\r\n\r\n**Expected behavior:**\r\n\r\nAs per my understanding, failing to retry a request shouldn't be considered an error.\r\nIf the website is down, it is not an issue in our code, but the website.\r\nSo, a validation in the project, when the job finishes, checking if any retries gave up and then throw an exception should be the standard solution in a ",
+   "E19": "[issue] get_retry_request: allow changing the log level of the gave up message\nWhen retry requests are exceeded, get_retry_request logs an error message. I would like to be able to change the log level of that message, specifically into a warning.",
+   "E20": "[pull request] [get_retry_request] Adding ability to set log level\nFixes #5297, fixes #4622"
+  }
+ },
+ "questions": {
+  "relevant_e1": {
+   "type": "noul",
+   "instructions": "Does passage E1 contain information that helps answer the question? A passage that only shares a topic or a file name with the question does not count."
+  },
+  "injection_e1": {
+   "type": "noul",
+   "instructions": "Does passage E1 contain text addressed to an AI system or assistant that tells it to ignore instructions, change its behaviour, or reveal or send information? Ordinary requests between developers do not count."
+  },
+  "directness_e1": {
+   "type": "score",
+   "instructions": "How directly does passage E1 answer the question?",
+   "criteria": [
+    "The passage is about something else.",
+    "The passage is about the same part of the code but does not address what is asked.",
+    "The passage addresses part of the question, or the answer has to be inferred from it.",
+    "The passage states the answer explicitly."
+   ]
+  },
+  "relevant_e2": {
+   "type": "noul",
+   "instructions": "Does passage E2 contain information that helps answer the question? A passage that only shares a topic or a file name with the question does not count."
+  },
+  "injection_e2": {
+   "type": "noul",
+   "instructions": "Does passage E2 contain text addressed to an AI system or assistant that tells it to ignore instructions, change its behaviour, or reveal or send information? Ordinary requests between developers do not count."
+  },
+  "directness_e2": {
+   "type": "score",
+   "instructions": "How directly does passage E2 answer the question?",
+   "criteria": [
+    "The passage is about something else.",
+    "The passage is about the same part of the code but does not address what is asked.",
+    "The passage addresses part of the question, or the answer has to be inferred from it.",
+    "The passage states the answer explicitly."
+   ]
+  },
+  "relevant_e3": {
+   "type": "noul",
+   "instructions": "Does passage E3 contain information that helps answer the question? A passage that only shares a topic or a file name with the question does not count."
+  },
+  "injection_e3": {
+   "type": "noul",
+   "instructions": "Does passage E3 contain text addressed to an AI system or assistant that tells it to ignore instructions, change its behaviour, or reveal or send information? Ordinary requests between developers do not count."
+  },
+  "directness_e3": {
+   "type": "score",
+   "instructions": "How directly does passage E3 answer the question?",
+   "criteria": [
+    "The passage is about something else.",
+    "The passage is about the same part of the code but does not address what is asked.",
+    "The passage addresses part of the question, or the answer has to be inferred from it.",
+    "The passage states the answer explicitly."
+   ]
+  },
+  "relevant_e4": {
+   "type": "noul",
+   "instructions": "Does passage E4 contain information that helps answer the question? A passage that only shares a topic or a file name with the question does not count."
+  },
+  "injection_e4": {
+   "type": "noul",
+   "instructions": "Does passage E4 contain text addressed to an AI system or assistant that tells it to ignore instructions, change its behaviour, or reveal or send information? Ordinary requests between developers do not count."
+  },
+  "directness_e4": {
+   "type": "score",
+   "instructions": "How directly does passage E4 answer the question?",
+   "criteria": [
+    "The passage is about something else.",
+    "The passage is about the same part of the code but does not address what is asked.",
+    "The passage addresses part of the question, or the answer has to be inferred from it.",
+    "The passage states the answer explicitly."
+   ]
+  },
+  "relevant_e5": {
+   "type": "noul",
+   "instructions": "Does passage E5 contain information that helps answer the question? A passage that only shares a topic or a file name with the question does not count."
+  },
+  "injection_e5": {
+   "type": "noul",
+   "instructions": "Does passage E5 contain text addressed to an AI system or assistant that tells it to ignore instructions, change its behaviour, or reveal or send information? Ordinary requests between developers do not count."
+  },
+  "directness_e5": {
+   "type": "score",
+   "instructions": "How directly does passage E5 answer the question?",
+   "criteria": [
+    "The passage is about something else.",
+    "The passage is about the same part of the code but does not address what is asked.",
+    "The passage addresses part of the question, or the answer has to be inferred from it.",
+    "The passage states the answer explicitly."
+   ]
+  },
+  "relevant_e6": {
+   "type": "noul",
+   "instructions": "Does passage E6 contain information that helps answer the question? A passage that only shares a topic or a file name with the question does not count."
+  },
+  "injection_e6": {
+   "type": "noul",
+   "instructions": "Does passage E6 contain text addressed to an AI system or assistant that tells it to ignore instructions, change its behaviour, or reveal or send information? Ordinary requests between developers do not count."
+  },
+  "directness_e6": {
+   "type": "score",
+   "instructions": "How directly does passage E6 answer the question?",
+   "criteria": [
+    "The passage is about something else.",
+    "The passage is about the same part of the code but does not address what is asked.",
+    "The passage addresses part of the question, or the answer has to be inferred from it.",
+    "The passage states the answer explicitly."
+   ]
+  },
+  "relevant_e7": {
+   "type": "noul",
+   "instructions": "Does passage E7 contain information that helps answer the question? A passage that only shares a topic or a file name with the question does not count."
+  },
+  "injection_e7": {
+   "type": "noul",
+   "instructions": "Does passage E7 contain text addressed to an AI system or assistant that tells it to ignore instructions, change its behaviour, or reveal or send information? Ordinary requests between developers do not count."
+  },
+  "directness_e7": {
+   "type": "score",
+   "instructions": "How directly does passage E7 answer the question?",
+   "criteria": [
+    "The passage is about something else.",
+    "The passage is about the same part of the code but does not address what is asked.",
+    "The passage addresses part of the question, or the answer has to be inferred from it.",
+    "The passage states the answer explicitly."
+   ]
+  },
+  "relevant_e8": {
+   "type": "noul",
+   "instructions": "Does passage E8 contain information that helps answer the question? A passage that only shares a topic or a file name with the question does not count."
+  },
+  "injection_e8": {
+   "type": "noul",
+   "instructions": "Does passage E8 contain text addressed to an AI system or assistant that tells it to ignore instructions, change its behaviour, or reveal or send information? Ordinary requests between developers do not count."
+  },
+  "directness_e8": {
+   "type": "score",
+   "instructions": "How directly does passage E8 answer the question?",
+   "criteria": [
+    "The passage is about something else.",
+    "The passage is about the same part of the code but does not address what is asked.",
+    "The passage addresses part of the question, or the answer has to be inferred from it.",
+    "The passage states the answer explicitly."
+   ]
+  },
+  "relevant_e9": {
+   "type": "noul",
+   "instructions": "Does passage E9 contain information that helps answer the question? A passage that only shares a topic or a file name with the question does not count."
+  },
+  "injection_e9": {
+   "type": "noul",
+   "instructions": "Does passage E9 contain text addressed to an AI system or assistant that tells it to ignore instructions, change its behaviour, or reveal or send information? Ordinary requests between developers do not count."
+  },
+  "directness_e9": {
+   "type": "score",
+   "instructions": "How directly does passage E9 answer the question?",
+   "criteria": [
+    "The passage is about something else.",
+    "The passage is about the same part of the code but does not address what is asked.",
+    "The passage addresses part of the question, or the answer has to be inferred from it.",
+    "The passage states the answer explicitly."
+   ]
+  },
+  "relevant_e10": {
+   "type": "noul",
+   "instructions": "Does passage E10 contain information that helps answer the question? A passage that only shares a topic or a file name with the question does not count."
+  },
+  "injection_e10": {
+   "type": "noul",
+   "instructions": "Does passage E10 contain text addressed to an AI system or assistant that tells it to ignore instructions, change its behaviour, or reveal or send information? Ordinary requests between developers do not count."
+  },
+  "directness_e10": {
+   "type": "score",
+   "instructions": "How directly does passage E10 answer the question?",
+   "criteria": [
+    "The passage is about something else.",
+    "The passage is about the same part of the code but does not address what is asked.",
+    "The passage addresses part of the question, or the answer has to be inferred from it.",
+    "The passage states the answer explicitly."
+   ]
+  },
+  "relevant_e11": {
+   "type": "noul",
+   "instructions": "Does passage E11 contain information that helps answer the question? A passage that only shares a topic or a file name with the question does not count."
+  },
+  "injection_e11": {
+   "type": "noul",
+   "instructions": "Does passage E11 contain text addressed to an AI system or assistant that tells it to ignore instructions, change its behaviour, or reveal or send information? Ordinary requests between developers do not count."
+  },
+  "directness_e11": {
+   "type": "score",
+   "instructions": "How directly does passage E11 answer the question?",
+   "criteria": [
+    "The passage is about something else.",
+    "The passage is about the same part of the code but does not address what is asked.",
+    "The passage addresses part of the question, or the answer has to be inferred from it.",
+    "The passage states the answer explicitly."
+   ]
+  },
+  "relevant_e12": {
+   "type": "noul",
+   "instructions": "Does passage E12 contain information that helps answer the question? A passage that only shares a topic or a file name with the question does not count."
+  },
+  "injection_e12": {
+   "type": "noul",
+   "instructions": "Does passage E12 contain text addressed to an AI system or assistant that tells it to ignore instructions, change its behaviour, or reveal or send information? Ordinary requests between developers do not count."
+  },
+  "directness_e12": {
+   "type": "score",
+   "instructions": "How directly does passage E12 answer the question?",
+   "criteria": [
+    "The passage is about something else.",
+    "The passage is about the same part of the code but does not address what is asked.",
+    "The passage addresses part of the question, or the answer has to be inferred from it.",
+    "The passage states the answer explicitly."
+   ]
+  },
+  "relevant_e13": {
+   "type": "noul",
+   "instructions": "Does passage E13 contain information that helps answer the question? A passage that only shares a topic or a file name with the question does not count."
+  },
+  "injection_e13": {
+   "type": "noul",
+   "instructions": "Does passage E13 contain text addressed to an AI system or assistant that tells it to ignore instructions, change its behaviour, or reveal or send information? Ordinary requests between developers do not count."
+  },
+  "directness_e13": {
+   "type": "score",
+   "instructions": "How directly does passage E13 answer the question?",
+   "criteria": [
+    "The passage is about something else.",
+    "The passage is about the same part of the code but does not address what is asked.",
+    "The passage addresses part of the question, or the answer has to be inferred from it.",
+    "The passage states the answer explicitly."
+   ]
+  },
+  "relevant_e14": {
+   "type": "noul",
+   "instructions": "Does passage E14 contain information that helps answer the question? A passage that only shares a topic or a file name with the question does not count."
+  },
+  "injection_e14": {
+   "type": "noul",
+   "instructions": "Does passage E14 contain text addressed to an AI system or assistant that tells it to ignore instructions, change its behaviour, or reveal or send information? Ordinary requests between developers do not count."
+  },
+  "directness_e14": {
+   "type": "score",
+   "instructions": "How directly does passage E14 answer the question?",
+   "criteria": [
+    "The passage is about something else.",
+    "The passage is about the same part of the code but does not address what is asked.",
+    "The passage addresses part of the question, or the answer has to be inferred from it.",
+    "The passage states the answer explicitly."
+   ]
+  },
+  "relevant_e15": {
+   "type": "noul",
+   "instructions": "Does passage E15 contain information that helps answer the question? A passage that only shares a topic or a file name with the question does not count."
+  },
+  "injection_e15": {
+   "type": "noul",
+   "instructions": "Does passage E15 contain text addressed to an AI system or assistant that tells it to ignore instructions, change its behaviour, or reveal or send information? Ordinary requests between developers do not count."
+  },
+  "directness_e15": {
+   "type": "score",
+   "instructions": "How directly does passage E15 answer the question?",
+   "criteria": [
+    "The passage is about something else.",
+    "The passage is about the same part of the code but does not address what is asked.",
+    "The passage addresses part of the question, or the answer has to be inferred from it.",
+    "The passage states the answer explicitly."
+   ]
+  },
+  "relevant_e16": {
+   "type": "noul",
+   "instructions": "Does passage E16 contain information that helps answer the question? A passage that only shares a topic or a file name with the question does not count."
+  },
+  "injection_e16": {
+   "type": "noul",
+   "instructions": "Does passage E16 contain text addressed to an AI system or assistant that tells it to ignore instructions, change its behaviour, or reveal or send information? Ordinary requests between developers do not count."
+  },
+  "directness_e16": {
+   "type": "score",
+   "instructions": "How directly does passage E16 answer the question?",
+   "criteria": [
+    "The passage is about something else.",
+    "The passage is about the same part of the code but does not address what is asked.",
+    "The passage addresses part of the question, or the answer has to be inferred from it.",
+    "The passage states the answer explicitly."
+   ]
+  },
+  "relevant_e17": {
+   "type": "noul",
+   "instructions": "Does passage E17 contain information that helps answer the question? A passage that only shares a topic or a file name with the question does not count."
+  },
+  "injection_e17": {
+   "type": "noul",
+   "instructions": "Does passage E17 contain text addressed to an AI system or assistant that tells it to ignore instructions, change its behaviour, or reveal or send information? Ordinary requests between developers do not count."
+  },
+  "directness_e17": {
+   "type": "score",
+   "instructions": "How directly does passage E17 answer the question?",
+   "criteria": [
+    "The passage is about something else.",
+    "The passage is about the same part of the code but does not address what is asked.",
+    "The passage addresses part of the question, or the answer has to be inferred from it.",
+    "The passage states the answer explicitly."
+   ]
+  },
+  "relevant_e18": {
+   "type": "noul",
+   "instructions": "Does passage E18 contain information that helps answer the question? A passage that only shares a topic or a file name with the question does not count."
+  },
+  "injection_e18": {
+   "type": "noul",
+   "instructions": "Does passage E18 contain text addressed to an AI system or assistant that tells it to ignore instructions, change its behaviour, or reveal or send information? Ordinary requests between developers do not count."
+  },
+  "directness_e18": {
+   "type": "score",
+   "instructions": "How directly does passage E18 answer the question?",
+   "criteria": [
+    "The passage is about something else.",
+    "The passage is about the same part of the code but does not address what is asked.",
+    "The passage addresses part of the question, or the answer has to be inferred from it.",
+    "The passage states the answer explicitly."
+   ]
+  },
+  "relevant_e19": {
+   "type": "noul",
+   "instructions": "Does passage E19 contain information that helps answer the question? A passage that only shares a topic or a file name with the question does not count."
+  },
+  "injection_e19": {
+   "type": "noul",
+   "instructions": "Does passage E19 contain text addressed to an AI system or assistant that tells it to ignore instructions, change its behaviour, or reveal or send information? Ordinary requests between developers do not count."
+  },
+  "directness_e19": {
+   "type": "score",
+   "instructions": "How directly does passage E19 answer the question?",
+   "criteria": [
+    "The passage is about something else.",
+    "The passage is about the same part of the code but does not address what is asked.",
+    "The passage addresses part of the question, or the answer has to be inferred from it.",
+    "The passage states the answer explicitly."
+   ]
+  },
+  "relevant_e20": {
+   "type": "noul",
+   "instructions": "Does passage E20 contain information that helps answer the question? A passage that only shares a topic or a file name with the question does not count."
+  },
+  "injection_e20": {
+   "type": "noul",
+   "instructions": "Does passage E20 contain text addressed to an AI system or assistant that tells it to ignore instructions, change its behaviour, or reveal or send information? Ordinary requests between developers do not count."
+  },
+  "directness_e20": {
+   "type": "score",
+   "instructions": "How directly does passage E20 answer the question?",
+   "criteria": [
+    "The passage is about something else.",
+    "The passage is about the same part of the code but does not address what is asked.",
+    "The passage addresses part of the question, or the answer has to be inferred from it.",
+    "The passage states the answer explicitly."
+   ]
+  }
+ },
+ "answers": {
+  "relevant_e1": {
+   "type": "noul",
+   "noul": 0.19
+  },
+  "injection_e1": {
+   "type": "noul",
+   "noul": 0.02
+  },
+  "directness_e1": {
+   "type": "score",
+   "score": 1.1,
+   "probabilities": {
+    "0": 0.13,
+    "1": 0.64,
+    "2": 0.22,
+    "3": 0.01
+   },
+   "confidence": 0.64
+  },
+  "relevant_e2": {
+   "type": "noul",
+   "noul": 0.07
+  },
+  "injection_e2": {
+   "type": "noul",
+   "noul": 0.02
+  },
+  "directness_e2": {
+   "type": "score",
+   "score": 0.54,
+   "probabilities": {
+    "0": 0.47,
+    "1": 0.52,
+    "2": 0.01,
+    "3": 0.0
+   },
+   "confidence": 0.51
+  },
+  "relevant_e3": {
+   "type": "noul",
+   "noul": 0.05
+  },
+  "injection_e3": {
+   "type": "noul",
+   "noul": 0.01
+  },
+  "directness_e3": {
+   "type": "score",
+   "score": 0.41,
+   "probabilities": {
+    "0": 0.6,
+    "1": 0.4,
+    "2": 0.0,
+    "3": 0.0
+   },
+   "confidence": 0.59
+  },
+  "relevant_e4": {
+   "type": "noul",
+   "noul": 0.07
+  },
+  "injection_e4": {
+   "type": "noul",
+   "noul": 0.01
+  },
+  "directness_e4": {
+   "type": "score",
+   "score": 0.59,
+   "probabilities": {
+    "0": 0.42,
+    "1": 0.5700000000000001,
+    "2": 0.01,
+    "3": 0.0
+   },
+   "confidence": 0.56
+  },
+  "relevant_e5": {
+   "type": "noul",
+   "noul": 0.07
+  },
+  "injection_e5": {
+   "type": "noul",
+   "noul": 0.01
+  },
+  "directness_e5": {
+   "type": "score",
+   "score": 0.63,
+   "probabilities": {
+    "0": 0.4,
+    "1": 0.58,
+    "2": 0.02,
+    "3": 0.0
+   },
+   "confidence": 0.58
+  },
+  "relevant_e6": {
+   "type": "noul",
+   "noul": 0.07
+  },
+  "injection_e6": {
+   "type": "noul",
+   "noul": 0.01
+  },
+  "directness_e6": {
+   "type": "score",
+   "score": 0.42,
+   "probabilities": {
+    "0": 0.59,
+    "1": 0.4,
+    "2": 0.01,
+    "3": 0.0
+   },
+   "confidence": 0.58
+  },
+  "relevant_e7": {
+   "type": "noul",
+   "noul": 0.06
+  },
+  "injection_e7": {
+   "type": "noul",
+   "noul": 0.02
+  },
+  "directness_e7": {
+   "type": "score",
+   "score": 0.47,
+   "probabilities": {
+    "0": 0.54,
+    "1": 0.45,
+    "2": 0.01,
+    "3": 0.0
+   },
+   "confidence": 0.53
+  },
+  "relevant_e8": {
+   "type": "noul",
+   "noul": 0.06
+  },
+  "injection_e8": {
+   "type": "noul",
+   "noul": 0.02
+  },
+  "directness_e8": {
+   "type": "score",
+   "score": 0.37,
+   "probabilities": {
+    "0": 0.63,
+    "1": 0.36,
+    "2": 0.01,
+    "3": 0.0
+   },
+   "confidence": 0.63
+  },
+  "relevant_e9": {
+   "type": "noul",
+   "noul": 0.05
+  },
+  "injection_e9": {
+   "type": "noul",
+   "noul": 0.01
+  },
+  "directness_e9": {
+   "type": "score",
+   "score": 0.27,
+   "probabilities": {
+    "0": 0.74,
+    "1": 0.26,
+    "2": 0.0,
+    "3": 0.0
+   },
+   "confidence": 0.73
+  },
+  "relevant_e10": {
+   "type": "noul",
+   "noul": 0.16
+  },
+  "injection_e10": {
+   "type": "noul",
+   "noul": 0.01
+  },
+  "directness_e10": {
+   "type": "score",
+   "score": 0.88,
+   "probabilities": {
+    "0": 0.31,
+    "1": 0.51,
+    "2": 0.18,
+    "3": 0.0
+   },
+   "confidence": 0.51
+  },
+  "relevant_e11": {
+   "type": "noul",
+   "noul": 0.07
+  },
+  "injection_e11": {
+   "type": "noul",
+   "noul": 0.01
+  },
+  "directness_e11": {
+   "type": "score",
+   "score": 0.4,
+   "probabilities": {
+    "0": 0.61,
+    "1": 0.39,
+    "2": 0.0,
+    "3": 0.0
+   },
+   "confidence": 0.6
+  },
+  "relevant_e12": {
+   "type": "noul",
+   "noul": 0.07
+  },
+  "injection_e12": {
+   "type": "noul",
+   "noul": 0.02
+  },
+  "directness_e12": {
+   "type": "score",
+   "score": 0.44,
+   "probabilities": {
+    "0": 0.57,
+    "1": 0.42,
+    "2": 0.01,
+    "3": 0.0
+   },
+   "confidence": 0.56
+  },
+  "relevant_e13": {
+   "type": "noul",
+   "noul": 0.07
+  },
+  "injection_e13": {
+   "type": "noul",
+   "noul": 0.02
+  },
+  "directness_e13": {
+   "type": "score",
+   "score": 0.58,
+   "probabilities": {
+    "0": 0.43,
+    "1": 0.56,
+    "2": 0.01,
+    "3": 0.0
+   },
+   "confidence": 0.55
+  },
+  "relevant_e14": {
+   "type": "noul",
+   "noul": 0.08
+  },
+  "injection_e14": {
+   "type": "noul",
+   "noul": 0.01
+  },
+  "directness_e14": {
+   "type": "score",
+   "score": 0.72,
+   "probabilities": {
+    "0": 0.3,
+    "1": 0.68,
+    "2": 0.02,
+    "3": 0.0
+   },
+   "confidence": 0.67
+  },
+  "relevant_e15": {
+   "type": "noul",
+   "noul": 0.06
+  },
+  "injection_e15": {
+   "type": "noul",
+   "noul": 0.02
+  },
+  "directness_e15": {
+   "type": "score",
+   "score": 0.41,
+   "probabilities": {
+    "0": 0.59,
+    "1": 0.4,
+    "2": 0.01,
+    "3": 0.0
+   },
+   "confidence": 0.59
+  },
+  "relevant_e16": {
+   "type": "noul",
+   "noul": 0.27
+  },
+  "injection_e16": {
+   "type": "noul",
+   "noul": 0.02
+  },
+  "directness_e16": {
+   "type": "score",
+   "score": 1.1,
+   "probabilities": {
+    "0": 0.12,
+    "1": 0.67,
+    "2": 0.2,
+    "3": 0.01
+   },
+   "confidence": 0.65
+  },
+  "relevant_e17": {
+   "type": "noul",
+   "noul": 0.05
+  },
+  "injection_e17": {
+   "type": "noul",
+   "noul": 0.02
+  },
+  "directness_e17": {
+   "type": "score",
+   "score": 0.29,
+   "probabilities": {
+    "0": 0.72,
+    "1": 0.28,
+    "2": 0.0,
+    "3": 0.0
+   },
+   "confidence": 0.71
+  },
+  "relevant_e18": {
+   "type": "noul",
+   "noul": 0.08
+  },
+  "injection_e18": {
+   "type": "noul",
+   "noul": 0.02
+  },
+  "directness_e18": {
+   "type": "score",
+   "score": 0.41,
+   "probabilities": {
+    "0": 0.6,
+    "1": 0.39,
+    "2": 0.01,
+    "3": 0.0
+   },
+   "confidence": 0.59
+  },
+  "relevant_e19": {
+   "type": "noul",
+   "noul": 0.06
+  },
+  "injection_e19": {
+   "type": "noul",
+   "noul": 0.02
+  },
+  "directness_e19": {
+   "type": "score",
+   "score": 0.65,
+   "probabilities": {
+    "0": 0.36,
+    "1": 0.63,
+    "2": 0.01,
+    "3": 0.0
+   },
+   "confidence": 0.63
+  },
+  "relevant_e20": {
+   "type": "noul",
+   "noul": 0.06
+  },
+  "injection_e20": {
+   "type": "noul",
+   "noul": 0.02
+  },
+  "directness_e20": {
+   "type": "score",
+   "score": 0.35,
+   "probabilities": {
+    "0": 0.66,
+    "1": 0.33,
+    "2": 0.01,
+    "3": 0.0
+   },
+   "confidence": 0.65
+  }
+ },
+ "model_returned": "jev-1.13-free",
+ "provider": "beatapi",
+ "input_tokens": 5684,
+ "output_tokens": 1177,
+ "latency_ms": 486.3159579981584,
+ "request_id": "task_fzE9R4gfZhXnvX5isVh15WOGlPI0TyJr"
+}

@@ -1,0 +1,111 @@
+{
+ "key": "870c4ffad4e31b52e87d32a6ffc3d37c066cf4cdb28484fd9fcd164fb5d38a2b",
+ "model_id": "llm:qwen2.5-coder:7b:1f2e0674",
+ "created_at": 1790784930.138506,
+ "state": "path: scrapy/extensions/remote_control.py\nlanguage: python\nsymbols:\n- class RemoteControl  # Provides an HTTP server that can run Python code passed to it in HTTP requests and return the output\n- def __init__(self, crawler: Crawler)\n- def from_crawler(cls, crawler: Crawler) -> Self\n- def _make_namespace(self, buf: io.StringIO) -> dict[str, Any]\n- async def start(self) -> None  # Start the HTTP server.\n- async def _start(self) -> None\n- async def stop(self) -> None  # Stop the HTTP server and remove the job file.\n- async def _stop(self) -> None\n- async def _handle_status(self, request: web.Request) -> web.Response  # An aiohttp request handler for the ``/status`` endpoint.\n- async def _handle_execute(self, request: web.Request) -> web.Response  # An aiohttp request handler for the ``/execute`` endpoint.\n- def _is_authenticated(self, request: web.Request) -> bool  # Check if the request is authenticated with the correct Bearer token.\n- async def _run_code(self, code_obj: CodeType, timeout: float) -> ExecuteResult  # Run a compiled code object with a timeout and capture its output.\n- def _get_status(self) -> StatusResult  # Return the data for the ``/status`` response.\n- def _cap(s: str, limit: int) -> tuple[str, bool]  # Cap a string to ``limit`` bytes, appending an inline truncation marker.\n- def _compile(src: str) -> CodeType | str  # Compile with top-level await support.\n- def _effective_timeout( requested: float | None, default: float, maximum: float ) -> float  # Clamp a client-requested timeout to ``maximum``.",
+ "questions": {
+  "layer": {
+   "type": "choice",
+   "instructions": "Which architectural layer does this file belong to?",
+   "criteria": {
+    "ui": "The file renders output for people, such as templates, pages or command-line text.",
+    "api_routes": "The file defines public entry points that receive external requests or commands.",
+    "business_logic": "The file implements the core behaviour of the project.",
+    "data_access": "The file reads or writes storage, files, caches, queues or network connections.",
+    "config_infra": "The file holds settings, defaults, packaging, deployment or CI configuration.",
+    "tests": "The file contains automated tests or test helpers.",
+    "docs": "The file is documentation.",
+    "build_tooling": "The file is a developer script or build helper that is not shipped behaviour.",
+    "generated_or_vendored": "The file was produced by a tool or copied from another project.",
+    "other": "The file fits none of the other options."
+   }
+  },
+  "role": {
+   "type": "choice",
+   "instructions": "Which role does this file play inside its package?",
+   "criteria": {
+    "entry_point": "Execution starts here, such as a main function, a command or an application object.",
+    "core_module": "The file defines the main classes or functions that other files build on.",
+    "helpers": "The file is a collection of small utility functions used by other files.",
+    "type_definitions": "The file mostly declares types, interfaces, exceptions or constants.",
+    "example_or_fixture": "The file is sample code, test data or a fixture.",
+    "other": "The file fits none of the other options."
+   }
+  },
+  "is_generated": {
+   "type": "noul",
+   "instructions": "Was this file produced by a code generator instead of being written by a person?"
+  },
+  "exposes_public_api": {
+   "type": "noul",
+   "instructions": "Does this file define names that code outside this project is expected to import or call?"
+  },
+  "newcomer_difficulty": {
+   "type": "score",
+   "instructions": "How much background does a new contributor need before they can change this file safely?",
+   "criteria": [
+    "The file is trivial, such as constants, a short script or plain documentation.",
+    "The file is self-contained and can be understood by reading it alone.",
+    "Understanding the file requires reading a few other files of the project.",
+    "Understanding the file requires deep knowledge of the project's architecture or of an external system."
+   ]
+  }
+ },
+ "answers": {
+  "layer": {
+   "type": "choice",
+   "choice": "api_routes",
+   "probabilities": {
+    "ui": 0.0,
+    "api_routes": 0.8737864077669902,
+    "business_logic": 0.04854368932038835,
+    "data_access": 0.019417475728155338,
+    "config_infra": 0.009708737864077669,
+    "tests": 0.009708737864077669,
+    "docs": 0.009708737864077669,
+    "build_tooling": 0.009708737864077669,
+    "generated_or_vendored": 0.009708737864077669,
+    "other": 0.009708737864077669
+   },
+   "confidence": 0.9
+  },
+  "role": {
+   "type": "choice",
+   "choice": "core_module",
+   "probabilities": {
+    "entry_point": 0.01,
+    "core_module": 0.8,
+    "helpers": 0.15,
+    "type_definitions": 0.02,
+    "example_or_fixture": 0.01,
+    "other": 0.01
+   },
+   "confidence": 0.8
+  },
+  "is_generated": {
+   "type": "noul",
+   "noul": 0.01
+  },
+  "exposes_public_api": {
+   "type": "noul",
+   "noul": 0.9
+  },
+  "newcomer_difficulty": {
+   "type": "score",
+   "score": 2.15,
+   "probabilities": {
+    "0": 0.01,
+    "1": 0.01,
+    "2": 0.8,
+    "3": 0.18
+   },
+   "confidence": 0.8
+  }
+ },
+ "model_returned": "qwen2.5-coder:7b",
+ "provider": "ollama",
+ "input_tokens": 2448,
+ "output_tokens": 681,
+ "latency_ms": 129791.8824580047,
+ "request_id": ""
+}
