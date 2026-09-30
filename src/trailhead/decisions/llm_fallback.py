@@ -45,12 +45,14 @@ class LLMFallbackEngine(DecisionEngine):
         cache: DecisionCache | None = None,
         log: DecisionLog | None = None,
         prompt_path: Path = PROMPT_PATH,
+        provider: str = "llm",
         repair_attempts: int = 1,
     ) -> None:
         self._system = prompt_path.read_text(encoding="utf-8")
         # The prompt is part of the model identity, so editing it invalidates cached answers.
         super().__init__(f"llm:{client.model}:{sha256_hex(self._system)[:8]}", cache=cache, log=log)
         self._client = client
+        self._provider = provider
         self._repair_attempts = repair_attempts
 
     async def aclose(self) -> None:
@@ -81,7 +83,7 @@ class LLMFallbackEngine(DecisionEngine):
             return EngineResponse(
                 answers=answers,
                 model_returned=model,
-                provider="llm",
+                provider=self._provider,
                 input_tokens=input_tokens,
                 output_tokens=output_tokens,
                 latency_ms=latency_ms,

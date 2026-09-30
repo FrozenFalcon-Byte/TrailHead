@@ -21,6 +21,17 @@ def build_llm(settings: Settings) -> OpenAICompatClient:
     )
 
 
+def build_local_llm(settings: Settings) -> OpenAICompatClient:
+    """Ollama's OpenAI-compatible endpoint: no key, no rate limit, slow enough to need a long timeout."""
+    return OpenAICompatClient(
+        api_key="ollama",
+        base_url=settings.local_llm_base_url,
+        model=settings.local_llm_model,
+        requests_per_minute=6000,
+        timeout=300.0,
+    )
+
+
 def build_engine(settings: Settings, kind: str | None = None, *, log: DecisionLog | None = None) -> DecisionEngine:
     kind = kind or settings.decision_engine
     if log is None:
@@ -40,5 +51,7 @@ def build_engine(settings: Settings, kind: str | None = None, *, log: DecisionLo
             max_attempts=settings.jev_max_attempts,
         )
     if kind == "llm":
-        return LLMFallbackEngine(build_llm(settings), cache=DecisionCache(settings.cache_dir / "llm"), log=log)
+        return LLMFallbackEngine(build_llm(settings), cache=DecisionCache(settings.cache_dir / "llm"), log=log, provider="hosted")
+    if kind == "local":
+        return LLMFallbackEngine(build_local_llm(settings), cache=DecisionCache(settings.cache_dir / "local"), log=log, provider="ollama")
     raise DecisionError(f"unknown engine {kind!r}")

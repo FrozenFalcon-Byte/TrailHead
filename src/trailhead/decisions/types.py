@@ -4,11 +4,14 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from dataclasses import dataclass, field
 from typing import Any, Mapping, Union
 
 MAX_CHOICE_OPTIONS = 255
 MAX_SCORE_LEVELS = 10
+# Descriptive snake_case ids only: BeatAPI rejects some one-letter ids ("n") with an opaque 400.
+_QUESTION_ID = re.compile(r"[a-z][a-z0-9_]{2,63}")
 
 State = Union[str, Mapping[str, Any], list[Any]]
 
@@ -124,8 +127,8 @@ def validate_questions(questions: Mapping[str, Question]) -> None:
     if not questions:
         raise InvalidQuestionError("at least one question is required")
     for qid, q in questions.items():
-        if not qid or not isinstance(qid, str):
-            raise InvalidQuestionError("question ids must be non-empty strings")
+        if not isinstance(qid, str) or not _QUESTION_ID.fullmatch(qid):
+            raise InvalidQuestionError(f"question id {qid!r} must be snake_case, 3 to 64 characters, starting with a letter")
         if not isinstance(q, (Choice, Score, Noul)):
             raise InvalidQuestionError(f"{qid}: unsupported question type {type(q).__name__}")
         if not q.instructions.strip():

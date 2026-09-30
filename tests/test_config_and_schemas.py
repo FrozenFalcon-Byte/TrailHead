@@ -30,6 +30,13 @@ def test_providers_are_enabled_by_key_and_ordered():
     assert [p.name for p in reordered.jev_providers] == ["beatapi", "vercel"]
 
 
+def test_local_engine_targets_ollama(tmp_path):
+    settings = load_settings(env={"TRAILHEAD_DATA_DIR": str(tmp_path), "OLLAMA_MODEL": "tiny:1b"})
+    assert settings.local_llm_base_url == "http://localhost:11434/v1"
+    engine = build_engine(settings, "local")
+    assert engine.name == "llm" and engine.model_id.startswith("llm:tiny:1b:")
+
+
 def test_bad_settings_are_rejected():
     with pytest.raises(ValueError, match="DECISION_ENGINE"):
         load_settings(env={"DECISION_ENGINE": "gpt"})

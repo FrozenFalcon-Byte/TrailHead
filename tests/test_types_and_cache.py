@@ -36,12 +36,14 @@ def test_normalize_handles_zero_mass():
     "questions",
     [
         {},
-        {"q": Choice("x", {"only": "one"})},
-        {"q": Choice("x", {f"o{i}": "d" for i in range(256)})},
-        {"q": Score("x", ("one",))},
-        {"q": Score("x", tuple(str(i) for i in range(11)))},
-        {"q": Noul("  ")},
+        {"qid": Choice("x", {"only": "one"})},
+        {"qid": Choice("x", {f"o{i}": "d" for i in range(256)})},
+        {"qid": Score("x", ("one",))},
+        {"qid": Score("x", tuple(str(i) for i in range(11)))},
+        {"qid": Noul("  ")},
         {"": Noul("x")},
+        {"n": Noul("x")},
+        {"Kind": Noul("x")},
     ],
 )
 def test_validate_rejects_bad_question_sets(questions):
@@ -50,7 +52,7 @@ def test_validate_rejects_bad_question_sets(questions):
 
 
 def test_validate_accepts_limits():
-    validate_questions({"q": Choice("x", {f"o{i}": "d" for i in range(255)}), "s": Score("x", tuple("abcdefghij"))})
+    validate_questions({"qid": Choice("x", {f"o{i}": "d" for i in range(255)}), "lvl": Score("x", tuple("abcdefghij"))})
 
 
 def test_cache_key_depends_on_model_state_and_questions():
@@ -67,7 +69,7 @@ def test_cache_roundtrip(tmp_path):
     key = cache_key("m", "s", Q)
     assert cache.get(key) is None
     response = EngineResponse(
-        answers={"kind": ChoiceAnswer("a", {"a": 0.9, "b": 0.1}, 0.8), "why": NoulAnswer(0.3), "s": ScoreAnswer(1.5, {0: 0.1, 1: 0.3, 2: 0.6}, 0.4)},
+        answers={"kind": ChoiceAnswer("a", {"a": 0.9, "b": 0.1}, 0.8), "why": NoulAnswer(0.3), "lvl": ScoreAnswer(1.5, {0: 0.1, 1: 0.3, 2: 0.6}, 0.4)},
         model_returned="jev-1.13.0",
         provider="beatapi",
         input_tokens=12,

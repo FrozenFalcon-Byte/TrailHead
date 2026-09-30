@@ -17,6 +17,8 @@ _JEV_PROVIDERS: dict[str, dict[str, str | float]] = {
 }
 _DEFAULT_ORDER = "typesafe,vercel,beatapi,openrouter"
 SYSTEM_ONE_PATH = "/v1/systemone"
+# jev: pooled Jev providers. llm: hosted OpenAI-compatible LLM. local: Ollama on this machine.
+ENGINE_KINDS = ("jev", "llm", "local")
 
 
 @dataclass(frozen=True)
@@ -43,6 +45,8 @@ class Settings:
     llm_base_url: str
     llm_model: str
     llm_rpm: float
+    local_llm_base_url: str
+    local_llm_model: str
     github_token: str
 
     @property
@@ -109,8 +113,8 @@ def load_settings(env: Mapping[str, str] | None = None, env_file: Path | str | N
         )
 
     engine = get("DECISION_ENGINE", "jev").lower()
-    if engine not in ("jev", "llm"):
-        raise ValueError(f"DECISION_ENGINE must be 'jev' or 'llm', got {engine!r}")
+    if engine not in ENGINE_KINDS:
+        raise ValueError(f"DECISION_ENGINE must be one of {ENGINE_KINDS}, got {engine!r}")
 
     return Settings(
         data_dir=Path(get("TRAILHEAD_DATA_DIR", "data")),
@@ -121,7 +125,9 @@ def load_settings(env: Mapping[str, str] | None = None, env_file: Path | str | N
         jev_max_attempts=int(get("JEV_MAX_ATTEMPTS", "6")),
         llm_api_key=get("LLM_API_KEY") or get("GROQ_API_KEY"),
         llm_base_url=get("LLM_BASE_URL", "https://api.groq.com/openai/v1").rstrip("/"),
-        llm_model=get("LLM_MODEL", "llama-3.3-70b-versatile"),
+        llm_model=get("LLM_MODEL", "openai/gpt-oss-120b"),
         llm_rpm=float(get("LLM_RPM", "20")),
+        local_llm_base_url=get("OLLAMA_BASE_URL", "http://localhost:11434/v1").rstrip("/"),
+        local_llm_model=get("OLLAMA_MODEL", "qwen2.5-coder:7b"),
         github_token=get("GITHUB_TOKEN"),
     )

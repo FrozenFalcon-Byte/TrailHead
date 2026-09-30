@@ -40,11 +40,36 @@ Running notes where observed behaviour differs from the project brief. Newest la
 - The SDK also pulls in `httpx2`, `pydantic` and `tenacity`; dropping it keeps runtime
   dependencies to `httpx` and `pyyaml`.
 
+### BeatAPI behaviour (verified with live calls, 2026-09-30)
+- Responses do include `confidence`, and for a three-level Score it equals
+  `(3 * p_max - 1) / 2`, so the computed fallback agrees with what the API returns.
+- Probabilities and Noul values come back rounded to two decimals (`{"ci": 1, "other": 0}`).
+  Whether Jev or BeatAPI rounds is unknown. Consequences: a probability of exactly 0 is
+  common, so beam search must floor probabilities before taking logs, and calibration
+  bins are coarse at the extremes.
+- A question whose id is `n` makes the request fail with HTTP 400
+  `plugin usage value must be a number`, for Choice and Noul alike; ids `c`, `s` and longer
+  names work. Question ids are now validated as snake_case with at least three characters.
+  Whether option names inside `criteria` are affected is not tested.
+- Failed requests did not consume the one-per-minute allowance.
+- Observed latency about 0.5 s; about 280 to 480 input tokens for a one-line state with
+  one to three questions, so per-question overhead is significant relative to tiny states.
+
+### Vercel AI Gateway (verified with a live call, 2026-09-30)
+- A key without a payment card gets HTTP 403 `customer_verification_required`: the free
+  credit is only unlocked once a card is on file. Until then the pool disables Vercel and
+  uses the remaining providers.
+
 ### LLM
 - No Anthropic key is available, so prose and `LLMFallbackEngine` use any
-  OpenAI-compatible endpoint (Groq by default, `llama-3.3-70b-versatile`). There is no
+  OpenAI-compatible endpoint (Groq by default, `openai/gpt-oss-120b`; the key used here has no access to Groq's Llama models). There is no
   Anthropic-native client; Claude models remain reachable through an OpenAI-compatible
   gateway by changing `LLM_BASE_URL` and `LLM_MODEL`.
+
+- `gpt-oss-120b` at temperature 0 is not deterministic: two identical smoke calls gave
+  slightly different probabilities. The disk cache is what makes runs reproducible.
+- Bulk annotation can run on a local Ollama model (`DECISION_ENGINE=local`, default
+  `qwen2.5-coder:7b`). Pulled models must be removed with `ollama rm` when testing ends.
 
 ### Tooling
 - On this Mac, files under `.venv` get the macOS hidden flag, and Python 3.12 skips hidden

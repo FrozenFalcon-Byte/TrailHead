@@ -8,7 +8,7 @@ import json
 import logging
 import sys
 
-from .config import Settings, load_settings
+from .config import ENGINE_KINDS, Settings, load_settings
 from .decisions import DecisionError, build_engine, load_question_set
 from .decisions.types import answer_to_dict
 from .llm.client import LLMError
@@ -26,6 +26,7 @@ def _doctor(settings: Settings) -> int:
     else:
         print("jev provider    : none (no provider key set)")
     print(f"llm             : {settings.llm_model} @ {settings.llm_base_url} key={'set' if settings.llm_api_key else 'MISSING'}")
+    print(f"local llm       : {settings.local_llm_model} @ {settings.local_llm_base_url}")
     print(f"data dir        : {settings.data_dir}")
     return 0
 
@@ -64,7 +65,7 @@ def main(argv: list[str] | None = None) -> int:
     sub = parser.add_subparsers(dest="command", required=True)
     sub.add_parser("doctor", help="show which providers are configured (never prints keys)")
     smoke = sub.add_parser("smoke", help="ask one of each question type against the real API")
-    smoke.add_argument("--engine", choices=["jev", "llm"])
+    smoke.add_argument("--engine", choices=list(ENGINE_KINDS))
     smoke.add_argument("--no-cache", action="store_true")
     decisions = sub.add_parser("decisions", help="print the most recent logged decisions")
     decisions.add_argument("--limit", type=int, default=30)
