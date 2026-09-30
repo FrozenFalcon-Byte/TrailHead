@@ -12,7 +12,7 @@ from typing import Mapping
 _JEV_PROVIDERS: dict[str, dict[str, str | float]] = {
     "typesafe": {"key_env": "TYPESAFE_API_KEY", "base_url": "https://api.typesafe.ai", "model": "jev-1.13.0", "rpm": 1200},
     "vercel": {"key_env": "AI_GATEWAY_API_KEY", "base_url": "https://ai-gateway.vercel.sh/typesafe", "model": "typesafe-ai/jev", "rpm": 8},
-    "beatapi": {"key_env": "BEATAPI_API_KEY", "base_url": "https://api.beatapi.io", "model": "jev-1.13-free", "rpm": 1},
+    "beatapi": {"key_env": "BEATAPI_API_KEY", "base_url": "https://api.beatapi.io", "model": "jev-1.13-free", "rpm": 0.92},
     "openrouter": {"key_env": "OPENROUTER_API_KEY", "base_url": "https://openrouter.ai/api", "model": "typesafe/jev-1.13", "rpm": 60},
 }
 _DEFAULT_ORDER = "typesafe,vercel,beatapi,openrouter"
@@ -36,6 +36,8 @@ class JevProvider:
 @dataclass(frozen=True)
 class Settings:
     data_dir: Path
+    cache_root: Path
+    offline: bool
     decision_engine: str
     jev_model_id: str
     jev_providers: tuple[JevProvider, ...]
@@ -51,7 +53,8 @@ class Settings:
 
     @property
     def cache_dir(self) -> Path:
-        return self.data_dir / "cache"
+        """Every model call is cached here. The directory is tracked in git so evals replay without keys."""
+        return self.cache_root
 
     @property
     def db_path(self) -> Path:
@@ -118,6 +121,8 @@ def load_settings(env: Mapping[str, str] | None = None, env_file: Path | str | N
 
     return Settings(
         data_dir=Path(get("TRAILHEAD_DATA_DIR", "data")),
+        cache_root=Path(get("TRAILHEAD_CACHE_DIR", "cache")),
+        offline=get("TRAILHEAD_OFFLINE", "0").lower() in ("1", "true", "yes"),
         decision_engine=engine,
         jev_model_id=get("JEV_MODEL_ID", "jev-1.13.0"),
         jev_providers=tuple(providers),

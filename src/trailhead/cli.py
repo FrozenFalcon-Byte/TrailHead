@@ -49,6 +49,49 @@ async def _smoke(settings: Settings, kind: str | None, use_cache: bool) -> int:
     return 0
 
 
+async def _annotate(settings: Settings, args: argparse.Namespace) -> int:
+    from .annotate import annotate
+    from .store import Store
+
+    kind = args.engine or settings.decision_engine
+    engine = build_engine(settings, kind)
+    store = Store(settings.db_path)
+
+    def progress(done: int, total: int) -> None:
+        if done % 25 == 0 or done == total:
+            print(f"  {done}/{total}", flush=True)
+
+    try:
+        counts = await annotate(store, engine, kind, args.kind, limit=args.limit, concurrency=args.concurrency, progress=progress)
+    finally:
+        await engine.aclose()
+    print(json.dumps(counts))
+    return 0
+
+
+async def _where(settings: Settings, args: argparse.Namespace) -> int:
+    from .navigate import Navigator, RepoTree
+    from .store import Store
+
+    store = Store(settings.db_path)
+    engine = build_engine(settings, args.engine, log=DecisionLog(settings.db_path))
+    navigator = Navigator(RepoTree(store, include_tests=args.tests, include_docs=args.docs), engine, beam_width=args.beam)
+    try:
+        result = await (navigator.greedy(args.query) if args.greedy else navigator.search(args.query, symbol_store=store))
+    finally:
+        await engine.aclose()
+    for step in result.steps:
+        top = ", ".join(f"{o['name']} {o['probability']:.2f}" for o in step.options[:4])
+        print(f"  depth {step.depth} {step.node or '/':<32} {top}  (none {step.none_probability:.2f})")
+    for rank, path in enumerate(result.paths, 1):
+        symbol = result.symbols.get(path.leaf)
+        where = f"{path.leaf}:{symbol['line']} {symbol['name']}" if symbol else path.leaf
+        print(f"{rank}. {where}  score={path.score:.3f}  edges={' > '.join(f'{p:.2f}' for p in path.edge_probabilities)}")
+    ratio = "n/a" if result.separation_ratio is None else f"{result.separation_ratio:.2f}"
+    print(f"separation={ratio} requests={result.requests} cached={result.cached_requests} input_tokens={result.input_tokens} latency_ms={result.latency_ms:.0f}")
+    return 0
+
+
 def _decisions(settings: Settings, limit: int) -> int:
     for row in reversed(DecisionLog(settings.db_path).recent(limit)):
         conf = "" if row["confidence"] is None else f" conf={row['confidence']:.2f}"
@@ -67,6 +110,23 @@ def main(argv: list[str] | None = None) -> int:
     smoke = sub.add_parser("smoke", help="ask one of each question type against the real API")
     smoke.add_argument("--engine", choices=list(ENGINE_KINDS))
     smoke.add_argument("--no-cache", action="store_true")
+    ingest_cmd = sub.add_parser("ingest", help="clone a repo and load its tree, history and GitHub items")
+    ingest_cmd.add_argument("repo", help="owner/name")
+    ingest_cmd.add_argument("--no-github", action="store_true", help="skip the GitHub API (tree and commits only)")
+    ingest_cmd.add_argument("--max-pages", type=int, help="limit GitHub pagination (for a quick trial)")
+    sub.add_parser("stats", help="row counts for the ingested repo")
+    annotate_cmd = sub.add_parser("annotate", help="run the fan-out annotation questions (cached, incremental)")
+    annotate_cmd.add_argument("kind", choices=["file", "pr", "issue", "commit"])
+    annotate_cmd.add_argument("--engine", choices=list(ENGINE_KINDS))
+    annotate_cmd.add_argument("--limit", type=int)
+    annotate_cmd.add_argument("--concurrency", type=int, default=2)
+    where = sub.add_parser("where", help="find the file a question is about by beam search over the repo tree")
+    where.add_argument("query")
+    where.add_argument("--engine", choices=list(ENGINE_KINDS))
+    where.add_argument("--beam", type=int, default=3)
+    where.add_argument("--greedy", action="store_true", help="follow only the best child at each node")
+    where.add_argument("--tests", action="store_true", help="include test files")
+    where.add_argument("--docs", action="store_true", help="include documentation files")
     decisions = sub.add_parser("decisions", help="print the most recent logged decisions")
     decisions.add_argument("--limit", type=int, default=30)
     args = parser.parse_args(argv)
@@ -77,6 +137,21 @@ def main(argv: list[str] | None = None) -> int:
         settings = load_settings()
         if args.command == "doctor":
             return _doctor(settings)
+        if args.command == "ingest":
+            from .ingest.pipeline import ingest
+
+            print(json.dumps(ingest(settings, args.repo, github=not args.no_github, max_pages=args.max_pages), indent=1))
+            return 0
+        if args.command == "stats":
+            from .ingest.pipeline import stats
+            from .store import Store
+
+            print(json.dumps(stats(Store(settings.db_path)), indent=1))
+            return 0
+        if args.command == "annotate":
+            return asyncio.run(_annotate(settings, args))
+        if args.command == "where":
+            return asyncio.run(_where(settings, args))
         if args.command == "smoke":
             return asyncio.run(_smoke(settings, args.engine, not args.no_cache))
         return _decisions(settings, args.limit)

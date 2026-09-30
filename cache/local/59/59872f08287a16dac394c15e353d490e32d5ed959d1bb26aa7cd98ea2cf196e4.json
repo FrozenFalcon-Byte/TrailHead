@@ -1,0 +1,111 @@
+{
+ "key": "59872f08287a16dac394c15e353d490e32d5ed959d1bb26aa7cd98ea2cf196e4",
+ "model_id": "llm:qwen2.5-coder:7b:1f2e0674",
+ "created_at": 1790782757.696141,
+ "state": "path: scrapy/commands/parse.py\nlanguage: python\nsymbols:\n- class Command(BaseRunSpiderCommand)\n- def syntax(self) -> str\n- def short_desc(self) -> str\n- def add_options(self, parser: argparse.ArgumentParser) -> None\n- def max_level(self) -> int\n- def handle_exception(self, _failure: Failure) -> None\n- def iterate_spider_output( self, result: AsyncGenerator[_T] | Coroutine[Any, Any, _T] ) -> Deferred[_T]\n- def iterate_spider_output(self, result: _T) -> Iterable[Any]\n- def iterate_spider_output(self, result: Any) -> Iterable[Any] | Deferred[Any]\n- def add_items(self, lvl: int, new_items: list[Any]) -> None\n- def add_requests(self, lvl: int, new_reqs: list[Request]) -> None\n- def print_items(self, lvl: int | None = None, colour: bool = True) -> None\n- def print_requests(self, lvl: int | None = None, colour: bool = True) -> None\n- def print_results(self, opts: argparse.Namespace) -> None\n- def _get_items_and_requests( self, spider_output: Iterable[Any], opts: argparse.Namespace, depth: int, spider: Spider, callback: CallbackT, ) -> tuple[list[Any], list[Request], argparse.Namespace, in…\n- def run_callback( self, response: Response, callback: CallbackT, cb_kwargs: dict[str, Any] | None = None, ) -> Deferred[Any]\n- def get_callback_from_rules( self, spider: Spider, response: Response ) -> CallbackT | str | None\n- def set_spidercls(self, url: str, opts: argparse.Namespace) -> None\n- def start_parsing(self, url: str, opts: argparse.Namespace) -> None\n- def scraped_data( self, args: tuple[ list[Any], list[Request], argparse.Namespace, int, Spider, CallbackT ], ) -> list[Any]\n- def _get_callback( self, *, spider: Spider, opts: argparse.Namespace, response: Response | None = None, ) -> CallbackT\n- def prepare_request( self, spider: Spider, request: Request, opts: argparse.Namespace ) -> Request\n- def process_options(self, args: list[str], opts: argparse.Namespace) -> None\n- def process_request_meta(self, opts: argparse.Namespace) -> None\n- def process_request_cb_kwargs(self, opts: argparse.Namespace) -> None\n- def run(self, args: list[str], opts: argparse.Namespace) -> None: # parse arguments",
+ "questions": {
+  "layer": {
+   "type": "choice",
+   "instructions": "Which architectural layer does this file belong to?",
+   "criteria": {
+    "ui": "The file renders output for people, such as templates, pages or command-line text.",
+    "api_routes": "The file defines public entry points that receive external requests or commands.",
+    "business_logic": "The file implements the core behaviour of the project.",
+    "data_access": "The file reads or writes storage, files, caches, queues or network connections.",
+    "config_infra": "The file holds settings, defaults, packaging, deployment or CI configuration.",
+    "tests": "The file contains automated tests or test helpers.",
+    "docs": "The file is documentation.",
+    "build_tooling": "The file is a developer script or build helper that is not shipped behaviour.",
+    "generated_or_vendored": "The file was produced by a tool or copied from another project.",
+    "other": "The file fits none of the other options."
+   }
+  },
+  "role": {
+   "type": "choice",
+   "instructions": "Which role does this file play inside its package?",
+   "criteria": {
+    "entry_point": "Execution starts here, such as a main function, a command or an application object.",
+    "core_module": "The file defines the main classes or functions that other files build on.",
+    "helpers": "The file is a collection of small utility functions used by other files.",
+    "type_definitions": "The file mostly declares types, interfaces, exceptions or constants.",
+    "example_or_fixture": "The file is sample code, test data or a fixture.",
+    "other": "The file fits none of the other options."
+   }
+  },
+  "is_generated": {
+   "type": "noul",
+   "instructions": "Was this file produced by a code generator instead of being written by a person?"
+  },
+  "exposes_public_api": {
+   "type": "noul",
+   "instructions": "Does this file define names that code outside this project is expected to import or call?"
+  },
+  "newcomer_difficulty": {
+   "type": "score",
+   "instructions": "How much background does a new contributor need before they can change this file safely?",
+   "criteria": [
+    "The file is trivial, such as constants, a short script or plain documentation.",
+    "The file is self-contained and can be understood by reading it alone.",
+    "Understanding the file requires reading a few other files of the project.",
+    "Understanding the file requires deep knowledge of the project's architecture or of an external system."
+   ]
+  }
+ },
+ "answers": {
+  "layer": {
+   "type": "choice",
+   "choice": "api_routes",
+   "probabilities": {
+    "ui": 0.0,
+    "api_routes": 0.64,
+    "business_logic": 0.08,
+    "data_access": 0.04,
+    "config_infra": 0.04,
+    "tests": 0.04,
+    "docs": 0.04,
+    "build_tooling": 0.04,
+    "generated_or_vendored": 0.04,
+    "other": 0.04
+   },
+   "confidence": 0.9
+  },
+  "role": {
+   "type": "choice",
+   "choice": "core_module",
+   "probabilities": {
+    "entry_point": 0.19047619047619047,
+    "core_module": 0.5714285714285714,
+    "helpers": 0.09523809523809523,
+    "type_definitions": 0.047619047619047616,
+    "example_or_fixture": 0.047619047619047616,
+    "other": 0.047619047619047616
+   },
+   "confidence": 0.8
+  },
+  "is_generated": {
+   "type": "noul",
+   "noul": 0.05
+  },
+  "exposes_public_api": {
+   "type": "noul",
+   "noul": 0.8
+  },
+  "newcomer_difficulty": {
+   "type": "score",
+   "score": 2.05,
+   "probabilities": {
+    "0": 0.05,
+    "1": 0.1,
+    "2": 0.6,
+    "3": 0.25
+   },
+   "confidence": 0.9
+  }
+ },
+ "model_returned": "qwen2.5-coder:7b",
+ "provider": "ollama",
+ "input_tokens": 1381,
+ "output_tokens": 324,
+ "latency_ms": 69160.22720900037,
+ "request_id": ""
+}

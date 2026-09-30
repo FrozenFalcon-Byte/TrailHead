@@ -1,0 +1,45 @@
+{
+ "key": "2d49184f8eb0c111f7846464bb51a89098af3bb8cb65cce2e2644c39e306b900",
+ "model_id": "jev-1.13.0",
+ "created_at": 1790782476.780769,
+ "state": {
+  "goal": "where are failed requests retried?"
+ },
+ "questions": {
+  "pick_00": {
+   "type": "choice",
+   "instructions": "Which entry is most likely to contain the code that the goal is about?",
+   "criteria": {
+    "c0": "core/: Scrapy core library classes and functions. Contains __init__.py, _http2, downloader, engine.py, scheduler.py, scraper.py, spidermw.py",
+    "c1": "downloadermiddlewares/: Contains __init__.py, cookies.py, defaultheaders.py, downloadtimeout.py, httpauth.py, httpcache.py, httpcompression.py, httpproxy.py, jsonvalidation.py, offsite.py…",
+    "c2": "spidermiddlewares/: Contains __init__.py, base.py, depth.py, httperror.py, metacopy.py, referer.py, start.py, stickymeta.py, urllength.py",
+    "c3": "utils/: Contains __init__.py, _benchserver.py, _colorize.py, _compression.py, _deps_compat.py, _download_handlers.py, _ftp.py, _ossignals.py, _remote_control.py, _shell.py…",
+    "c4": "templates/: Contains project, spiders",
+    "c5": "statscollectors.py: Scrapy extension for collecting scraping stats Defines StatsCollector, MemoryStatsCollector, DummyStatsCollector…",
+    "none": "None of the listed entries is related to the goal."
+   }
+  }
+ },
+ "answers": {
+  "pick_00": {
+   "type": "choice",
+   "choice": "c0",
+   "probabilities": {
+    "c0": 0.48,
+    "c1": 0.31,
+    "c2": 0.18,
+    "c3": 0.01,
+    "c4": 0.0,
+    "c5": 0.0,
+    "none": 0.02
+   },
+   "confidence": 0.39
+  }
+ },
+ "model_returned": "jev-1.13-free",
+ "provider": "beatapi",
+ "input_tokens": 638,
+ "output_tokens": 76,
+ "latency_ms": 414.19150000001537,
+ "request_id": "task_hluFDT8bDUlS56WOknWC9yrf8IrPoUNQ"
+}

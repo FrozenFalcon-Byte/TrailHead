@@ -75,3 +75,24 @@ Running notes where observed behaviour differs from the project brief. Newest la
 - On this Mac, files under `.venv` get the macOS hidden flag, and Python 3.12 skips hidden
   `.pth` files, which breaks the editable install. Use `bin/trailhead` (sets `PYTHONPATH`);
   pytest is configured with `pythonpath = ["src"]`.
+
+### BeatAPI pacing (verified 2026-09-30)
+- The limit is "1 successful request per minute per account" and the server's window is a
+  little longer than the client's: requests spaced exactly 60 s apart were rejected with 429
+  about half the time, each costing another 60 s. Spacing of 61 s and more always passed.
+  The default pace for BeatAPI is therefore 0.92 requests per minute (65 s).
+- Consequence for design: a query must cost few requests. Navigation sends one request per
+  tree depth (the goal is the state, every open beam node is one Choice in the same request)
+  instead of one request per node.
+
+### Ingest of scrapy/scrapy (2026-09-30, head bb1b5c6)
+- 673 files kept (31 binaries and 6 secret-looking files skipped), 7,090 symbols, 2,260 import
+  edges, 11,551 commits, 8,087 issues and pull requests, 37,819 comments, 519 GitHub requests.
+- Link graph: 1,759 fixes, 2,685 mentions, 6,557 part_of edges; 12,588 PR-to-file rows derived
+  from merge commits and "(#123)" squash subjects rather than one API call per pull request.
+- Bulk annotation with the local 7B model runs at about two files per minute on this laptop,
+  so only source files are annotated up front; pull requests and issues are annotated on demand.
+
+### Cache
+- Every model call (Jev, fallback engine, prose LLM) is cached under `cache/`, which is tracked
+  in git, so evals replay without keys (`TRAILHEAD_OFFLINE=1` turns a cache miss into an error).

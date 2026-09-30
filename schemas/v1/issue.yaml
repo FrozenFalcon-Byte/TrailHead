@@ -1,0 +1,43 @@
+# One fan-out request per issue. State: title, labels, body. No dates.
+name: issue
+questions:
+  kind:
+    type: choice
+    instructions: Which kind of request does this issue describe?
+    criteria:
+      feature: The issue asks for new behaviour or a new option.
+      bug_fix: The issue reports incorrect behaviour.
+      refactor: The issue asks to restructure code and keep behaviour the same.
+      docs: The issue asks for a documentation change.
+      tests: The issue asks for a change to tests.
+      dependency_bump: The issue asks to change a dependency version or supported runtime version.
+      question: The issue asks how to use the project and requests no change.
+      other: The issue fits none of the other options.
+  records_design_decision:
+    type: noul
+    instructions: Does the text explain why a particular approach should be taken?
+  mentions_alternatives:
+    type: noul
+    instructions: Does the text name more than one possible approach?
+  has_acceptance_criteria:
+    type: noul
+    instructions: Does the text state a condition that tells a contributor when the work is finished?
+  touches_single_area:
+    type: noul
+    instructions: Can the requested change be made inside one module or one directory of the project?
+  scope_clarity:
+    type: score
+    instructions: How clearly does the issue state what has to change?
+    criteria:
+      - The issue does not say what should change.
+      - The issue names a problem but leaves the required change open.
+      - The issue names the required change but not where to make it.
+      - The issue names the required change and the file, class or function to change.
+  prior_knowledge_needed:
+    type: score
+    instructions: How much knowledge of this project does a contributor need to complete the issue?
+    criteria:
+      - None. General programming knowledge is enough.
+      - The contributor must understand one file or one class of the project.
+      - The contributor must understand how several components of the project interact.
+      - The contributor must understand the project's core architecture or an external protocol in depth.

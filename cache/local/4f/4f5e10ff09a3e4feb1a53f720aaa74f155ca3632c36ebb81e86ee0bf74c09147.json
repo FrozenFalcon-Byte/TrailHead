@@ -1,0 +1,111 @@
+{
+ "key": "4f5e10ff09a3e4feb1a53f720aaa74f155ca3632c36ebb81e86ee0bf74c09147",
+ "model_id": "llm:qwen2.5-coder:7b:1f2e0674",
+ "created_at": 1790783167.4404852,
+ "state": "path: scrapy/core/_http2/stream.py\nlanguage: python\nsymbols:\n- class InactiveStreamClosed(ConnectionClosed)  # Connection was closed without sending request headers of the stream. This happens when a stream is w\n- def __init__(self, request: Request) -> None\n- class InvalidHostname(H2Error)\n- def __init__( self, request: Request, expected_hostname: str, expected_netloc: str ) -> None\n- class StreamCloseReason(Enum): # Received a StreamEnded event from the remote\n- class Stream  # Represents a single HTTP/2 Stream.\n- def __init__( self, stream_id: int, request: Request, protocol: H2ClientProtocol, crawler: Crawler, download_maxsize: int = 0, download_warnsize: int = 0, ) -> None  # Arguments: stream_id -- Unique identifier for the stream within a single HTTP/2 connection request -\n- def _cancel(self, _: Any) -> None: # Close this stream as gracefully as possible # If the associated request is initiated we reset this stream # else we directly call close() method\n- def _log_warnsize(self) -> bool  # Checks if we have received data which exceeds the download warnsize and whether we have not already \n- def get_response(self) -> Deferred[Response]  # Simply return a Deferred which fires when response from the asynchronous request is available\n- def check_request_url(self) -> bool: # Make sure that we are sending the request to the correct URL\n- def _get_request_headers(self) -> list[tuple[str, str]]\n- def initiate_request(self) -> None\n- def send_data(self) -> None  # Called immediately after the headers are sent. Here we send all the data as part of the request.\n- def receive_window_update(self) -> None  # Flow control window size was changed. Send data that earlier could not be sent as we were blocked be\n- def receive_data(self, data: bytes, flow_controlled_length: int) -> None\n- def receive_headers(self, headers: list[tuple[str, str]]) -> None\n- def reset_stream(self, reason: StreamCloseReason = StreamCloseReason.RESET) -> None  # Close this stream by sending a RST_FRAME to the remote peer\n- def close( self, reason: StreamCloseReason, errors: Sequence[BaseException] | None = None, from_protocol: bool = False, ) -> None  # Based on the reason sent we will handle each case.\n- def _fire_response_deferred(self) -> None  # Builds response from the self._response dict and fires the response deferred callback with the gener",
+ "questions": {
+  "layer": {
+   "type": "choice",
+   "instructions": "Which architectural layer does this file belong to?",
+   "criteria": {
+    "ui": "The file renders output for people, such as templates, pages or command-line text.",
+    "api_routes": "The file defines public entry points that receive external requests or commands.",
+    "business_logic": "The file implements the core behaviour of the project.",
+    "data_access": "The file reads or writes storage, files, caches, queues or network connections.",
+    "config_infra": "The file holds settings, defaults, packaging, deployment or CI configuration.",
+    "tests": "The file contains automated tests or test helpers.",
+    "docs": "The file is documentation.",
+    "build_tooling": "The file is a developer script or build helper that is not shipped behaviour.",
+    "generated_or_vendored": "The file was produced by a tool or copied from another project.",
+    "other": "The file fits none of the other options."
+   }
+  },
+  "role": {
+   "type": "choice",
+   "instructions": "Which role does this file play inside its package?",
+   "criteria": {
+    "entry_point": "Execution starts here, such as a main function, a command or an application object.",
+    "core_module": "The file defines the main classes or functions that other files build on.",
+    "helpers": "The file is a collection of small utility functions used by other files.",
+    "type_definitions": "The file mostly declares types, interfaces, exceptions or constants.",
+    "example_or_fixture": "The file is sample code, test data or a fixture.",
+    "other": "The file fits none of the other options."
+   }
+  },
+  "is_generated": {
+   "type": "noul",
+   "instructions": "Was this file produced by a code generator instead of being written by a person?"
+  },
+  "exposes_public_api": {
+   "type": "noul",
+   "instructions": "Does this file define names that code outside this project is expected to import or call?"
+  },
+  "newcomer_difficulty": {
+   "type": "score",
+   "instructions": "How much background does a new contributor need before they can change this file safely?",
+   "criteria": [
+    "The file is trivial, such as constants, a short script or plain documentation.",
+    "The file is self-contained and can be understood by reading it alone.",
+    "Understanding the file requires reading a few other files of the project.",
+    "Understanding the file requires deep knowledge of the project's architecture or of an external system."
+   ]
+  }
+ },
+ "answers": {
+  "layer": {
+   "type": "choice",
+   "choice": "business_logic",
+   "probabilities": {
+    "ui": 0.0,
+    "api_routes": 0.05,
+    "business_logic": 0.9,
+    "data_access": 0.05,
+    "config_infra": 0.0,
+    "tests": 0.0,
+    "docs": 0.0,
+    "build_tooling": 0.0,
+    "generated_or_vendored": 0.0,
+    "other": 0.0
+   },
+   "confidence": 0.9
+  },
+  "role": {
+   "type": "choice",
+   "choice": "core_module",
+   "probabilities": {
+    "entry_point": 0.0,
+    "core_module": 0.8,
+    "helpers": 0.15,
+    "type_definitions": 0.05,
+    "example_or_fixture": 0.0,
+    "other": 0.0
+   },
+   "confidence": 0.8
+  },
+  "is_generated": {
+   "type": "noul",
+   "noul": 0.0
+  },
+  "exposes_public_api": {
+   "type": "noul",
+   "noul": 0.9
+  },
+  "newcomer_difficulty": {
+   "type": "score",
+   "score": 2.3,
+   "probabilities": {
+    "0": 0.0,
+    "1": 0.0,
+    "2": 0.7,
+    "3": 0.3
+   },
+   "confidence": 0.7
+  }
+ },
+ "model_returned": "qwen2.5-coder:7b",
+ "provider": "ollama",
+ "input_tokens": 1385,
+ "output_tokens": 324,
+ "latency_ms": 67996.77337499998,
+ "request_id": ""
+}

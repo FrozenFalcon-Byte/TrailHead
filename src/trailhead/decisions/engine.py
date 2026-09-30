@@ -20,6 +20,7 @@ class DecisionEngine(ABC):
         self.model_id = model_id
         self.cache = cache
         self.log = log
+        self.offline = False  # when set, a cache miss is an error instead of a request
         self._inflight: dict[str, asyncio.Future[EngineResponse]] = {}
 
     @abstractmethod
@@ -40,6 +41,8 @@ class DecisionEngine(ABC):
         cached = True
         response = self.cache.get(key) if (self.cache and use_cache) else None
         if response is None:
+            if self.offline:
+                raise DecisionError(f"{self.name}: offline and no cached answer for {purpose or 'this call'} ({key[:12]})")
             cached = False
             response = await self._call_once(key, state, questions)
         missing = set(questions) - set(response.answers)

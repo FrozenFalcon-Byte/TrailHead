@@ -1,0 +1,64 @@
+{
+ "key": "27d625a853568e836da082fa70c8081fd7235ce8596a8680a1caa01af8ffbd3b",
+ "model_id": "llm:qwen2.5-coder:7b:1f2e0674",
+ "created_at": 1790782214.5634282,
+ "state": "Fix off-by-one in retry counter\n\nThe middleware retried one time too many because the counter started at zero.",
+ "questions": {
+  "kind": {
+   "type": "choice",
+   "instructions": "Which kind of change does this commit message describe?",
+   "criteria": {
+    "bug_fix": "The message says that incorrect behaviour was corrected.",
+    "feature": "The message says that new behaviour was added.",
+    "docs": "The message says that only documentation changed.",
+    "other": "The message fits none of the other options."
+   }
+  },
+  "explains_why": {
+   "type": "noul",
+   "instructions": "Does the message state a reason for making the change?"
+  },
+  "clarity": {
+   "type": "score",
+   "instructions": "How clearly does the message describe what changed?",
+   "criteria": [
+    "The message does not say what changed.",
+    "The message names the area that changed but not the change itself.",
+    "The message states the change and where it was made."
+   ]
+  }
+ },
+ "answers": {
+  "kind": {
+   "type": "choice",
+   "choice": "bug_fix",
+   "probabilities": {
+    "bug_fix": 0.9,
+    "feature": 0.05,
+    "docs": 0.02,
+    "other": 0.03
+   },
+   "confidence": 0.95
+  },
+  "explains_why": {
+   "type": "noul",
+   "noul": 0.8
+  },
+  "clarity": {
+   "type": "score",
+   "score": 1.2,
+   "probabilities": {
+    "0": 0.1,
+    "1": 0.6,
+    "2": 0.3
+   },
+   "confidence": 0.9
+  }
+ },
+ "model_returned": "qwen2.5-coder:7b",
+ "provider": "ollama",
+ "input_tokens": 500,
+ "output_tokens": 147,
+ "latency_ms": 14536.719083000207,
+ "request_id": ""
+}

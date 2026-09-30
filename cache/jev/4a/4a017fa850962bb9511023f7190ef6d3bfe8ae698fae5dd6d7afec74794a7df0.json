@@ -1,0 +1,45 @@
+{
+ "key": "4a017fa850962bb9511023f7190ef6d3bfe8ae698fae5dd6d7afec74794a7df0",
+ "model_id": "jev-1.13.0",
+ "created_at": 1790782657.4934,
+ "state": {
+  "goal": "where are failed requests retried?"
+ },
+ "questions": {
+  "pick_00": {
+   "type": "choice",
+   "instructions": "Which entry is most likely to contain the code that the goal is about?",
+   "criteria": {
+    "c0": "__init__.py: Defines Slot, _default_jitter, _slot_jitter, Downloader…",
+    "c1": "_idna_patch.py: Fallbacks for hostnames that the ``idna`` package rejects but that resolve fine. Defines _safe_hostname_bytes, _patched_idna_bytes, _patched_idna_text, _install_twisted_idna_fallbacks",
+    "c2": "contextfactory.py: Defines _ScrapyClientContextFactory, _get_creator_context, BrowserLikeContextFactory, _AcceptableProtocolsContextFactory, _ScrapyCertificateOptions, _load_context_factory_from_settings, load_context_factory_from_settings…",
+    "c3": "handlers/: Download handlers for different schemes Contains __init__.py, _aiohttp.py, _base_http.py, _base_streaming.py, _httpx.py, base.py, datauri.py, file.py, ftp.py, http.py…",
+    "c4": "middleware.py: Downloader Middleware manager Defines DownloaderMiddlewareManager…",
+    "c5": "tls.py: Defines __getattr__, _ScrapyClientTLSOptions, _ScrapyClientTLSOptions26…",
+    "none": "None of the listed entries is related to the goal."
+   }
+  }
+ },
+ "answers": {
+  "pick_00": {
+   "type": "choice",
+   "choice": "c0",
+   "probabilities": {
+    "c0": 0.34,
+    "c1": 0.01,
+    "c2": 0.01,
+    "c3": 0.26,
+    "c4": 0.33,
+    "c5": 0.0,
+    "none": 0.05
+   },
+   "confidence": 0.23
+  }
+ },
+ "model_returned": "jev-1.13-free",
+ "provider": "beatapi",
+ "input_tokens": 637,
+ "output_tokens": 76,
+ "latency_ms": 871.5684159997181,
+ "request_id": "task_Er1czKeouJxEI5TlxTq2SSAMlDFP2Fq6"
+}

@@ -1,0 +1,64 @@
+{
+ "key": "a17dabf78dd0291b508cf7fc3cadc963c8e2bba578bb83097d721f976b093df8",
+ "model_id": "llm:openai/gpt-oss-120b:1f2e0674",
+ "created_at": 1790780829.6845162,
+ "state": "Fix off-by-one in retry counter\n\nThe middleware retried one time too many because the counter started at zero.",
+ "questions": {
+  "kind": {
+   "type": "choice",
+   "instructions": "Which kind of change does this commit message describe?",
+   "criteria": {
+    "bug_fix": "The message says that incorrect behaviour was corrected.",
+    "feature": "The message says that new behaviour was added.",
+    "docs": "The message says that only documentation changed.",
+    "other": "The message fits none of the other options."
+   }
+  },
+  "explains_why": {
+   "type": "noul",
+   "instructions": "Does the message state a reason for making the change?"
+  },
+  "clarity": {
+   "type": "score",
+   "instructions": "How clearly does the message describe what changed?",
+   "criteria": [
+    "The message does not say what changed.",
+    "The message names the area that changed but not the change itself.",
+    "The message states the change and where it was made."
+   ]
+  }
+ },
+ "answers": {
+  "kind": {
+   "type": "choice",
+   "choice": "bug_fix",
+   "probabilities": {
+    "bug_fix": 0.95,
+    "feature": 0.02,
+    "docs": 0.01,
+    "other": 0.02
+   },
+   "confidence": 0.95
+  },
+  "explains_why": {
+   "type": "noul",
+   "noul": 0.97
+  },
+  "clarity": {
+   "type": "score",
+   "score": 1.93,
+   "probabilities": {
+    "0": 0.01,
+    "1": 0.05,
+    "2": 0.94
+   },
+   "confidence": 0.94
+  }
+ },
+ "model_returned": "openai/gpt-oss-120b",
+ "provider": "llm",
+ "input_tokens": 589,
+ "output_tokens": 600,
+ "latency_ms": 2000.6786249996367,
+ "request_id": ""
+}

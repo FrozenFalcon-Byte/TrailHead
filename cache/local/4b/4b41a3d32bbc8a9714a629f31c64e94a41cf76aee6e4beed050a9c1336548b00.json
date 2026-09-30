@@ -1,0 +1,111 @@
+{
+ "key": "4b41a3d32bbc8a9714a629f31c64e94a41cf76aee6e4beed050a9c1336548b00",
+ "model_id": "llm:qwen2.5-coder:7b:1f2e0674",
+ "created_at": 1790782985.3883111,
+ "state": "path: scrapy/contracts/__init__.py\nlanguage: python\nsymbols:\n- def _is_async(cb: Callable[..., Any]) -> bool\n- def _collect(result: Any) -> list[Any]\n- async def _collect_async(result: Any) -> list[Any]\n- def _run_hook( process: Callable[[Any], None], value: Any, testcase: TestCase, results: TestResult, ) -> None\n- class Contract  # Base class for :ref:`custom contracts <topics-contracts>`.\n- def __init__(self, method: Callable[..., Any], *args: str)\n- def add_pre_hook(self, request: Request, results: TestResult) -> Request\n- def add_post_hook(self, request: Request, results: TestResult) -> Request\n- def adjust_request_args(self, args: dict[str, Any]) -> dict[str, Any]  # Receive a ``dict`` with the default arguments for the sample request and return it, either unmodifie\n- class ContractsManager\n- def __init__(self, contracts: Iterable[type[Contract]])\n- def _iter_contract_batches(self, docstring: str) -> Iterator[list[tuple[str, str]]]  # Yield the ``(name, args)`` pairs of the lines of *docstring* that declare a registered contract, gro\n- def tested_methods_from_spidercls(self, spidercls: type[Spider]) -> list[str]\n- def extract_contracts(self, method: Callable[..., Any]) -> list[list[Contract]]  # Group the contracts of a callback docstring into batches, one per blank line found after the first c\n- def from_spider(self, spider: Spider, results: TestResult) -> list[Request]\n- def from_method( self, method: Callable[..., Any], results: TestResult ) -> list[Request]\n- def _requests_from_batch( self, contracts: list[Contract], method: Callable[..., Any], results: TestResult, ) -> list[Request]\n- def _clean_req( self, request: Request, method: Callable[..., Any], results: TestResult ) -> None  # stop the request from returning objects and records any errors\n- def _create_testcase(method: Callable[..., Any], desc: str) -> TestCase",
+ "questions": {
+  "layer": {
+   "type": "choice",
+   "instructions": "Which architectural layer does this file belong to?",
+   "criteria": {
+    "ui": "The file renders output for people, such as templates, pages or command-line text.",
+    "api_routes": "The file defines public entry points that receive external requests or commands.",
+    "business_logic": "The file implements the core behaviour of the project.",
+    "data_access": "The file reads or writes storage, files, caches, queues or network connections.",
+    "config_infra": "The file holds settings, defaults, packaging, deployment or CI configuration.",
+    "tests": "The file contains automated tests or test helpers.",
+    "docs": "The file is documentation.",
+    "build_tooling": "The file is a developer script or build helper that is not shipped behaviour.",
+    "generated_or_vendored": "The file was produced by a tool or copied from another project.",
+    "other": "The file fits none of the other options."
+   }
+  },
+  "role": {
+   "type": "choice",
+   "instructions": "Which role does this file play inside its package?",
+   "criteria": {
+    "entry_point": "Execution starts here, such as a main function, a command or an application object.",
+    "core_module": "The file defines the main classes or functions that other files build on.",
+    "helpers": "The file is a collection of small utility functions used by other files.",
+    "type_definitions": "The file mostly declares types, interfaces, exceptions or constants.",
+    "example_or_fixture": "The file is sample code, test data or a fixture.",
+    "other": "The file fits none of the other options."
+   }
+  },
+  "is_generated": {
+   "type": "noul",
+   "instructions": "Was this file produced by a code generator instead of being written by a person?"
+  },
+  "exposes_public_api": {
+   "type": "noul",
+   "instructions": "Does this file define names that code outside this project is expected to import or call?"
+  },
+  "newcomer_difficulty": {
+   "type": "score",
+   "instructions": "How much background does a new contributor need before they can change this file safely?",
+   "criteria": [
+    "The file is trivial, such as constants, a short script or plain documentation.",
+    "The file is self-contained and can be understood by reading it alone.",
+    "Understanding the file requires reading a few other files of the project.",
+    "Understanding the file requires deep knowledge of the project's architecture or of an external system."
+   ]
+  }
+ },
+ "answers": {
+  "layer": {
+   "type": "choice",
+   "choice": "business_logic",
+   "probabilities": {
+    "ui": 0.0,
+    "api_routes": 0.08,
+    "business_logic": 0.64,
+    "data_access": 0.04,
+    "config_infra": 0.04,
+    "tests": 0.04,
+    "docs": 0.04,
+    "build_tooling": 0.04,
+    "generated_or_vendored": 0.04,
+    "other": 0.04
+   },
+   "confidence": 0.9
+  },
+  "role": {
+   "type": "choice",
+   "choice": "core_module",
+   "probabilities": {
+    "entry_point": 0.0,
+    "core_module": 0.7,
+    "helpers": 0.2,
+    "type_definitions": 0.1,
+    "example_or_fixture": 0.0,
+    "other": 0.0
+   },
+   "confidence": 0.8
+  },
+  "is_generated": {
+   "type": "noul",
+   "noul": 0.05
+  },
+  "exposes_public_api": {
+   "type": "noul",
+   "noul": 0.8
+  },
+  "newcomer_difficulty": {
+   "type": "score",
+   "score": 1.7,
+   "probabilities": {
+    "0": 0.1,
+    "1": 0.2,
+    "2": 0.6,
+    "3": 0.1
+   },
+   "confidence": 0.9
+  }
+ },
+ "model_returned": "qwen2.5-coder:7b",
+ "provider": "ollama",
+ "input_tokens": 1301,
+ "output_tokens": 309,
+ "latency_ms": 63956.56816600058,
+ "request_id": ""
+}

@@ -1,0 +1,111 @@
+{
+ "key": "6d0d531900a89dcb5add80156105eb4b7dcc49ed38af2b0f5c6c88229a2cebac",
+ "model_id": "llm:qwen2.5-coder:7b:1f2e0674",
+ "created_at": 1790782656.598857,
+ "state": "path: scrapy/commands/fetch.py\nlanguage: python\nsymbols:\n- class Command(ScrapyCommand)\n- def syntax(self) -> str\n- def short_desc(self) -> str\n- def long_desc(self) -> str\n- def add_options(self, parser: ArgumentParser) -> None\n- def _print_headers(self, headers: dict[bytes, list[bytes]], prefix: bytes) -> None\n- def _print_response(self, response: Response, opts: Namespace) -> None\n- def _print_bytes(self, bytes_: bytes) -> None\n- def run(self, args: list[str], opts: Namespace) -> None",
+ "questions": {
+  "layer": {
+   "type": "choice",
+   "instructions": "Which architectural layer does this file belong to?",
+   "criteria": {
+    "ui": "The file renders output for people, such as templates, pages or command-line text.",
+    "api_routes": "The file defines public entry points that receive external requests or commands.",
+    "business_logic": "The file implements the core behaviour of the project.",
+    "data_access": "The file reads or writes storage, files, caches, queues or network connections.",
+    "config_infra": "The file holds settings, defaults, packaging, deployment or CI configuration.",
+    "tests": "The file contains automated tests or test helpers.",
+    "docs": "The file is documentation.",
+    "build_tooling": "The file is a developer script or build helper that is not shipped behaviour.",
+    "generated_or_vendored": "The file was produced by a tool or copied from another project.",
+    "other": "The file fits none of the other options."
+   }
+  },
+  "role": {
+   "type": "choice",
+   "instructions": "Which role does this file play inside its package?",
+   "criteria": {
+    "entry_point": "Execution starts here, such as a main function, a command or an application object.",
+    "core_module": "The file defines the main classes or functions that other files build on.",
+    "helpers": "The file is a collection of small utility functions used by other files.",
+    "type_definitions": "The file mostly declares types, interfaces, exceptions or constants.",
+    "example_or_fixture": "The file is sample code, test data or a fixture.",
+    "other": "The file fits none of the other options."
+   }
+  },
+  "is_generated": {
+   "type": "noul",
+   "instructions": "Was this file produced by a code generator instead of being written by a person?"
+  },
+  "exposes_public_api": {
+   "type": "noul",
+   "instructions": "Does this file define names that code outside this project is expected to import or call?"
+  },
+  "newcomer_difficulty": {
+   "type": "score",
+   "instructions": "How much background does a new contributor need before they can change this file safely?",
+   "criteria": [
+    "The file is trivial, such as constants, a short script or plain documentation.",
+    "The file is self-contained and can be understood by reading it alone.",
+    "Understanding the file requires reading a few other files of the project.",
+    "Understanding the file requires deep knowledge of the project's architecture or of an external system."
+   ]
+  }
+ },
+ "answers": {
+  "layer": {
+   "type": "choice",
+   "choice": "api_routes",
+   "probabilities": {
+    "ui": 0.04807692307692308,
+    "api_routes": 0.8653846153846154,
+    "business_logic": 0.019230769230769232,
+    "data_access": 0.009615384615384616,
+    "config_infra": 0.009615384615384616,
+    "tests": 0.009615384615384616,
+    "docs": 0.009615384615384616,
+    "build_tooling": 0.009615384615384616,
+    "generated_or_vendored": 0.009615384615384616,
+    "other": 0.009615384615384616
+   },
+   "confidence": 0.95
+  },
+  "role": {
+   "type": "choice",
+   "choice": "core_module",
+   "probabilities": {
+    "entry_point": 0.050505050505050504,
+    "core_module": 0.8080808080808081,
+    "helpers": 0.10101010101010101,
+    "type_definitions": 0.0202020202020202,
+    "example_or_fixture": 0.0101010101010101,
+    "other": 0.0101010101010101
+   },
+   "confidence": 0.85
+  },
+  "is_generated": {
+   "type": "noul",
+   "noul": 0.01
+  },
+  "exposes_public_api": {
+   "type": "noul",
+   "noul": 0.9
+  },
+  "newcomer_difficulty": {
+   "type": "score",
+   "score": 2.0777777777777775,
+   "probabilities": {
+    "0": 0.011111111111111112,
+    "1": 0.05555555555555556,
+    "2": 0.7777777777777777,
+    "3": 0.15555555555555556
+   },
+   "confidence": 0.9
+  }
+ },
+ "model_returned": "qwen2.5-coder:7b",
+ "provider": "ollama",
+ "input_tokens": 966,
+ "output_tokens": 339,
+ "latency_ms": 58803.59220799983,
+ "request_id": ""
+}

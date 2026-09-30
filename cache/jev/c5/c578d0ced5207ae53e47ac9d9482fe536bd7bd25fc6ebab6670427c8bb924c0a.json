@@ -1,0 +1,64 @@
+{
+ "key": "c578d0ced5207ae53e47ac9d9482fe536bd7bd25fc6ebab6670427c8bb924c0a",
+ "model_id": "jev-1.13.0",
+ "created_at": 1790780808.711313,
+ "state": "Fix off-by-one in retry counter\n\nThe middleware retried one time too many because the counter started at zero.",
+ "questions": {
+  "kind": {
+   "type": "choice",
+   "instructions": "Which kind of change does this commit message describe?",
+   "criteria": {
+    "bug_fix": "The message says that incorrect behaviour was corrected.",
+    "feature": "The message says that new behaviour was added.",
+    "docs": "The message says that only documentation changed.",
+    "other": "The message fits none of the other options."
+   }
+  },
+  "explains_why": {
+   "type": "noul",
+   "instructions": "Does the message state a reason for making the change?"
+  },
+  "clarity": {
+   "type": "score",
+   "instructions": "How clearly does the message describe what changed?",
+   "criteria": [
+    "The message does not say what changed.",
+    "The message names the area that changed but not the change itself.",
+    "The message states the change and where it was made."
+   ]
+  }
+ },
+ "answers": {
+  "kind": {
+   "type": "choice",
+   "choice": "bug_fix",
+   "probabilities": {
+    "bug_fix": 1.0,
+    "docs": 0.0,
+    "feature": 0.0,
+    "other": 0.0
+   },
+   "confidence": 1.0
+  },
+  "explains_why": {
+   "type": "noul",
+   "noul": 0.97
+  },
+  "clarity": {
+   "type": "score",
+   "score": 1.92,
+   "probabilities": {
+    "0": 0.01,
+    "1": 0.07,
+    "2": 0.92
+   },
+   "confidence": 0.88
+  }
+ },
+ "model_returned": "jev-1.13-free",
+ "provider": "beatapi",
+ "input_tokens": 476,
+ "output_tokens": 80,
+ "latency_ms": 498.0150000010326,
+ "request_id": "task_bylIgJLnsyxEufEvjskZZOLW2Ww1GO4f"
+}

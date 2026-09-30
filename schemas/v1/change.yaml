@@ -1,0 +1,26 @@
+# One fan-out request per commit or pull request. State: title, description, changed paths, size bucket. No dates.
+name: change
+questions:
+  kind:
+    type: choice
+    instructions: Which kind of change does this text describe?
+    criteria:
+      feature: New behaviour or a new option was added.
+      bug_fix: Incorrect behaviour was corrected.
+      refactor: Code was restructured and behaviour stayed the same.
+      revert: An earlier change was undone.
+      docs: Only documentation changed.
+      tests: Only tests changed.
+      dependency_bump: A dependency version or supported runtime version changed.
+      formatting: Only formatting, lint fixes, typing annotations or typos changed.
+      release_chore: A release, version bump, changelog entry or CI configuration change.
+      other: The change fits none of the other options.
+  records_design_decision:
+    type: noul
+    instructions: Does the text explain why this approach was chosen?
+  mentions_alternatives:
+    type: noul
+    instructions: Does the text name another approach that was considered or rejected?
+  is_trivial:
+    type: noul
+    instructions: Is this change too small to teach a reader anything about how the project works?

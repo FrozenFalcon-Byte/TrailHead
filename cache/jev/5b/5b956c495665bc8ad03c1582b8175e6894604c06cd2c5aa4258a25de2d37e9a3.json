@@ -1,0 +1,60 @@
+{
+ "key": "5b956c495665bc8ad03c1582b8175e6894604c06cd2c5aa4258a25de2d37e9a3",
+ "model_id": "jev-1.13.0",
+ "created_at": 1790782717.422657,
+ "state": {
+  "goal": "where are failed requests retried?"
+ },
+ "questions": {
+  "symbol_00": {
+   "type": "choice",
+   "instructions": "Which definition in this file is the goal most directly about?",
+   "criteria": {
+    "c0": "def get_retry_request( request: Request, *, spider: scrapy.Spider, reason: str | Exception | type[Exception] = \"unspecif - Returns a new :class:`~scrapy.Request` object to retry the specified request, or ``None`` if retries of the specified re",
+    "c1": "class RetryMiddleware",
+    "none": "None of the listed definitions is related to the goal."
+   }
+  },
+  "symbol_01": {
+   "type": "choice",
+   "instructions": "Which definition in this file is the goal most directly about?",
+   "criteria": {
+    "c0": "class Slot - Downloader slot",
+    "c1": "def _default_jitter(settings: BaseSettings) -> float - Return the magnitude of the random variation to apply to the delay of slots that do not set their own ``jitter``: :setti",
+    "c2": "def _slot_jitter(slot_settings: dict[str, Any], default: float) -> float - Return the jitter of a :setting:`DOWNLOAD_SLOTS` entry, from its ``jitter`` key, its deprecated ``randomize_delay`` key,",
+    "c3": "class Downloader",
+    "none": "None of the listed definitions is related to the goal."
+   }
+  }
+ },
+ "answers": {
+  "symbol_00": {
+   "type": "choice",
+   "choice": "c1",
+   "probabilities": {
+    "c0": 0.44,
+    "c1": 0.53,
+    "none": 0.03
+   },
+   "confidence": 0.29
+  },
+  "symbol_01": {
+   "type": "choice",
+   "choice": "none",
+   "probabilities": {
+    "c0": 0.26,
+    "c1": 0.03,
+    "c2": 0.0,
+    "c3": 0.28,
+    "none": 0.43
+   },
+   "confidence": 0.29
+  }
+ },
+ "model_returned": "jev-1.13-free",
+ "provider": "beatapi",
+ "input_tokens": 621,
+ "output_tokens": 100,
+ "latency_ms": 801.0713339990616,
+ "request_id": "task_BqJ2pVfV8ZjYfrum3w3Ry4TazEl71zui"
+}

@@ -1,0 +1,125 @@
+{
+ "key": "a4894d6ae7864630b0a1f2a90b0a5f7c9a6f848e19e9356bb006dde6ebadfba7",
+ "model_id": "jev-1.13.0",
+ "created_at": 1790782537.0889301,
+ "state": {
+  "goal": "where are failed requests retried?"
+ },
+ "questions": {
+  "pick_00": {
+   "type": "choice",
+   "instructions": "Which entry is most likely to contain the code that the goal is about?",
+   "criteria": {
+    "c0": "__init__.py: Scrapy core library classes and functions.",
+    "c1": "_http2/: Contains __init__.py, agent.py, protocol.py, stream.py",
+    "c2": "downloader/: Contains __init__.py, _idna_patch.py, contextfactory.py, handlers, middleware.py, tls.py",
+    "c3": "engine.py: This is the Scrapy engine which controls the Scheduler, Downloader and Spider. Defines EngineState, _Slot, ExecutionEngine…",
+    "c4": "scheduler.py: Defines BaseSchedulerMeta, BaseScheduler, Scheduler…",
+    "c5": "scraper.py: This module implements the Scraper component which parses responses and extracts information from them Defines Slot, Scraper…",
+    "c6": "spidermw.py: Spider Middleware manager Defines SpiderMiddlewareManager…",
+    "none": "None of the listed entries is related to the goal."
+   }
+  },
+  "pick_01": {
+   "type": "choice",
+   "instructions": "Which entry is most likely to contain the code that the goal is about?",
+   "criteria": {
+    "c0": "__init__.py",
+    "c1": "cookies.py: Defines _is_public_domain, CookiesMiddleware…",
+    "c2": "defaultheaders.py: DefaultHeaders downloader middleware Defines DefaultHeadersMiddleware…",
+    "c3": "downloadtimeout.py: Download timeout middleware Defines DownloadTimeoutMiddleware…",
+    "c4": "httpauth.py: HTTP basic auth downloader middleware Defines HttpAuthMiddleware…",
+    "c5": "httpcache.py: Defines HttpCacheMiddleware…",
+    "c6": "httpcompression.py: Defines HttpCompressionMiddleware…",
+    "c7": "httpproxy.py: Defines HttpProxyMiddleware…",
+    "c8": "jsonvalidation.py: Defines JsonValidationMiddleware…",
+    "c9": "offsite.py: Defines OffsiteMiddleware…",
+    "c10": "redirect.py: Defines BaseRedirectMiddleware, RedirectMiddleware, MetaRefreshMiddleware…",
+    "c11": "retry.py: An extension to retry failed requests that are potentially caused by temporary problems such as a connection timeout or HTTP 500 error. Defines get_retry_request, RetryMiddleware…",
+    "c12": "robotstxt.py: This is a middleware to respect robots.txt policies. To activate it you must enable this middleware and enable the ROBOTSTXT_OBEY setting. Defines RobotsTxtMiddleware…",
+    "c13": "stats.py: Defines get_header_size, get_status_size, DownloaderStats…",
+    "c14": "useragent.py: Set User-Agent header per spider or use a default value from settings Defines UserAgentMiddleware…",
+    "none": "None of the listed entries is related to the goal."
+   }
+  },
+  "pick_02": {
+   "type": "choice",
+   "instructions": "Which entry is most likely to contain the code that the goal is about?",
+   "criteria": {
+    "c0": "__init__.py",
+    "c1": "base.py: Defines BaseSpiderMiddleware…",
+    "c2": "depth.py: Depth Spider Middleware Defines DepthMiddleware…",
+    "c3": "httperror.py: HttpError Spider Middleware Defines HttpError, HttpErrorMiddleware…",
+    "c4": "metacopy.py: Defines MetaCopyDetectionMiddleware…",
+    "c5": "referer.py: RefererMiddleware: populates Request referer field, based on the Response which originated it. Defines ReferrerPolicy, NoReferrerPolicy, NoReferrerWhenDowngradePolicy, SameOriginPolicy, OriginPolicy, StrictOriginPolicy, OriginWhenCrossOriginPolicy, StrictOrigi",
+    "c6": "start.py: Defines StartSpiderMiddleware…",
+    "c7": "stickymeta.py: Defines StickyMetaParamsMiddleware…",
+    "c8": "urllength.py: Url Length Spider Middleware Defines UrlLengthMiddleware…",
+    "none": "None of the listed entries is related to the goal."
+   }
+  }
+ },
+ "answers": {
+  "pick_00": {
+   "type": "choice",
+   "choice": "c2",
+   "probabilities": {
+    "c0": 0.01,
+    "c1": 0.02,
+    "c2": 0.76,
+    "c3": 0.17,
+    "c4": 0.03,
+    "c5": 0.0,
+    "c6": 0.0,
+    "none": 0.01
+   },
+   "confidence": 0.72
+  },
+  "pick_01": {
+   "type": "choice",
+   "choice": "c11",
+   "probabilities": {
+    "c0": 0.0,
+    "c1": 0.0,
+    "c10": 0.0,
+    "c11": 1.0,
+    "c12": 0.0,
+    "c13": 0.0,
+    "c14": 0.0,
+    "c2": 0.0,
+    "c3": 0.0,
+    "c4": 0.0,
+    "c5": 0.0,
+    "c6": 0.0,
+    "c7": 0.0,
+    "c8": 0.0,
+    "c9": 0.0,
+    "none": 0.0
+   },
+   "confidence": 1.0
+  },
+  "pick_02": {
+   "type": "choice",
+   "choice": "c3",
+   "probabilities": {
+    "c0": 0.01,
+    "c1": 0.07,
+    "c2": 0.0,
+    "c3": 0.71,
+    "c4": 0.0,
+    "c5": 0.0,
+    "c6": 0.0,
+    "c7": 0.0,
+    "c8": 0.0,
+    "none": 0.21
+   },
+   "confidence": 0.67
+  }
+ },
+ "model_returned": "jev-1.13-free",
+ "provider": "beatapi",
+ "input_tokens": 1491,
+ "output_tokens": 332,
+ "latency_ms": 715.7974589990772,
+ "request_id": "task_IqXhfQKcM4QlmbrKHOkdlFM930UwXWb5"
+}
