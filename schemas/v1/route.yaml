@@ -1,0 +1,16 @@
+# Asked once per user question. State: {"goal": <the question>}. Packed into the first navigation request.
+name: route
+questions:
+  question_kind:
+    type: choice
+    instructions: What is the person asking for?
+    criteria:
+      where_is: They want to know which file, class or function contains something.
+      how_does_it_work: They want an explanation of how existing behaviour or a mechanism works.
+      why_built_this_way: They want the reason behind a design decision, a default value, or a past change.
+      what_breaks_if_changed: They want to know what depends on some code or what a change to it would affect.
+      how_to_run_or_test: They want to know how to install, run, configure, debug or test the project.
+      other: The goal is something else, such as a request to write code, or it is not a question about this codebase.
+  code_alone:
+    type: noul
+    instructions: Can this be answered fully by reading the current source code, without commit history, pull requests, issues or discussions? A question about reasons, motivation or past decisions cannot.

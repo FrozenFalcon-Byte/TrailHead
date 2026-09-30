@@ -1,0 +1,54 @@
+# Why-questions for scrapy/scrapy. `expect` is what the author believed when writing the question:
+#   rationale - the reason is written down somewhere in the history (hint: where; never shown to the system)
+#   none      - no recorded reason is known; the right behaviour is to abstain
+# Human labels in eval/why_claim_labels.csv and eval/why_answer_labels.csv are what the metrics use.
+- {id: w01, expect: rationale, hint: "pr:6545", q: "Why is the mitmproxy-dhparam.pem file committed to the repository?"}
+- {id: w02, expect: rationale, hint: "pr:5357", q: "Why must the Twisted reactor be imported locally inside functions instead of at the top of a module?"}
+- {id: w03, expect: rationale, hint: "pr:4823", q: "Why was processing of cookies from the Cookie request header reverted?"}
+- {id: w04, expect: rationale, hint: "pr:4902", q: "Why was a get_retry_request function chosen as the way to retry requests from spider callbacks?"}
+- {id: w05, expect: rationale, hint: "pr:5833", q: "Why did the S3 feed storage switch from botocore to boto3 for uploads?"}
+- {id: w06, expect: rationale, hint: "pr:5445", q: "Why does Scrapy subclass ArgumentParser to make the '-o -' option work?"}
+- {id: w07, expect: rationale, hint: "pr:4554", q: "Why were lambda attributes removed from the default link extractor?"}
+- {id: w08, expect: rationale, hint: "pr:5786", q: "Why was the minimum cryptography version raised to 3.4.6?"}
+- {id: w09, expect: rationale, hint: "pr:8169", q: "Why is the scheduler built before engine.spider is assigned?"}
+- {id: w10, expect: rationale, hint: "pr:7573", q: "Why are the objects in cb_kwargs and meta deep-copied when JOBDIR is set?"}
+- {id: w11, expect: rationale, hint: "pr:6969", q: "Why does an empty FILES_STORE or IMAGES_STORE raise NotConfigured?"}
+- {id: w12, expect: rationale, hint: "pr:7263", q: "Why was scrapy.mail deprecated?"}
+- {id: w13, expect: rationale, hint: "pr:5066", q: "Why was the h2 version requirement changed?"}
+- {id: w14, expect: rationale, hint: "pr:5450", q: "Why were URLs ending in .tar.gz not being ignored by link extraction?"}
+- {id: w15, expect: rationale, hint: "pr:4727", q: "Why was a longer key put into the mitmproxy CA certificate used by the tests?"}
+- {id: w16, expect: rationale, hint: "pr:7663", q: "Why did LocalCache with a limit of zero still store items?"}
+- {id: w17, expect: rationale, hint: "pr:8008", q: "Why does test_slow_pipeline compare items without regard to order?"}
+- {id: w18, expect: rationale, hint: "pr:6607", q: "Why is libjpeg-dev installed in the pinned CI environments?"}
+- {id: w19, expect: rationale, hint: "pr:6568", q: "Why is add-on awareness of the spider loader handled at the crawler level?"}
+- {id: w20, expect: rationale, hint: "pr:4541", q: "Why was a PICKLE_PROTOCOL setting not added when moving to pickle protocol 4?"}
+- {id: w21, expect: rationale, hint: "pr:4982", q: "Why were the nested functions extracted from SpiderMiddlewareManager.scrape_response?"}
+- {id: w22, expect: rationale, hint: "pr:5090", q: "Why was ExecutionEngine.open_spiders deprecated?"}
+- {id: w23, expect: rationale, hint: "pr:5705", q: "Why did CsvItemExporter fail with a read of closed file error when exporting to S3?"}
+- {id: w24, expect: rationale, hint: "pr:6817", q: "Why can add-ons and spiders no longer override ASYNCIO_EVENT_LOOP when AsyncCrawlerProcess is used?"}
+- {id: w25, expect: rationale, hint: "pr:7802", q: "Why does Request.to_curl import its helper inside the method?"}
+- {id: w26, expect: rationale, hint: "pr:7818", q: "Why did get_func_args_dict raise NameError on Python 3.14?"}
+- {id: w27, expect: rationale, hint: "pr:7649", q: "Why is the receiver passed as an extra positional argument in _send_catch_log_deferred?"}
+- {id: w28, expect: rationale, hint: "pr:6357", q: "Why is the secure flag set automatically on user-defined cookies for https requests?"}
+- {id: w29, expect: rationale, hint: "pr:5150", q: "Why were __str__ methods replaced by __repr__ methods?"}
+- {id: w30, expect: rationale, hint: "pr:7593", q: "Why are reversed TELNETCONSOLE_PORT ranges rejected?"}
+- {id: w31, expect: rationale, hint: "pr:8217", q: "Why did making spider close stop the engine require behaviour changes in many engine methods?"}
+- {id: w32, expect: rationale, hint: "pr:8126", q: "Why does LxmlLinkExtractor skip some of its deduplication passes?"}
+- {id: w33, expect: rationale, hint: "pr:4872", q: "Why is asyncio.get_event_loop called when the asyncio reactor is installed?"}
+- {id: w34, expect: rationale, hint: "pr:5776", q: "Why does the publish workflow no longer install setuptools and wheel?"}
+- {id: w35, expect: rationale, hint: "pr:7524", q: "Why was HTTP/2 support left out when HttpxDownloadHandler moved to BaseStreamingDownloadHandler?"}
+- {id: w36, expect: rationale, hint: "pr:5847", q: "Why was the default value of FEED_STORE_EMPTY changed?"}
+- {id: u01, expect: none, q: "Why is the default value of CONCURRENT_REQUESTS 16?"}
+- {id: u02, expect: none, q: "Why is the default DOWNLOAD_TIMEOUT 180 seconds?"}
+- {id: u03, expect: none, q: "Why does the telnet console default to the port range 6023 to 6073?"}
+- {id: u04, expect: none, q: "Why is RETRY_TIMES 2 by default?"}
+- {id: u05, expect: none, q: "Why is the project named Scrapy?"}
+- {id: u06, expect: none, q: "Why is REDIRECT_MAX_TIMES 20 by default?"}
+- {id: u07, expect: none, q: "Why is DNSCACHE_SIZE 10000 by default?"}
+- {id: u08, expect: none, q: "Why is the package for spider middlewares named spidermiddlewares without an underscore?"}
+- {id: u09, expect: none, q: "Why is the LogStats interval 60 seconds by default?"}
+- {id: u10, expect: none, q: "Why does the default priority adjustment for retried requests equal minus one?"}
+- {id: u11, expect: none, q: "Why is the default DEPTH_PRIORITY zero?"}
+- {id: u12, expect: none, q: "Why does the default item pipeline order use the range 0 to 1000?"}
+- {id: u13, expect: none, q: "Why is the memory usage check interval 60 seconds by default?"}
+- {id: u14, expect: none, q: "Why is the default download warn size 32 megabytes?"}
