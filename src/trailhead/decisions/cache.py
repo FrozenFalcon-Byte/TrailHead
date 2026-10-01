@@ -8,6 +8,7 @@ import time
 from pathlib import Path
 from typing import Any, Mapping
 
+from ..guard import redact_payload
 from .types import (
     EngineResponse,
     Question,
@@ -56,7 +57,7 @@ class DecisionCache:
             "key": key,
             "model_id": model_id,
             "created_at": time.time(),
-            "state": state,
+            "state": redact_payload(state),  # the cache is committed, so it holds only what was sent
             "questions": questions_to_wire(questions),
             "answers": {qid: answer_to_dict(a) for qid, a in response.answers.items()},
             "model_returned": response.model_returned,

@@ -7,6 +7,7 @@ import os
 from pathlib import Path
 
 from ..decisions.types import canonical_json, sha256_hex
+from ..guard import redact
 from .client import LLMClient, LLMError, LLMResponse
 
 
@@ -35,7 +36,7 @@ class CachedLLM:
         response = await self.inner.complete(system, user, json_mode=json_mode, max_tokens=max_tokens)
         self.misses += 1
         record = {
-            "model": response.model, "system": system, "user": user, "json_mode": json_mode, "max_tokens": max_tokens,
+            "model": response.model, "system": system, "user": redact(user)[0], "json_mode": json_mode, "max_tokens": max_tokens,
             "text": response.text, "input_tokens": response.input_tokens, "output_tokens": response.output_tokens,
             "latency_ms": response.latency_ms,
         }

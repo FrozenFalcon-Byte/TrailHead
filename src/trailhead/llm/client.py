@@ -12,6 +12,7 @@ from typing import Protocol
 import httpx
 
 from ..decisions.ratelimit import Clock, Sleep, SlotLimiter
+from ..guard import redact
 
 logger = logging.getLogger(__name__)
 
@@ -75,7 +76,7 @@ class OpenAICompatClient:
     async def complete(self, system: str, user: str, *, json_mode: bool = False, max_tokens: int = 1024) -> LLMResponse:
         body: dict[str, object] = {
             "model": self._active_model,
-            "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}],
+            "messages": [{"role": "system", "content": system}, {"role": "user", "content": redact(user)[0]}],
             "temperature": 0,
             "max_tokens": max_tokens,
         }

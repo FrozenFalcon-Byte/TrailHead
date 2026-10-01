@@ -2463,6 +2463,202 @@
   },
   "tour:jev": {
    "items": {
+    "issue:6617": {
+     "candidate_recall": 1.0,
+     "candidates": [
+      "scrapy/extensions/feedexport.py",
+      "scrapy/exporters.py",
+      "scrapy/crawler.py",
+      "scrapy/utils/boto.py",
+      "scrapy/downloadermiddlewares/httpauth.py",
+      "scrapy/downloadermiddlewares/httpcompression.py",
+      "scrapy/dupefilters.py",
+      "scrapy/http/request/__init__.py",
+      "scrapy/http/request/json_request.py",
+      "scrapy/pipelines/media.py",
+      "scrapy/__init__.py",
+      "scrapy/exceptions.py",
+      "scrapy/extensions/postprocessing.py",
+      "scrapy/settings/__init__.py",
+      "scrapy/signals.py",
+      "scrapy/utils/_ftp.py"
+     ],
+     "files": [
+      "scrapy/extensions/feedexport.py",
+      "scrapy/settings/__init__.py",
+      "scrapy/utils/boto.py"
+     ],
+     "input_tokens": 8899,
+     "metrics": {
+      "mrr": 1.0,
+      "recall@1": 1.0,
+      "recall@3": 1.0,
+      "recall@7": 1.0
+     },
+     "requests": 4,
+     "tentative": [
+      "scrapy/settings/__init__.py",
+      "scrapy/utils/boto.py"
+     ],
+     "truth": [
+      "scrapy/extensions/feedexport.py"
+     ]
+    },
+    "issue:6731": {
+     "candidate_recall": 0.5,
+     "candidates": [
+      "scrapy/spiders/__init__.py",
+      "scrapy/utils/misc.py",
+      "scrapy/utils/spider.py",
+      "scrapy/utils/decorators.py",
+      "scrapy/utils/datatypes.py",
+      "docs/conf.py",
+      "docs/utils/linkfix.py",
+      "scrapy/downloadermiddlewares/retry.py",
+      "scrapy/core/engine.py",
+      "scrapy/core/scraper.py",
+      "scrapy/__init__.py",
+      "scrapy/spiderloader.py",
+      "scrapy/utils/defer.py"
+     ],
+     "files": [
+      "scrapy/utils/decorators.py",
+      "scrapy/spiders/__init__.py",
+      "scrapy/utils/spider.py"
+     ],
+     "input_tokens": 8401,
+     "metrics": {
+      "mrr": 0.0,
+      "recall@1": 0.0,
+      "recall@3": 0.0,
+      "recall@7": 0.0
+     },
+     "requests": 4,
+     "tentative": [
+      "scrapy/utils/decorators.py",
+      "scrapy/spiders/__init__.py",
+      "scrapy/utils/spider.py"
+     ],
+     "truth": [
+      "scrapy/settings/default_settings.py",
+      "scrapy/utils/misc.py"
+     ]
+    },
+    "issue:6739": {
+     "candidate_recall": 0.0,
+     "candidates": [
+      "scrapy/statscollectors.py",
+      "scrapy/extensions/corestats.py",
+      "scrapy/core/engine.py",
+      "scrapy/contracts/default.py",
+      "scrapy/settings/default_settings.py",
+      "scrapy/utils/curl.py",
+      "scrapy/contracts/__init__.py",
+      "scrapy/http/__init__.py",
+      "scrapy/http/response/json.py",
+      "scrapy/responsetypes.py",
+      "scrapy/http/response/text.py",
+      "scrapy/__init__.py",
+      "scrapy/crawler.py",
+      "scrapy/utils/decorators.py"
+     ],
+     "files": [
+      "scrapy/statscollectors.py",
+      "scrapy/extensions/corestats.py",
+      "scrapy/core/engine.py"
+     ],
+     "input_tokens": 6599,
+     "metrics": {
+      "mrr": 0.0,
+      "recall@1": 0.0,
+      "recall@3": 0.0,
+      "recall@7": 0.0
+     },
+     "requests": 4,
+     "tentative": [
+      "scrapy/extensions/corestats.py",
+      "scrapy/core/engine.py"
+     ],
+     "truth": [
+      "scrapy/core/scraper.py"
+     ]
+    },
+    "issue:6838": {
+     "candidate_recall": 1.0,
+     "candidates": [
+      "scrapy/settings/default_settings.py",
+      "scrapy/settings/__init__.py",
+      "scrapy/VERSION",
+      "scrapy/utils/conf.py",
+      "scrapy/commands/list.py",
+      "scrapy/http/request/json_request.py",
+      "scrapy/exporters.py",
+      "scrapy/utils/misc.py",
+      "scrapy/core/downloader/handlers/__init__.py",
+      "scrapy/core/downloader/handlers/datauri.py",
+      "scrapy/core/downloader/handlers/ftp.py",
+      "scrapy/exceptions.py"
+     ],
+     "files": [
+      "scrapy/settings/default_settings.py",
+      "scrapy/settings/__init__.py",
+      "scrapy/utils/conf.py"
+     ],
+     "input_tokens": 5590,
+     "metrics": {
+      "mrr": 1.0,
+      "recall@1": 1.0,
+      "recall@3": 1.0,
+      "recall@7": 1.0
+     },
+     "requests": 4,
+     "tentative": [
+      "scrapy/settings/__init__.py",
+      "scrapy/utils/conf.py"
+     ],
+     "truth": [
+      "scrapy/settings/default_settings.py"
+     ]
+    },
+    "issue:6876": {
+     "candidate_recall": 1.0,
+     "candidates": [
+      "scrapy/settings/default_settings.py",
+      "scrapy/settings/__init__.py",
+      "scrapy/VERSION",
+      "scrapy/http/response/text.py",
+      "scrapy/responsetypes.py",
+      "scrapy/loader/__init__.py",
+      "scrapy/core/scraper.py",
+      "scrapy/http/request/__init__.py",
+      "scrapy/commands/__init__.py",
+      "scrapy/contracts/default.py",
+      "scrapy/core/downloader/middleware.py",
+      "scrapy/exceptions.py",
+      "scrapy/utils/misc.py",
+      "scrapy/utils/python.py"
+     ],
+     "files": [
+      "scrapy/settings/__init__.py",
+      "scrapy/exceptions.py",
+      "scrapy/settings/default_settings.py"
+     ],
+     "input_tokens": 6123,
+     "metrics": {
+      "mrr": 1.0,
+      "recall@1": 1.0,
+      "recall@3": 1.0,
+      "recall@7": 1.0
+     },
+     "requests": 4,
+     "tentative": [
+      "scrapy/exceptions.py",
+      "scrapy/settings/default_settings.py"
+     ],
+     "truth": [
+      "scrapy/settings/__init__.py"
+     ]
+    },
     "issue:6917": {
      "candidate_recall": 0.5,
      "candidates": [
@@ -2648,13 +2844,13 @@
     }
    },
    "summary": {
-    "input_tokens": 7022.4,
-    "mrr": 0.7,
-    "n": 5,
-    "recall@1": 0.4333333333333333,
-    "recall@3": 0.5666666666666667,
-    "recall@7": 0.5666666666666667,
-    "requests": 4.6
+    "input_tokens": 7072.4,
+    "mrr": 0.65,
+    "n": 10,
+    "recall@1": 0.5166666666666667,
+    "recall@3": 0.5833333333333333,
+    "recall@7": 0.5833333333333333,
+    "requests": 4.3
    }
   }
  }

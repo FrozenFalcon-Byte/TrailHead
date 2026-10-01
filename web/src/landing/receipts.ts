@@ -9,3 +9,4 @@ export const NAV_RESULTS = [
 // Tour row: the 10 issues the Jev tour has run on so far, with every method scored on those same 10.
 export const TOUR_RESULTS = { jevRecall7: 0.583, jevMrr: 0.65, bm25Recall7: 0.45, bm25Mrr: 0.308, historyRecall7: 0.45, historyMrr: 0.433, n: 10, poolIssues: 60 }
 export const COSTS = { requestsPerSearch: 3.6, tokensPerSearch: '4.3k', retrievalTokens: '6k', retrievalPassages: 60 }
+export const INJECTION = { jevCaught: 14, llmCaught: 15, attacks: 16, benign: 10, falseAlarms: 0 }

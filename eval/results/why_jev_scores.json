@@ -1,0 +1,34 @@
+{
+ "answers": {
+  "abstained": 0,
+  "abstention_rate": 0.0,
+  "abstentions_that_were_right": 0.0,
+  "answered": 0,
+  "missed_answers": 0,
+  "n": 0,
+  "precision_when_answering": 0.0
+ },
+ "by_expectation": {
+  "none": {
+   "abstained": 0,
+   "questions": 0
+  },
+  "rationale": {
+   "abstained": 0,
+   "questions": 1
+  }
+ },
+ "claims": {
+  "bins": [],
+  "ece": 0.0,
+  "n": 0,
+  "n_dropped": 0,
+  "n_shown": 0,
+  "precision_of_shown_claims": 0.0,
+  "supported_among_dropped": 0.0
+ },
+ "label_sources": {
+  "human": 0,
+  "provisional": 0
+ }
+}

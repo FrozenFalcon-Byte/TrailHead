@@ -16,6 +16,7 @@ from typing import Any, Mapping, Sequence
 import httpx
 
 from ..config import SYSTEM_ONE_PATH, JevProvider
+from ..guard import redact_payload
 from ..obs.log import DecisionLog
 from .cache import DecisionCache
 from .engine import DecisionEngine
@@ -79,6 +80,7 @@ class JevEngine(DecisionEngine):
 
     async def _call(self, state: State, questions: Mapping[str, Question]) -> EngineResponse:
         wire_questions = questions_to_wire(questions)
+        outbound = redact_payload(state)  # repo text can carry credentials; they are never sent
         last_error = "no attempt made"
         async with self._semaphore:
             for attempt in range(1, self._max_attempts + 1):
@@ -91,7 +93,7 @@ class JevEngine(DecisionEngine):
                     response = await self._http.post(
                         provider.base_url + SYSTEM_ONE_PATH,
                         headers={"Authorization": f"Bearer {provider.api_key}"},
-                        json={"model": provider.model, "state": state, "questions": wire_questions},
+                        json={"model": provider.model, "state": outbound, "questions": wire_questions},
                     )
                 except httpx.HTTPError as exc:
                     last_error = f"{provider.name}: {type(exc).__name__}"

@@ -1,0 +1,292 @@
+{
+ "key": "ba5dfee2ca317c54db7288fce82398ed2a46a1ccb3155b30f79b4fd10bcf9b34",
+ "model_id": "jev-1.13.0",
+ "created_at": 1790820948.5490549,
+ "state": {
+  "goal": "Resolve this issue: GCSFeedStorage does not support feed_options\n\nSince https://github.com/scrapy/scrapy/issues/6105, `feed_options` parameter needs to be supported by the feed storage classes.\nNow with version 2.12.0, GCSFeedStorage does not have this parameter added, therefore it fails upon usage.\n```\nGCSFeedStorage.from_crawler() got an unexpected keyword argument 'feed_options'\n```",
+  "files": {
+   "F1": "scrapy/extensions/feedexport.py: Feed Exports extension. Defines apply_uri_params, ItemFilter, FeedStorageProtocol, BlockingFeedStorage, StdoutFeedStorage, FileFeedStorage, S3FeedStorage, GCSFeedStorage and more. Defines: apply_uri_params, ItemFilter, _IFeedStorage, FeedStorageProtocol, BlockingFeedStorage, StdoutFeedStorage, FileFeedStorage, S3FeedStorage, GCSFeedStorage, FTPFeedStorage, FeedSlot, FeedExporter.",
+   "F2": "scrapy/exporters.py: Item Exporters are used to export/serialize items into different formats. Defines BaseItemExporter, JsonLinesItemExporter, JsonItemExporter, XmlItemExporter, CsvItemExporter, PickleItemExporter, MarshalItemExporter, PprintItemExporter and more. Defines: BaseItemExporter, JsonLinesItemExporter, JsonItemExporter, XmlItemExporter, CsvItemExporter, PickleItemExporter, MarshalItemExporter, PprintItemExporter, PythonItemExporter.",
+   "F3": "scrapy/crawler.py: Defines Crawler, CrawlerRunnerBase, CrawlerRunner, AsyncCrawlerRunner, CrawlerProcessBase, CrawlerProcess, AsyncCrawlerProcess, _LateAttribute. Defines: _LateAttribute, Crawler, CrawlerRunnerBase, CrawlerRunner, AsyncCrawlerRunner, CrawlerProcessBase, CrawlerProcess, AsyncCrawlerProcess.",
+   "F4": "scrapy/utils/boto.py: Boto/botocore helpers. Defines is_botocore_available, _get_max_pool_connections. Defines: is_botocore_available, _get_max_pool_connections.",
+   "F5": "scrapy/downloadermiddlewares/httpauth.py: HTTP basic auth downloader middleware. Defines HttpAuthMiddleware. Defines: HttpAuthMiddleware.",
+   "F6": "scrapy/downloadermiddlewares/httpcompression.py: Defines HttpCompressionMiddleware. Defines: HttpCompressionMiddleware.",
+   "F7": "scrapy/dupefilters.py: Defines BaseDupeFilter, RFPDupeFilter, _read_fingerprints. Defines: _read_fingerprints, BaseDupeFilter, RFPDupeFilter.",
+   "F8": "scrapy/http/request/__init__.py: This module implements the Request class which is used to represent HTTP requests in Scrapy. Defines VerboseCookie, NO_CALLBACK, Request, _find_method. Defines: VerboseCookie, NO_CALLBACK, Request, _find_method.",
+   "F9": "scrapy/http/request/json_request.py: This module implements the JsonRequest class which is a more convenient class (than Request) to generate JSON Requests. Defines JsonRequest. Defines: JsonRequest.",
+   "F10": "scrapy/pipelines/media.py: Defines FileInfo, FileException, MediaPipeline, _MediaRequestFiltered, _media_request_filtered. Defines: FileInfo, FileException, _MediaRequestFiltered, _media_request_filtered, MediaPipeline, MediaPipeline.SpiderInfo.",
+   "F11": "scrapy/__init__.py: Scrapy - a web crawling and web scraping framework written for Python.",
+   "F12": "scrapy/exceptions.py: Scrapy core exceptions. Defines NotConfigured, IgnoreRequest, DontCloseSpider, CloseSpider, StopDownload, DownloadConnectionRefusedError, CannotResolveHostError, DownloadTimeoutError and more. Defines: NotConfigured, _InvalidOutput, IgnoreRequest, DontCloseSpider, CloseSpider, StopDownload, DownloadConnectionRefusedError, CannotResolveHostError, DownloadTimeoutError, DownloadCancelledError, DownloadFailedError, ResponseDataLossError.",
+   "F13": "scrapy/extensions/postprocessing.py: Extension for processing data before they are exported to feeds. Defines GzipPlugin, Bz2Plugin, LZMAPlugin, PostProcessingManager. Defines: GzipPlugin, Bz2Plugin, LZMAPlugin, PostProcessingManager.",
+   "F14": "scrapy/settings/__init__.py: Defines get_settings_priority, SettingsAttribute, BaseSettings, Settings, iter_default_settings, overridden_settings. Defines: get_settings_priority, SettingsAttribute, BaseSettings, Settings, iter_default_settings, overridden_settings.",
+   "F15": "scrapy/signals.py: Scrapy signals.",
+   "F16": "scrapy/utils/_ftp.py: Defines ftp_makedirs_cwd, ftp_store_file. Defines: ftp_makedirs_cwd, ftp_store_file."
+  }
+ },
+ "questions": {
+  "need_f1": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F1 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f1": {
+   "type": "noul",
+   "instructions": "Is file F1 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f2": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F2 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f2": {
+   "type": "noul",
+   "instructions": "Is file F2 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f3": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F3 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f3": {
+   "type": "noul",
+   "instructions": "Is file F3 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f4": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F4 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f4": {
+   "type": "noul",
+   "instructions": "Is file F4 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f5": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F5 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f5": {
+   "type": "noul",
+   "instructions": "Is file F5 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f6": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F6 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f6": {
+   "type": "noul",
+   "instructions": "Is file F6 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f7": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F7 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f7": {
+   "type": "noul",
+   "instructions": "Is file F7 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f8": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F8 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f8": {
+   "type": "noul",
+   "instructions": "Is file F8 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f9": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F9 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f9": {
+   "type": "noul",
+   "instructions": "Is file F9 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f10": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F10 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f10": {
+   "type": "noul",
+   "instructions": "Is file F10 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f11": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F11 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f11": {
+   "type": "noul",
+   "instructions": "Is file F11 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f12": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F12 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f12": {
+   "type": "noul",
+   "instructions": "Is file F12 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f13": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F13 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f13": {
+   "type": "noul",
+   "instructions": "Is file F13 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f14": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F14 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f14": {
+   "type": "noul",
+   "instructions": "Is file F14 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f15": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F15 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f15": {
+   "type": "noul",
+   "instructions": "Is file F15 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f16": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F16 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f16": {
+   "type": "noul",
+   "instructions": "Is file F16 the place where the change described by the goal would most likely be made?"
+  }
+ },
+ "answers": {
+  "need_f1": {
+   "type": "noul",
+   "noul": 0.92
+  },
+  "entry_f1": {
+   "type": "noul",
+   "noul": 0.95
+  },
+  "need_f2": {
+   "type": "noul",
+   "noul": 0.1
+  },
+  "entry_f2": {
+   "type": "noul",
+   "noul": 0.04
+  },
+  "need_f3": {
+   "type": "noul",
+   "noul": 0.09
+  },
+  "entry_f3": {
+   "type": "noul",
+   "noul": 0.05
+  },
+  "need_f4": {
+   "type": "noul",
+   "noul": 0.12
+  },
+  "entry_f4": {
+   "type": "noul",
+   "noul": 0.03
+  },
+  "need_f5": {
+   "type": "noul",
+   "noul": 0.03
+  },
+  "entry_f5": {
+   "type": "noul",
+   "noul": 0.02
+  },
+  "need_f6": {
+   "type": "noul",
+   "noul": 0.04
+  },
+  "entry_f6": {
+   "type": "noul",
+   "noul": 0.02
+  },
+  "need_f7": {
+   "type": "noul",
+   "noul": 0.04
+  },
+  "entry_f7": {
+   "type": "noul",
+   "noul": 0.02
+  },
+  "need_f8": {
+   "type": "noul",
+   "noul": 0.05
+  },
+  "entry_f8": {
+   "type": "noul",
+   "noul": 0.02
+  },
+  "need_f9": {
+   "type": "noul",
+   "noul": 0.04
+  },
+  "entry_f9": {
+   "type": "noul",
+   "noul": 0.02
+  },
+  "need_f10": {
+   "type": "noul",
+   "noul": 0.06
+  },
+  "entry_f10": {
+   "type": "noul",
+   "noul": 0.03
+  },
+  "need_f11": {
+   "type": "noul",
+   "noul": 0.05
+  },
+  "entry_f11": {
+   "type": "noul",
+   "noul": 0.02
+  },
+  "need_f12": {
+   "type": "noul",
+   "noul": 0.09
+  },
+  "entry_f12": {
+   "type": "noul",
+   "noul": 0.03
+  },
+  "need_f13": {
+   "type": "noul",
+   "noul": 0.11
+  },
+  "entry_f13": {
+   "type": "noul",
+   "noul": 0.05
+  },
+  "need_f14": {
+   "type": "noul",
+   "noul": 0.16
+  },
+  "entry_f14": {
+   "type": "noul",
+   "noul": 0.06
+  },
+  "need_f15": {
+   "type": "noul",
+   "noul": 0.11
+  },
+  "entry_f15": {
+   "type": "noul",
+   "noul": 0.03
+  },
+  "need_f16": {
+   "type": "noul",
+   "noul": 0.1
+  },
+  "entry_f16": {
+   "type": "noul",
+   "noul": 0.05
+  }
+ },
+ "model_returned": "jev-1.13-free",
+ "provider": "beatapi",
+ "input_tokens": 2672,
+ "output_tokens": 594,
+ "latency_ms": 384.8433749990363,
+ "request_id": "task_DNDu52ZN6hFQnOb0WfAbxlhWXGK6wLIk"
+}

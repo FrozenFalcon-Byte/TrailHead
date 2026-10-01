@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" font-family="sans-serif" font-size="10">
+<rect width="320" height="320" fill="white"/>
+<line x1="44" y1="276" x2="276" y2="44" stroke="#999" stroke-dasharray="4 3"/>
+<rect x="44" y="44" width="232" height="232" fill="none" stroke="#333"/>
+<text x="44" y="290" text-anchor="middle">0</text>
+<text x="38" y="279" text-anchor="end">0</text>
+<text x="102.0" y="290" text-anchor="middle">0.25</text>
+<text x="38" y="221.0" text-anchor="end">0.25</text>
+<text x="160.0" y="290" text-anchor="middle">0.5</text>
+<text x="38" y="163.0" text-anchor="end">0.5</text>
+<text x="218.0" y="290" text-anchor="middle">0.75</text>
+<text x="38" y="105.0" text-anchor="end">0.75</text>
+<text x="276" y="290" text-anchor="middle">1</text>
+<text x="38" y="47" text-anchor="end">1</text>
+<text x="160.0" y="312" text-anchor="middle">Jev P(supports)</text>
+<text x="12" y="160.0" text-anchor="middle" transform="rotate(-90 12 160.0)">fraction labelled supported</text>
+<text x="160.0" y="18" text-anchor="middle" font-size="12">Claim reliability, ECE 0.000</text></svg>

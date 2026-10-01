@@ -1,0 +1,37 @@
+{
+ "key": "fe321621b8ce94ca627c8fb5512ad7adee2379deb3b1f5f2063c12e40ebffb78",
+ "model_id": "jev-1.13.0",
+ "created_at": 1790793351.098109,
+ "state": {
+  "goal": "Resolve this issue: Sort default settings\n\nKeys in scrapy/settings/default_settings.py have several order problems, both between groups and inside groups.\n\nSorting keys in a group may be controversial though, as it seems may of them are ordered by important, e.g. FOO_ENABLED between other FOO_* and FTP_USER before FTP_PASSWORD. I'm fine with keeping these occasional violations (not all violations though, e.g. even if FOO_ENABLED comes first, other keys should normally be sorted) if the file header is modified to mention that."
+ },
+ "questions": {
+  "in_scrapy_settings": {
+   "type": "choice",
+   "instructions": "Which entry is most likely to contain the code that the goal is about?",
+   "criteria": {
+    "c0": "__init__.py: Defines get_settings_priority, SettingsAttribute, BaseSettings, Settings, iter_default_settings, overridden_settings.",
+    "c1": "default_settings.py: This module contains the default values for all settings used by Scrapy. Defines __getattr__.",
+    "none": "None of the listed entries is related to the goal."
+   }
+  }
+ },
+ "answers": {
+  "in_scrapy_settings": {
+   "type": "choice",
+   "choice": "c1",
+   "probabilities": {
+    "c0": 0.0,
+    "c1": 1.0,
+    "none": 0.0
+   },
+   "confidence": 1.0
+  }
+ },
+ "model_returned": "jev-1.13-free",
+ "provider": "beatapi",
+ "input_tokens": 504,
+ "output_tokens": 44,
+ "latency_ms": 781.3610830016842,
+ "request_id": "task_1LyVEW8aQbehuY2h9i8qqbDkj9Op4PN4"
+}

@@ -1,0 +1,224 @@
+{
+ "key": "e896bd28e9106169de7f83a7c3567f32b7218466c32da9557e7539696334c019",
+ "model_id": "jev-1.13.0",
+ "created_at": 1790798000.0387478,
+ "state": {
+  "goal": "Resolve this issue: Sort default settings\n\nKeys in scrapy/settings/default_settings.py have several order problems, both between groups and inside groups.\n\nSorting keys in a group may be controversial though, as it seems may of them are ordered by important, e.g. FOO_ENABLED between other FOO_* and FTP_USER before FTP_PASSWORD. I'm fine with keeping these occasional violations (not all violations though, e.g. even if FOO_ENABLED comes first, other keys should normally be sorted) if the file header is modified to mention that.",
+  "files": {
+   "F1": "scrapy/settings/default_settings.py: This module contains the default values for all settings used by Scrapy. Defines __getattr__. Defines: __getattr__.",
+   "F2": "scrapy/settings/__init__.py: Defines get_settings_priority, SettingsAttribute, BaseSettings, Settings, iter_default_settings, overridden_settings. Defines: get_settings_priority, SettingsAttribute, BaseSettings, Settings, iter_default_settings, overridden_settings.",
+   "F3": "scrapy/VERSION: ",
+   "F4": "scrapy/utils/conf.py: Defines build_component_list, arglist_to_dict, closest_scrapy_cfg, init_env, get_config, get_sources, feed_complete_default_values_from_settings, feed_process_params_from_cli and more. Defines: build_component_list, arglist_to_dict, closest_scrapy_cfg, init_env, get_config, get_sources, feed_complete_default_values_from_settings, feed_process_params_from_cli, _job_dir.",
+   "F5": "scrapy/commands/list.py: Defines Command. Defines: Command.",
+   "F6": "scrapy/http/request/json_request.py: This module implements the JsonRequest class which is a more convenient class (than Request) to generate JSON Requests. Defines JsonRequest. Defines: JsonRequest.",
+   "F7": "scrapy/exporters.py: Item Exporters are used to export/serialize items into different formats. Defines BaseItemExporter, JsonLinesItemExporter, JsonItemExporter, XmlItemExporter, CsvItemExporter, PickleItemExporter, MarshalItemExporter, PprintItemExporter and more. Defines: BaseItemExporter, JsonLinesItemExporter, JsonItemExporter, XmlItemExporter, CsvItemExporter, PickleItemExporter, MarshalItemExporter, PprintItemExporter, PythonItemExporter.",
+   "F8": "scrapy/utils/misc.py: Helper functions which don't fit anywhere else. Defines arg_to_iter, arg_to_iter, arg_to_iter, arg_to_iter, arg_to_iter, load_object, load_object, load_object and more. Defines: arg_to_iter, arg_to_iter, arg_to_iter, arg_to_iter, arg_to_iter, load_object, load_object, load_object, load_object, _load_objects, walk_modules_iter, walk_modules.",
+   "F9": "scrapy/core/downloader/handlers/__init__.py: Download handlers for different schemes. Defines DownloadHandlerProtocol, DownloadHandlers. Defines: DownloadHandlerProtocol, DownloadHandlers.",
+   "F10": "scrapy/core/downloader/handlers/datauri.py: Defines DataURIDownloadHandler. Defines: DataURIDownloadHandler.",
+   "F11": "scrapy/core/downloader/handlers/ftp.py: An asynchronous FTP file download handler for scrapy which somehow emulates an http response. Defines ReceivedDataProtocol, FTPDownloadHandler. Defines: ReceivedDataProtocol, FTPDownloadHandler.",
+   "F12": "scrapy/exceptions.py: Scrapy core exceptions. Defines NotConfigured, IgnoreRequest, DontCloseSpider, CloseSpider, StopDownload, DownloadConnectionRefusedError, CannotResolveHostError, DownloadTimeoutError and more. Defines: NotConfigured, _InvalidOutput, IgnoreRequest, DontCloseSpider, CloseSpider, StopDownload, DownloadConnectionRefusedError, CannotResolveHostError, DownloadTimeoutError, DownloadCancelledError, DownloadFailedError, ResponseDataLossError."
+  }
+ },
+ "questions": {
+  "need_f1": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F1 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f1": {
+   "type": "noul",
+   "instructions": "Is file F1 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f2": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F2 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f2": {
+   "type": "noul",
+   "instructions": "Is file F2 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f3": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F3 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f3": {
+   "type": "noul",
+   "instructions": "Is file F3 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f4": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F4 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f4": {
+   "type": "noul",
+   "instructions": "Is file F4 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f5": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F5 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f5": {
+   "type": "noul",
+   "instructions": "Is file F5 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f6": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F6 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f6": {
+   "type": "noul",
+   "instructions": "Is file F6 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f7": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F7 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f7": {
+   "type": "noul",
+   "instructions": "Is file F7 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f8": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F8 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f8": {
+   "type": "noul",
+   "instructions": "Is file F8 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f9": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F9 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f9": {
+   "type": "noul",
+   "instructions": "Is file F9 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f10": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F10 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f10": {
+   "type": "noul",
+   "instructions": "Is file F10 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f11": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F11 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f11": {
+   "type": "noul",
+   "instructions": "Is file F11 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f12": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F12 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f12": {
+   "type": "noul",
+   "instructions": "Is file F12 the place where the change described by the goal would most likely be made?"
+  }
+ },
+ "answers": {
+  "need_f1": {
+   "type": "noul",
+   "noul": 0.94
+  },
+  "entry_f1": {
+   "type": "noul",
+   "noul": 0.97
+  },
+  "need_f2": {
+   "type": "noul",
+   "noul": 0.23
+  },
+  "entry_f2": {
+   "type": "noul",
+   "noul": 0.09
+  },
+  "need_f3": {
+   "type": "noul",
+   "noul": 0.05
+  },
+  "entry_f3": {
+   "type": "noul",
+   "noul": 0.01
+  },
+  "need_f4": {
+   "type": "noul",
+   "noul": 0.09
+  },
+  "entry_f4": {
+   "type": "noul",
+   "noul": 0.04
+  },
+  "need_f5": {
+   "type": "noul",
+   "noul": 0.05
+  },
+  "entry_f5": {
+   "type": "noul",
+   "noul": 0.02
+  },
+  "need_f6": {
+   "type": "noul",
+   "noul": 0.05
+  },
+  "entry_f6": {
+   "type": "noul",
+   "noul": 0.02
+  },
+  "need_f7": {
+   "type": "noul",
+   "noul": 0.05
+  },
+  "entry_f7": {
+   "type": "noul",
+   "noul": 0.02
+  },
+  "need_f8": {
+   "type": "noul",
+   "noul": 0.07
+  },
+  "entry_f8": {
+   "type": "noul",
+   "noul": 0.02
+  },
+  "need_f9": {
+   "type": "noul",
+   "noul": 0.07
+  },
+  "entry_f9": {
+   "type": "noul",
+   "noul": 0.02
+  },
+  "need_f10": {
+   "type": "noul",
+   "noul": 0.05
+  },
+  "entry_f10": {
+   "type": "noul",
+   "noul": 0.02
+  },
+  "need_f11": {
+   "type": "noul",
+   "noul": 0.05
+  },
+  "entry_f11": {
+   "type": "noul",
+   "noul": 0.02
+  },
+  "need_f12": {
+   "type": "noul",
+   "noul": 0.06
+  },
+  "entry_f12": {
+   "type": "noul",
+   "noul": 0.02
+  }
+ },
+ "model_returned": "jev-1.13-free",
+ "provider": "beatapi",
+ "input_tokens": 2072,
+ "output_tokens": 442,
+ "latency_ms": 840.9376669987978,
+ "request_id": "task_4YDqSsFBXbbYqptmlNvlILFSGbBn5497"
+}

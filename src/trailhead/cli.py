@@ -182,6 +182,18 @@ async def _eval(settings: Settings, args: argparse.Namespace) -> int:
             if kind == "jev":
                 print("label sheets: %d claims, %d answers" % why.export_labels(evals.load_results("why_jev")))
         print(why.report(evals.load_results(f"why_{kind}"), f"why_{kind}"))
+    elif args.name == "injection":
+        from .context import Context
+        from .evals import injection
+
+        if not args.report_only:
+            ctx = Context(settings)
+            try:
+                await injection.run(ctx, engine_kind=args.engine or "jev", progress=lambda line: print(line, flush=True))
+            finally:
+                await ctx.aclose()
+        found = {k: evals.load_results(f"injection_{k}") for k in ENGINE_KINDS}
+        print(injection.report({k: v for k, v in found.items() if v}))
     return 0
 
 
@@ -286,7 +298,7 @@ def main(argv: list[str] | None = None) -> int:
     evidence.add_argument("--engine", choices=list(ENGINE_KINDS))
     evidence.add_argument("--limit", type=int, default=20)
     eval_cmd = sub.add_parser("eval", help="run an evaluation; replays from the call cache where it can")
-    eval_cmd.add_argument("name", choices=["nav", "why", "tour"])
+    eval_cmd.add_argument("name", choices=["nav", "why", "tour", "injection"])
     eval_cmd.add_argument("--methods", help="comma-separated subset of methods")
     eval_cmd.add_argument("--engine", choices=list(ENGINE_KINDS))
     eval_cmd.add_argument("--limit", type=int)

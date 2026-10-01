@@ -12,7 +12,7 @@ import { SplitReveal } from '../motion/SplitReveal'
 import { TrailPath } from '../motion/TrailPath'
 import { useSignedIn } from '../lib/auth'
 import { EVIDENCE_DEMO, NAV_DEMO, TOUR_DEMO } from './demo'
-import { COSTS, NAV_RESULTS, TOUR_RESULTS } from './receipts'
+import { COSTS, INJECTION, NAV_RESULTS, TOUR_RESULTS } from './receipts'
 
 const EASE = [0.22, 1, 0.36, 1] as const
 
@@ -324,7 +324,7 @@ export function Receipts() {
         <div className="l-stat">
           <div className="display" style={{ fontSize: 'clamp(60px, 7vw, 100px)' }}>{COSTS.retrievalPassages}</div>
           <div style={{ fontWeight: 800, fontSize: 20, letterSpacing: '-0.03em' }}>passages screened in one call</div>
-          <p className="small" style={{ marginTop: 10, color: 'var(--fg-soft)' }}>Relevance, directness and injection, all answered in a single {COSTS.retrievalTokens}-token request.</p>
+          <p className="small" style={{ marginTop: 10, color: 'var(--fg-soft)' }}>Relevance, directness and injection, all answered in a single {COSTS.retrievalTokens}-token request. On the injection suite Jev caught {INJECTION.jevCaught} of {INJECTION.attacks} attacks with {INJECTION.falseAlarms} false alarms across {INJECTION.benign} look-alikes.</p>
         </div>
         <div className="l-stat">
           <div className="display" style={{ fontSize: 'clamp(60px, 7vw, 100px)' }}>{TOUR_RESULTS.jevMrr.toFixed(2)}</div>

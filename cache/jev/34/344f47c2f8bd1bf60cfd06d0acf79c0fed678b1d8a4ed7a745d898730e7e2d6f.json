@@ -1,0 +1,96 @@
+{
+ "key": "344f47c2f8bd1bf60cfd06d0acf79c0fed678b1d8a4ed7a745d898730e7e2d6f",
+ "model_id": "jev-1.13.0",
+ "created_at": 1790820361.052255,
+ "state": {
+  "goal": "Resolve this issue: Add count to spider_exceptions stats\n\n<!--\n\nThanks for taking an interest in Scrapy!\n\nIf you have a question that starts with \"How to...\", please see the Scrapy Community page: https://scrapy.org/community/.\nThe GitHub issue tracker's purpose is to deal with bug reports and feature requests for the project itself.\n\nKeep in mind that by filing an issue, you are expected to comply with Scrapy's Code of Conduct, including treating everyone with respect: https://github.com/scrapy/scrapy/blob/master/CODE_OF_CONDUCT.md\n\nThe following is a"
+ },
+ "questions": {
+  "in_scrapy_extensions": {
+   "type": "choice",
+   "instructions": "Which entry is most likely to contain the code that the goal is about?",
+   "criteria": {
+    "c0": "__init__.py",
+    "c1": "closespider.py: CloseSpider is an extension that forces spiders to be closed after certain conditions are met. Defines CloseSpider.",
+    "c2": "corestats.py: Extension for collecting core stats like items scraped and start/finish times. Defines CoreStats.",
+    "c3": "debug.py: Extensions for debugging Scrapy. Defines StackTraceDump, Debugger.",
+    "c4": "feedexport.py: Feed Exports extension. Defines apply_uri_params, ItemFilter, FeedStorageProtocol, BlockingFeedStorage, StdoutFeedStorage, FileFeedStorage, S3FeedStorage, GCSFeedStorage and more.",
+    "c5": "httpcache.py: Defines DummyPolicy, RFC2616Policy, DbmCacheStorage, FilesystemCacheStorage, parse_cachecontrol, rfc1123_to_epoch.",
+    "c6": "logcount.py: Defines LogCount.",
+    "c7": "logstats.py: Defines LogStats.",
+    "c8": "memdebug.py: MemoryDebugger extension. Defines MemoryDebugger.",
+    "c9": "memusage.py: MemoryUsage extension. Defines MemoryUsage.",
+    "c10": "periodic_log.py: Defines PeriodicLog.",
+    "c11": "postprocessing.py: Extension for processing data before they are exported to feeds. Defines GzipPlugin, Bz2Plugin, LZMAPlugin, PostProcessingManager.",
+    "c12": "remote_control.py: Defines RemoteControl, _cap, _compile, _effective_timeout.",
+    "c13": "spiderstate.py: Defines SpiderState.",
+    "c14": "statsmailer.py: StatsMailer extension sends an email when a spider finishes scraping. Defines StatsMailer.",
+    "c15": "telnet.py: Scrapy Telnet Console extension. Defines TelnetConsole, _get_manhole_class.",
+    "c16": "throttle.py: Defines AutoThrottle.",
+    "none": "None of the listed entries is related to the goal."
+   }
+  },
+  "in_scrapy_core": {
+   "type": "choice",
+   "instructions": "Which entry is most likely to contain the code that the goal is about?",
+   "criteria": {
+    "c0": "__init__.py: Scrapy core library classes and functions.",
+    "c1": "_http2/: Contains agent.py, protocol.py, stream.py, __init__.py.",
+    "c2": "downloader/: Contains handlers/, contextfactory.py, middleware.py, tls.py, __init__.py, _idna_patch.py.",
+    "c3": "engine.py: This is the Scrapy engine which controls the Scheduler, Downloader and Spider. Defines EngineState, ExecutionEngine, _Slot.",
+    "c4": "scheduler.py: Defines BaseSchedulerMeta, BaseScheduler, Scheduler.",
+    "c5": "scraper.py: This module implements the Scraper component which parses responses and extracts information from them. Defines Slot, Scraper.",
+    "c6": "spidermw.py: Spider Middleware manager. Defines SpiderMiddlewareManager.",
+    "none": "None of the listed entries is related to the goal."
+   }
+  }
+ },
+ "answers": {
+  "in_scrapy_extensions": {
+   "type": "choice",
+   "choice": "c2",
+   "probabilities": {
+    "c0": 0.01,
+    "c1": 0.04,
+    "c10": 0.01,
+    "c11": 0.0,
+    "c12": 0.0,
+    "c13": 0.02,
+    "c14": 0.0,
+    "c15": 0.0,
+    "c16": 0.0,
+    "c2": 0.77,
+    "c3": 0.01,
+    "c4": 0.0,
+    "c5": 0.0,
+    "c6": 0.01,
+    "c7": 0.05,
+    "c8": 0.0,
+    "c9": 0.0,
+    "none": 0.08
+   },
+   "confidence": 0.75
+  },
+  "in_scrapy_core": {
+   "type": "choice",
+   "choice": "c3",
+   "probabilities": {
+    "c0": 0.12,
+    "c1": 0.0,
+    "c2": 0.01,
+    "c3": 0.49,
+    "c4": 0.0,
+    "c5": 0.18,
+    "c6": 0.13,
+    "none": 0.07
+   },
+   "confidence": 0.41
+  }
+ },
+ "model_returned": "jev-1.13-free",
+ "provider": "beatapi",
+ "input_tokens": 1340,
+ "output_tokens": 252,
+ "latency_ms": 766.5150829998311,
+ "request_id": "task_tw2XhtNBPRYNXmdidBOmkaCczdlUySsL"
+}
