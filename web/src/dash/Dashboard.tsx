@@ -74,6 +74,12 @@ function Shell() {
     setOpen(false)
     window.scrollTo({ top: 0 })
   }, [location.pathname])
+  useEffect(() => {
+    if (!open) return
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false)
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [open])
 
   return (
     <div className="d-shell">

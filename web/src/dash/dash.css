@@ -203,8 +203,54 @@ html[data-theme='dark'] .d-side {
 }
 .d-grid {
   display: grid;
-  gap: 16px;
-  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+}
+/* overview shortcuts */
+.d-action {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 190px;
+  padding: 20px;
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--fg);
+  text-decoration: none;
+  overflow: hidden;
+}
+.d-action__shape {
+  position: absolute;
+  right: 16px;
+  top: 16px;
+  line-height: 0;
+  transition: transform 0.5s var(--ease-out);
+}
+.d-action:hover .d-action__shape {
+  transform: rotate(-12deg) scale(1.12);
+}
+.d-action__title {
+  font-size: clamp(40px, 4.2vw, 58px);
+  padding-right: 52px;
+}
+.d-action__go {
+  margin-top: auto;
+  align-self: flex-start;
+  display: inline-flex;
+  gap: 8px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--paper);
+  font-weight: 800;
+  font-size: 14px;
+  transition: gap 0.3s var(--ease-out), background 0.3s;
+}
+.d-action:hover .d-action__go {
+  gap: 14px;
+  background: var(--lime);
+  color: var(--solid);
 }
 .d-stat {
   border-radius: var(--radius);
@@ -302,6 +348,66 @@ html[data-theme='dark'] .d-side {
 .d-mobile-bar {
   display: none;
 }
+/* the "API offline / no repository" panel at the top of a page */
+.d-gate {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: clamp(18px, 3vw, 36px);
+  align-items: center;
+  padding: clamp(20px, 3vw, 32px);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--fg);
+  box-shadow: inset 0 0 0 1.5px var(--line);
+}
+.d-gate__art {
+  position: relative;
+  width: clamp(64px, 8vw, 96px);
+  line-height: 0;
+}
+.d-gate__art > :first-child {
+  position: relative;
+  z-index: 1;
+}
+.d-gate__pulse {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+}
+.d-gate__copy {
+  display: grid;
+  gap: 10px;
+  justify-items: start;
+}
+.d-gate__copy h2 {
+  margin: 0;
+  font-size: clamp(24px, 2.6vw, 34px);
+}
+.d-gate__copy p {
+  margin: 0;
+  max-width: 560px;
+  color: var(--fg-soft);
+}
+.d-gate__cmd {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  border: 0;
+  border-radius: 12px;
+  padding: 10px 10px 10px 14px;
+  background: var(--solid);
+  color: var(--on-solid);
+  font-size: 14px;
+  cursor: pointer;
+}
+.d-gate__cmd b {
+  padding: 3px 9px;
+  border-radius: 8px;
+  background: var(--lime);
+  color: var(--solid);
+  font-size: 11.5px;
+  text-transform: uppercase;
+}
 .d-md p {
   margin: 0 0 0.7em;
 }
@@ -321,13 +427,12 @@ html[data-theme='dark'] .d-side {
   }
   .d-head__art {
     position: absolute;
-    right: -18px;
-    top: -18px;
-    width: 120px;
-    opacity: 0.9;
+    right: 14px;
+    top: 14px;
+    width: 92px;
   }
   .d-head__copy {
-    padding-right: 70px;
+    padding-right: 96px;
   }
   .d-side {
     position: fixed;
@@ -336,7 +441,8 @@ html[data-theme='dark'] .d-side {
     margin: 10px;
     width: min(300px, 86vw);
     z-index: 60;
-    transform: translateX(-102%);
+    /* slide fully out, margin and shadow included, so no dark sliver shows at the edge */
+    transform: translateX(calc(-100% - 24px));
     transition: transform 0.5s var(--ease-out);
   }
   .d-side.open {
@@ -346,10 +452,30 @@ html[data-theme='dark'] .d-side {
     display: inline-flex;
   }
   .d-top {
-    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .d-top label {
+    min-width: 0;
+  }
+  .d-top label > span {
+    display: none;
+  }
+  .d-top .d-select {
+    max-width: 38vw;
+    text-overflow: ellipsis;
   }
   .d-top .d-user-name {
     display: none;
+  }
+  .d-gate {
+    grid-template-columns: 1fr;
+  }
+  /* wide tables scroll sideways inside their card instead of spilling off the screen */
+  .d-table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
   }
 }
 html[data-theme='dark'] .d-select {

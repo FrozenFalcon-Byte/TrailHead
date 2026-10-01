@@ -1,7 +1,7 @@
 import { motion } from 'motion/react'
 import { Link } from 'react-router-dom'
 import { useDash } from '../context'
-import { Card, EASE, Empty, Loading, Note, PageHead, Prob, q, useFetch } from '../ui'
+import { Card, EASE, Empty, Gate, Loading, Note, PageHead, Prob, q, useFetch } from '../ui'
 
 type Pick = { number: number; title: string; url: string; labels: string[]; score: number; parts: Record<string, number>; kind: string; engine: string }
 type IssuesData = { weights: Record<string, number>; picks: Pick[]; open_unlinked: number; annotated: number }
@@ -14,6 +14,7 @@ export default function Issues() {
     <>
       <PageHead theme="butter" kicker="Good first issues" title="Start" oblique="small" note="open issues nobody has fixed yet, ranked by how gentle a first contribution they make" />
       <div className="d-body">
+        <Gate />
         {error && <Note tone="error">{error}</Note>}
         {loading && !data && <Loading label="Sorting the issues" />}
         {data && (

@@ -5,6 +5,7 @@ import type { BeamStep } from '../motion/BeamColumns'
 import { Shape, STORY } from '../motion/Shapes'
 import { SplitReveal } from '../motion/SplitReveal'
 import { TrailSpinner } from '../motion/TrailSpinner'
+import { Link } from 'react-router-dom'
 import { useDash } from './context'
 
 export const EASE = [0.22, 1, 0.36, 1] as const
@@ -277,6 +278,8 @@ export function ago(iso: string): string {
 
 /** GET with loading and error state; refetches when the path changes. */
 export function useFetch<T>(path: string | null) {
+  // While the API is down the Gate panel explains it; a raw "Failed to fetch" on top would only add noise.
+  const { offline } = useDash()
   const [data, setData] = useState<T | null>(null)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -294,7 +297,7 @@ export function useFetch<T>(path: string | null) {
       alive = false
     }
   }, [path, tick])
-  return { data, error, loading, reload: () => setTick((t) => t + 1) }
+  return { data, error: offline ? '' : error, loading, reload: () => setTick((t) => t + 1) }
 }
 
 export function Loading({ label = 'Walking over' }: { label?: string }) {
@@ -306,3 +309,59 @@ export function Loading({ label = 'Walking over' }: { label?: string }) {
 }
 
 export const q = (repo: string) => (repo ? `repo=${encodeURIComponent(repo)}` : '')
+
+/** What a page needs before it can do anything: the API running and, usually, an ingested repository.
+ *  Renders nothing when both are there; otherwise one clear panel with the next step. */
+export function Gate({ needsRepo = true }: { needsRepo?: boolean }) {
+  const { offline, repo, recheck } = useDash()
+  const [checking, setChecking] = useState(false)
+  const [copied, setCopied] = useState(false)
+  if (!offline && (repo || !needsRepo)) return null
+  const cmd = 'bin/trailhead serve'
+  const copy = () => {
+    navigator.clipboard?.writeText(cmd).then(() => {
+      setCopied(true)
+      window.setTimeout(() => setCopied(false), 1400)
+    }, () => undefined)
+  }
+  const retry = async () => {
+    setChecking(true)
+    await recheck()
+    setChecking(false)
+  }
+  return (
+    <motion.section className={`d-gate ${offline ? 't-peach' : 't-mint'}`} initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: EASE }}>
+      <div className="d-gate__art" aria-hidden>
+        <Shape kind={offline ? 'tag' : 'square'} color={offline ? 'var(--orange)' : 'var(--green)'} glyph={offline ? 'signal' : 'folder'} size={0} style={{ width: '100%', height: 'auto' }} />
+        <motion.span className="d-gate__pulse" style={{ background: offline ? 'var(--orange)' : 'var(--green)' }} animate={{ scale: [1, 1.8], opacity: [0.5, 0] }} transition={{ duration: 1.6, repeat: Infinity, ease: 'easeOut' }} />
+      </div>
+      <div className="d-gate__copy">
+        <h2 className="chunk">{offline ? 'The Trailhead API is not running' : 'No repository yet'}</h2>
+        <p className="body">
+          {offline
+            ? 'Everything here is computed by the local API. Start it from the project folder, then check again.'
+            : 'Ingest one first. It reads code, commits, pull requests and issues, and never runs the code.'}
+        </p>
+        <div className="d-row">
+          {offline ? (
+            <>
+              <button className="d-gate__cmd mono" onClick={copy} title="Copy the command">
+                <span>$ {cmd}</span>
+                <b>{copied ? 'copied' : 'copy'}</b>
+              </button>
+              <button className="btn small" onClick={retry} disabled={checking} style={{ ['--fg' as string]: 'var(--ink)', ['--bg' as string]: 'var(--paper)' }}>
+                <span>{checking ? 'Checking…' : 'Check again'}</span>
+                <span className="arrow">↻</span>
+              </button>
+            </>
+          ) : (
+            <Link to="/app/repos" className="btn small" style={{ ['--fg' as string]: 'var(--ink)', ['--bg' as string]: 'var(--paper)' }}>
+              <span>Add a repository</span>
+              <span className="arrow">→</span>
+            </Link>
+          )}
+        </div>
+      </div>
+    </motion.section>
+  )
+}

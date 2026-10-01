@@ -3,19 +3,20 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../lib/auth'
 import { listSaved, type Saved } from '../../lib/history'
+import { Shape, type Glyph, type ShapeKind } from '../../motion/Shapes'
 import { useDash } from '../context'
-import { ago, Card, EASE, Empty, Loading, Note, PageHead, q, Stat, useFetch, type Theme } from '../ui'
+import { ago, Card, EASE, Gate, Loading, Note, PageHead, q, Stat, useFetch, type Theme } from '../ui'
 
 type OverviewData = {
   repo: string; head: string; files: number; tests: number; symbols: number; commits: number; pull_requests: number; issues: number
   comments: number; links: number; annotated_files: number; layers: Record<string, number>; top_dirs: { path: string; summary: string }[]
 }
 
-const ACTIONS: { to: string; title: string; text: string; theme: Theme }[] = [
-  { to: '/app/ask', title: 'Ask', text: 'Where, how and why — cited, or an honest “not sure”.', theme: 'sky' },
-  { to: '/app/tour', title: 'Tour', text: 'Give a goal, get the files to read, in order.', theme: 'mint' },
-  { to: '/app/find', title: 'Find', text: 'Watch the beam walk the tree to the right file.', theme: 'peach' },
-  { to: '/app/issues', title: 'First issues', text: 'Open issues ranked by how gentle they are.', theme: 'lilac' },
+const ACTIONS: { to: string; title: string; text: string; theme: Theme; kind: ShapeKind; color: string; glyph: Glyph }[] = [
+  { to: '/app/ask', title: 'Ask', text: 'Where, how and why — cited, or an honest “not sure”.', theme: 'sky', kind: 'tag', color: 'var(--orange)', glyph: 'signal' },
+  { to: '/app/tour', title: 'Tour', text: 'Give a goal, get the files to read, in order.', theme: 'mint', kind: 'circle', color: 'var(--blue)', glyph: 'flag' },
+  { to: '/app/find', title: 'Find', text: 'Watch the beam walk the tree to the right file.', theme: 'peach', kind: 'square', color: 'var(--green)', glyph: 'branch' },
+  { to: '/app/issues', title: 'First issues', text: 'Open issues ranked by how gentle they are.', theme: 'lilac', kind: 'square', color: 'var(--yellow)', glyph: 'pr' },
 ]
 
 export default function Overview() {
@@ -40,15 +41,8 @@ export default function Overview() {
     <>
       <PageHead theme="lilac" kicker={repo || 'No repository yet'} title={first ? `${greeting}, ${first}.` : 'Base camp.'} oblique="Pick a trail" note="every answer here is decided by Jev and backed by the repo's own history" />
       <div className="d-body">
-        {offline && <Note tone="error">The Trailhead API is not reachable. Start it with <span className="mono">bin/trailhead serve</span>.</Note>}
-        {!repo && !offline && (
-          <Card>
-            <Empty title="No repository ingested yet">
-              Add one on the <Link to="/app/repos">Repositories</Link> page. Ingest reads code, commits, pull requests and issues; it never runs the code.
-            </Empty>
-          </Card>
-        )}
-        {error && <Note tone="error">{error}</Note>}
+        <Gate />
+        {error && !offline && <Note tone="error">{error}</Note>}
         {loading && !data && <Loading label="Reading the map" />}
         {data && (
           <>
@@ -64,10 +58,11 @@ export default function Overview() {
             <div style={{ display: 'grid', gap: 16, gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))' }}>
               {ACTIONS.map((a, i) => (
                 <motion.div key={a.to} initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 + i * 0.07, duration: 0.7, ease: EASE }} whileHover={{ y: -6, rotate: i % 2 ? 1 : -1 }}>
-                  <Link to={a.to} className={`t-${a.theme}`} style={{ display: 'flex', flexDirection: 'column', gap: 10, minHeight: 170, borderRadius: 'var(--radius)', padding: 20, textDecoration: 'none' }}>
-                    <span className="display" style={{ fontSize: 58 }}>{a.title}</span>
-                    <span className="body" style={{ opacity: 0.85 }}>{a.text}</span>
-                    <span style={{ marginTop: 'auto', fontWeight: 800 }}>Go →</span>
+                  <Link to={a.to} className={`d-action t-${a.theme}`}>
+                    <span className="d-action__shape"><Shape kind={a.kind} color={a.color} glyph={a.glyph} size={44} /></span>
+                    <span className="display d-action__title">{a.title}</span>
+                    <span className="body" style={{ color: 'var(--fg-soft)' }}>{a.text}</span>
+                    <span className="d-action__go">Open <span aria-hidden>→</span></span>
                   </Link>
                 </motion.div>
               ))}
@@ -111,7 +106,7 @@ export default function Overview() {
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                     {recent.map((r) => (
                       <Link key={r.id} to={`/app/${r.type}?saved=${r.id}`} style={{ textDecoration: 'none', display: 'flex', gap: 10, alignItems: 'baseline' }}>
-                        <span className="d-badge" style={{ background: r.type === 'ask' ? 'var(--sky)' : 'var(--solid)', color: r.type === 'ask' ? 'var(--blue)' : 'var(--green)' }}>{r.type}</span>
+                        <span className="d-badge" style={{ background: r.type === 'ask' ? 'var(--sky)' : 'var(--mint)', color: r.type === 'ask' ? 'var(--blue)' : 'var(--green)' }}>{r.type}</span>
                         <span style={{ fontWeight: 650, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.title}</span>
                         <span className="small" style={{ opacity: 0.55 }}>{ago(r.created_at)}</span>
                       </Link>

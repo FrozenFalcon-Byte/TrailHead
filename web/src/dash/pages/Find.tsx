@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { BeamColumns } from '../../motion/BeamColumns'
 import { useDash } from '../context'
-import { Card, EASE, Empty, JobStatus, Note, PageHead, Prob, toBeamSteps, useJob } from '../ui'
+import { Card, EASE, Empty, Gate, JobStatus, Note, PageHead, Prob, toBeamSteps, useJob } from '../ui'
 
 type NavData = { query: string; paths: { nodes: string[]; score: number; file: string; edge_probabilities: number[] }[]; steps: any[]; symbols: Record<string, { name: string; line: number }>; separation_ratio: number | null; requests: number; cached_requests: number; input_tokens: number; latency_ms: number }
 
@@ -37,6 +37,7 @@ export default function Find() {
         </div>
       </PageHead>
       <div className="d-body">
+        <Gate />
         <JobStatus running={job.running} stage={depths.length ? `Depth ${depths.length + 1}: asking about the kept branches` : 'Reading the top of the tree'} elapsed={job.elapsed} onCancel={job.cancel} />
         {job.error && <Note tone="error">{job.error}</Note>}
         {r && (

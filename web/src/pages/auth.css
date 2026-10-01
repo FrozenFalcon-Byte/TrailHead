@@ -165,3 +165,11 @@
     height: 150px;
   }
 }
+.a-soon {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--chip);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}

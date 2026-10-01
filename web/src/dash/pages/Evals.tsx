@@ -1,5 +1,5 @@
 import { motion } from 'motion/react'
-import { Card, EASE, Loading, Note, PageHead, useFetch } from '../ui'
+import { Card, EASE, Gate, Loading, Note, PageHead, useFetch } from '../ui'
 
 type Summary = Record<string, number>
 type EvalData = { nav: Record<string, Summary>; tour: Record<string, Summary>; why: Record<string, any> }
@@ -34,6 +34,7 @@ export default function Evals() {
     <>
       <PageHead theme="sky" kicker="Receipts" title="Measured," oblique="not claimed" note="every number replays from cached calls with one command: bin/trailhead eval …" />
       <div className="d-body">
+        <Gate needsRepo={false} />
         {error && <Note tone="error">{error}</Note>}
         {loading && !data && <Loading label="Counting" />}
         {data && (

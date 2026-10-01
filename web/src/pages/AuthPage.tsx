@@ -59,7 +59,10 @@ export default function AuthPage() {
     try {
       await fn()
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e))
+      // The browser's WebAuthn errors are opaque; say what to actually do.
+      if (key === 'passkey' && e instanceof Error && /not allowed|timed out|NotAllowed|abort/i.test(`${e.name} ${e.message}`))
+        setError('The passkey prompt was closed or timed out. No passkey yet? Sign in with GitHub or email, then add one from Profile.')
+      else setError(e instanceof Error ? e.message : String(e))
     } finally {
       setBusy(null)
     }
@@ -169,8 +172,9 @@ export default function AuthPage() {
           <button {...aim('github')} className="a-provider" style={{ background: 'var(--solid)', color: 'var(--on-solid)', boxShadow: 'inset 0 0 0 1.5px var(--line)' }} disabled={disabled} onClick={run('github', () => auth.signInWith('github'))}>
             {busy === 'github' ? <TrailSpinner /> : <GitHubIcon />} Continue with GitHub
           </button>
-          <button {...aim('google')} className="a-provider" style={{ background: 'var(--surface)', color: 'var(--ink)', boxShadow: 'inset 0 0 0 2px var(--ink)' }} disabled={disabled} onClick={run('google', () => auth.signInWith('google'))}>
-            {busy === 'google' ? <TrailSpinner /> : <GoogleIcon />} Continue with Google
+          {/* Google is switched off until its OAuth client is set up in Supabase. */}
+          <button className="a-provider" style={{ background: 'var(--surface)', color: 'var(--ink)', boxShadow: 'inset 0 0 0 2px var(--line)' }} disabled title="Google sign-in is not available yet">
+            <GoogleIcon /> Continue with Google <span className="a-soon">soon</span>
           </button>
           <button
             {...aim('passkey')}

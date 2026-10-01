@@ -2,7 +2,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import { useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useDash } from '../context'
-import { Card, EASE, Loading, Note, PageHead, q, useFetch } from '../ui'
+import { Card, EASE, Gate, Loading, Note, PageHead, q, useFetch } from '../ui'
 
 type Child = { id: string; name: string; kind: string; summary: string; annotations: Record<string, string> }
 type Node = { id: string; kind: string; summary: string; children: Child[] }
@@ -26,6 +26,7 @@ export default function MapPage() {
     <>
       <PageHead theme="lime" kicker="Map" title="The lay of the" oblique="land" note="the same tree Jev walks, with the summaries it reads at every step" />
       <div className="d-body">
+        <Gate />
         {error && <Note tone="error">{error}</Note>}
         <div className="d-row mono" style={{ fontWeight: 700 }}>
           <button className="d-chip" onClick={() => go('')}>{repo || '/'}</button>

@@ -6,7 +6,7 @@ import { listSaved, saveItem, type Saved } from '../../lib/history'
 import { TrailPath } from '../../motion/TrailPath'
 import { TrailSpinner } from '../../motion/TrailSpinner'
 import { useDash } from '../context'
-import { ago, Card, EASE, Empty, JobStatus, Note, PageHead, Prob, useJob } from '../ui'
+import { ago, Card, EASE, Empty, Gate, JobStatus, Note, PageHead, Prob, useJob } from '../ui'
 
 type Stop = { path: string; need: number; entry: number; tentative: boolean; summary: string; why: string; look_at: string[]; sources: string[]; history: { ref: string; title: string; url: string }[]; url: string }
 type Candidate = { path: string; sources: string[]; need: number | null; entry: number | null; nav_score: number; history_score: number }
@@ -108,6 +108,7 @@ export default function TourPage() {
         </form>
       </PageHead>
       <div className="d-body">
+        <Gate />
         <JobStatus running={job.running} stage={stage} elapsed={job.elapsed} onCancel={job.cancel} />
         {(job.error || error) && <Note tone="error">{job.error || error}</Note>}
 

@@ -30,6 +30,8 @@ type DashState = {
   nextSlot: number
   noteSlot: (s: number) => void
   refreshRepos: () => Promise<void>
+  /** Poll the API now instead of waiting for the next 15s tick. */
+  recheck: () => Promise<void>
 }
 
 const Ctx = createContext<DashState | null>(null)
@@ -63,27 +65,26 @@ export function DashProvider({ children }: { children: ReactNode }) {
     setRepoState((current) => (current && list.some((r) => r.repo === current) ? current : list.find((r) => r.status === 'ready')?.repo || ''))
   }, [])
 
+  const poll = useCallback(async () => {
+    try {
+      const h = await api<Health>('/api/health')
+      setHealth(h)
+      setOffline(false)
+      setSlotAt(Date.now() + h.next_slot_s * 1000)
+    } catch {
+      setOffline(true)
+    }
+  }, [])
+  const recheck = useCallback(async () => {
+    await poll()
+    await refreshRepos().catch(() => setOffline(true))
+  }, [poll, refreshRepos])
+
   useEffect(() => {
-    let alive = true
-    const poll = async () => {
-      try {
-        const h = await api<Health>('/api/health')
-        if (!alive) return
-        setHealth(h)
-        setOffline(false)
-        setSlotAt(Date.now() + h.next_slot_s * 1000)
-      } catch {
-        if (alive) setOffline(true)
-      }
-    }
-    poll()
-    refreshRepos().catch(() => setOffline(true))
+    recheck()
     const id = setInterval(poll, 15000)
-    return () => {
-      alive = false
-      clearInterval(id)
-    }
-  }, [refreshRepos])
+    return () => clearInterval(id)
+  }, [poll, recheck])
 
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 500)
@@ -108,8 +109,9 @@ export function DashProvider({ children }: { children: ReactNode }) {
       nextSlot: Math.max(0, (slotAt - now) / 1000),
       noteSlot: (s) => setSlotAt(Date.now() + s * 1000),
       refreshRepos,
+      recheck,
     }),
-    [repos, repo, engine, health, offline, slotAt, now, refreshRepos],
+    [repos, repo, engine, health, offline, slotAt, now, refreshRepos, recheck],
   )
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>
 }

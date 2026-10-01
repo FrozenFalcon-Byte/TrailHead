@@ -5,7 +5,7 @@ import { listSaved, saveItem, type Saved } from '../../lib/history'
 import { BeamColumns } from '../../motion/BeamColumns'
 import { EvidenceCard } from '../../motion/EvidenceCard'
 import { useDash } from '../context'
-import { ago, CalibBadge, Card, EASE, Empty, JobStatus, Note, PageHead, Prob, Prose, toBeamSteps, useJob } from '../ui'
+import { ago, CalibBadge, Card, EASE, Empty, Gate, JobStatus, Note, PageHead, Prob, Prose, toBeamSteps, useJob } from '../ui'
 
 type Evidence = { ref: string; kind: string; title: string; url: string; label: string; relevance: number | null; directness: number | null; injection: number | null; kept: boolean; reason: string; source: string }
 type Claim = { id: string; text: string; evidence: string[]; p_support: number; directness: number; addresses: number; status: string; badge: string; reason: string }
@@ -97,10 +97,10 @@ export default function Ask() {
         </div>
       </PageHead>
       <div className="d-body">
+        <Gate />
         <JobStatus running={job.running} stage={stage} elapsed={job.elapsed} onCancel={job.cancel} />
         {job.error && <Note tone="error">{job.error}</Note>}
         {saveError && <Note tone="info">Answer shown but not saved: {saveError}</Note>}
-        {!repo && <Note>Add a repository first on the Repositories page.</Note>}
 
         <AnimatePresence>
           {v.route && (

@@ -1,7 +1,7 @@
 import { AnimatePresence, motion } from 'motion/react'
 import { Fragment, useState } from 'react'
 import { useDash } from '../context'
-import { Card, EASE, Empty, Loading, Note, PageHead, Prob, q, useFetch } from '../ui'
+import { Card, EASE, Empty, Gate, Loading, Note, PageHead, Prob, q, useFetch } from '../ui'
 
 type Decision = { id: number; call_id: string; ts: number; purpose: string; engine: string; model_id: string; provider: string; question_id: string; question_type: string; answer: string; probabilities: string; confidence: number | null; action: string; latency_ms: number; input_tokens: number; cached: number }
 
@@ -18,6 +18,7 @@ export default function Decisions() {
     <>
       <PageHead theme="lilac" kicker="Audit log" title="Every" oblique="decision" note="each judgement Jev made, with its probabilities, what code did with it, and whether it came from the cache" />
       <div className="d-body">
+        <Gate />
         {error && <Note tone="error">{error}</Note>}
         <div className="d-row">
           <input className="field" style={{ maxWidth: 320, padding: '10px 14px', fontSize: 15, ['--fg' as string]: 'var(--ink)' }} placeholder="Filter by purpose, question or answer" value={filter} onChange={(e) => setFilter(e.target.value)} />
