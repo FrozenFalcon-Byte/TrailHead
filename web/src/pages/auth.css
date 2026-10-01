@@ -128,3 +128,40 @@
     width: 46px;
   }
 }
+/* the art panel's motion graphic: the trail when idle, one scene per way in otherwise */
+.a-stage {
+  position: relative;
+  height: clamp(170px, 30svh, 290px);
+  display: flex;
+  align-items: flex-end;
+}
+.a-stage .a-trail {
+  width: 100%;
+}
+.a-scene {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+.a-scene__svg {
+  flex: 1;
+  min-height: 0;
+  width: min(100%, 460px);
+  overflow: visible;
+}
+.a-scene__cap {
+  font-size: 13px;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--solid);
+  color: var(--on-solid);
+}
+@media (max-width: 900px) {
+  .a-stage {
+    height: 150px;
+  }
+}

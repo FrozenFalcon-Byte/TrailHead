@@ -1,6 +1,6 @@
 # Supabase setup
 
-Trailhead uses Supabase for sign-in (GitHub, Google, email) and for each user's saved asks and tours.
+Trailhead uses Supabase for sign-in (GitHub, Google, email and password, magic link, passkey) and for each user's saved asks and tours.
 Repository data (code, history, Jev decisions) stays in the local SQLite store. The free plan is enough and needs no card.
 
 1. Create a project at https://supabase.com/dashboard.
@@ -15,6 +15,10 @@ Repository data (code, history, Jev decisions) stays in the local SQLite store. 
      `https://<project-ref>.supabase.co/auth/v1/callback`; paste its client id and secret.
    - **Google**: create an OAuth client (Web application) in Google Cloud → APIs & Services → Credentials with the same callback URL; paste the id and secret.
    - **Email** is on by default. Turn off "Confirm email" if you want sign-up to log in immediately.
+     Magic links use the same provider; the email template's link lands on `/auth/callback`.
+   - **Passkeys**: turn on passkey (WebAuthn) sign-in in the Authentication settings if your project shows it, and set the
+     relying party to your site's host (`localhost` while developing). A passkey attaches to an existing account:
+     sign in another way first, then **Profile → Add a passkey** in the dashboard. After that, "Sign in with a passkey" works.
 6. **Authentication → Sign In / Providers → Allow manual linking** (lets an email or Google account connect GitHub later from the Repositories page).
 
 Local development without an account: set `TRAILHEAD_AUTH=off` for the API and `VITE_AUTH_BYPASS=1` in `web/.env`.

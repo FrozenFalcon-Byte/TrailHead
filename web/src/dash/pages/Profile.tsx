@@ -5,7 +5,7 @@ import { supabase } from '../../lib/supabase'
 import { Card, Note, PageHead } from '../ui'
 
 export default function Profile() {
-  const { user, displayName, avatar, signOut, connectGitHub, bypass } = useAuth()
+  const { user, displayName, avatar, signOut, connectGitHub, registerPasskey, bypass } = useAuth()
   const navigate = useNavigate()
   const [name, setName] = useState(displayName)
   const [msg, setMsg] = useState<{ tone: 'ok' | 'error'; text: string } | null>(null)
@@ -43,10 +43,16 @@ export default function Profile() {
           <Card title="Connected accounts">
             <div className="d-row">
               {(['github', 'google', 'email'] as const).map((p) => (
-                <span key={p} className="d-badge" style={{ background: providers.includes(p) ? 'var(--solid)' : 'var(--chip)', color: 'var(--ink)', fontSize: 15 }}>{p} {providers.includes(p) ? '✓' : ''}</span>
+                <span key={p} className="d-badge" style={{ background: providers.includes(p) ? 'var(--solid)' : 'var(--chip)', color: providers.includes(p) ? 'var(--on-solid)' : 'var(--ink)', fontSize: 15 }}>{p} {providers.includes(p) ? '✓' : ''}</span>
               ))}
               {!providers.includes('github') && <button className="d-chip" onClick={() => connectGitHub().catch((e) => setMsg({ tone: 'error', text: e.message }))}>Connect GitHub ↗</button>}
             </div>
+          </Card>
+        )}
+        {!bypass && (
+          <Card title="Passkey">
+            <p className="small" style={{ margin: '0 0 12px', opacity: 0.7 }}>Sign in next time with your fingerprint, face or device PIN instead of a password.</p>
+            <button className="d-chip" onClick={() => registerPasskey().then(() => setMsg({ tone: 'ok', text: 'Passkey added. Use “Sign in with a passkey” next time.' }), (e) => setMsg({ tone: 'error', text: e.message }))}>Add a passkey +</button>
           </Card>
         )}
         <Card title="Leave the trail">

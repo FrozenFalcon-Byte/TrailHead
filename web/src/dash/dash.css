@@ -79,13 +79,19 @@ html[data-theme='dark'] .d-side {
   box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--on-solid) 40%, transparent);
   background: transparent;
 }
+/* page-switch bands cover the whole main column, top bar included, however short the page is */
 .d-band {
-  position: absolute;
-  left: 0;
+  position: fixed;
+  left: 268px;
   right: 0;
-  height: calc(min(100%, 70vh) / 3 + 1px);
-  z-index: 10;
+  height: calc(100svh / 3 + 1px);
+  z-index: 30;
   pointer-events: none;
+}
+@media (max-width: 960px) {
+  .d-band {
+    left: 0;
+  }
 }
 .d-main {
   min-width: 0;

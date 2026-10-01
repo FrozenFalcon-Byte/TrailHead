@@ -15,6 +15,8 @@ type AuthState = {
   signInWithEmail: (email: string, password: string) => Promise<void>
   signUpWithEmail: (email: string, password: string, name: string) => Promise<{ needsConfirmation: boolean }>
   sendMagicLink: (email: string) => Promise<void>
+  signInWithPasskey: () => Promise<void>
+  registerPasskey: () => Promise<void>
   connectGitHub: () => Promise<void>
   signOut: () => Promise<void>
 }
@@ -70,6 +72,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       },
       async sendMagicLink(email) {
         const { error } = await need().auth.signInWithOtp({ email, options: { emailRedirectTo: redirectTo() } })
+        if (error) throw error
+      },
+      async signInWithPasskey() {
+        // Needs passkey sign-in enabled for the project (see docs/supabase.md).
+        if (!window.PublicKeyCredential) throw new Error('This browser does not support passkeys.')
+        const { error } = await need().auth.signInWithPasskey()
+        if (error) throw error
+      },
+      async registerPasskey() {
+        if (!window.PublicKeyCredential) throw new Error('This browser does not support passkeys.')
+        const { error } = await need().auth.registerPasskey()
         if (error) throw error
       },
       async connectGitHub() {

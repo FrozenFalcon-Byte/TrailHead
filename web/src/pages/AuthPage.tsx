@@ -8,9 +8,17 @@ import { Shape, STORY } from '../motion/Shapes'
 import { Wordmark } from '../motion/Mark'
 import { SplitReveal } from '../motion/SplitReveal'
 import { TrailSpinner } from '../motion/TrailSpinner'
+import { AuthScene, CAPTION, type Method } from './AuthScene'
 
 const EASE = [0.22, 1, 0.36, 1] as const
 
+function PasskeyIcon() {
+  return (
+    <svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" aria-hidden>
+      <path d="M6.5 18.5C5.6 16.6 5 14.4 5 12a7 7 0 0 1 12.2-4.7M19 12c0 1.6-.2 3.1-.6 4.5M9 20.5C8.4 18.6 8 16.3 8 13.5a4 4 0 0 1 8 0c0 2.4-.3 4.6-.9 6.5M12 13v1.5c0 2.4-.3 4.6-.9 6.5" />
+    </svg>
+  )
+}
 function GitHubIcon() {
   return (
     <svg width={22} height={22} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
@@ -41,6 +49,7 @@ export default function AuthPage() {
   const [busy, setBusy] = useState<string | null>(null)
   const [error, setError] = useState('')
   const [info, setInfo] = useState('')
+  const [hover, setHover] = useState<Method | null>(null)
   const next = (location.state as { from?: string } | null)?.from || '/app'
 
   const run = (key: string, fn: () => Promise<void>) => async () => {
@@ -71,6 +80,14 @@ export default function AuthPage() {
   }
 
   const disabled = !supabaseConfigured || busy !== null
+  // The art panel plays the graphic for whichever way in you are pointing at, typing into, or waiting on.
+  const shown: Method | null = (busy as Method | null) ?? hover
+  const aim = (m: Method) => ({
+    onPointerEnter: () => setHover(m),
+    onPointerLeave: () => setHover((h) => (h === m ? null : h)),
+    onFocus: () => setHover(m),
+    onBlur: () => setHover((h) => (h === m ? null : h)),
+  })
 
   return (
     <div className="a-wrap">
@@ -96,7 +113,15 @@ export default function AuthPage() {
           </AnimatePresence>
           <p className="body" style={{ fontSize: 20, color: 'var(--fg-soft)', marginTop: 18 }}>One repo, one goal, one clear path.</p>
         </div>
-        <div className="a-trail" aria-hidden>
+        <div className="a-stage">
+          <AnimatePresence mode="wait">
+            {shown ? (
+              <motion.div key={shown} className="a-scene" initial={{ opacity: 0, y: 24, scale: 0.96 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -16, transition: { duration: 0.18 } }} transition={{ duration: 0.4, ease: EASE }}>
+                <AuthScene method={shown} />
+                <span className="a-scene__cap mono">{busy ? 'working… ' : ''}{CAPTION[shown]}</span>
+              </motion.div>
+            ) : (
+              <motion.div key="trail" className="a-trail" aria-hidden initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, y: 20, transition: { duration: 0.2 } }}>
           {STORY.map((st, i) => (
             <motion.span key={i} className="a-trail__stop" style={{ ['--i' as string]: i }} initial={{ scale: 0, rotate: -60 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: 'spring', stiffness: 220, damping: 13, delay: 0.5 + i * 0.12 }}>
               <motion.span animate={{ y: [0, -8, 0] }} transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut', delay: i * 0.25 }} style={{ display: 'block', lineHeight: 0 }}>
@@ -104,6 +129,9 @@ export default function AuthPage() {
               </motion.span>
             </motion.span>
           ))}
+        </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </aside>
 
@@ -138,16 +166,32 @@ export default function AuthPage() {
             </div>
           )}
 
-          <button className="a-provider" style={{ background: 'var(--solid)', color: 'var(--on-solid)', boxShadow: 'inset 0 0 0 1.5px var(--line)' }} disabled={disabled} onClick={run('github', () => auth.signInWith('github'))}>
+          <button {...aim('github')} className="a-provider" style={{ background: 'var(--solid)', color: 'var(--on-solid)', boxShadow: 'inset 0 0 0 1.5px var(--line)' }} disabled={disabled} onClick={run('github', () => auth.signInWith('github'))}>
             {busy === 'github' ? <TrailSpinner /> : <GitHubIcon />} Continue with GitHub
           </button>
-          <button className="a-provider" style={{ background: 'var(--surface)', color: 'var(--ink)', boxShadow: 'inset 0 0 0 2px var(--ink)' }} disabled={disabled} onClick={run('google', () => auth.signInWith('google'))}>
+          <button {...aim('google')} className="a-provider" style={{ background: 'var(--surface)', color: 'var(--ink)', boxShadow: 'inset 0 0 0 2px var(--ink)' }} disabled={disabled} onClick={run('google', () => auth.signInWith('google'))}>
             {busy === 'google' ? <TrailSpinner /> : <GoogleIcon />} Continue with Google
+          </button>
+          <button
+            {...aim('passkey')}
+            className="a-provider"
+            style={{ background: 'var(--lilac)', color: 'var(--ink)', boxShadow: 'inset 0 0 0 2px var(--violet)' }}
+            disabled={disabled}
+            onClick={run('passkey', async () => {
+              if (mode === 'signup') {
+                setInfo('Passkeys attach to an account. Sign up first, then add one from your Profile in the dashboard.')
+                return
+              }
+              await auth.signInWithPasskey()
+              navigate(next)
+            })}
+          >
+            {busy === 'passkey' ? <TrailSpinner /> : <PasskeyIcon />} {mode === 'login' ? 'Sign in with a passkey' : 'Use a passkey'}
           </button>
 
           <div className="a-divider">or with email</div>
 
-          <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: 10, ['--fg' as string]: 'var(--ink)' }}>
+          <form {...aim('email')} onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: 10, ['--fg' as string]: 'var(--ink)' }}>
             <AnimatePresence initial={false}>
               {mode === 'signup' && (
                 <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.35, ease: EASE }} style={{ overflow: 'hidden' }}>
@@ -164,6 +208,7 @@ export default function AuthPage() {
           </form>
           <button
             type="button"
+            {...aim('magic')}
             onClick={run('magic', async () => {
               if (!email) throw new Error('Enter your email first.')
               await auth.sendMagicLink(email)

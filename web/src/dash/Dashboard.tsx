@@ -123,7 +123,7 @@ function Shell() {
                 initial={{ scaleX: 1, originX: 1 }}
                 animate={{ scaleX: 0, transition: { duration: 0.5, ease: EASE, delay: 0.05 + i * 0.06 } }}
                 exit={{ scaleX: 1, originX: 0, transition: { duration: 0.3, ease: EASE, delay: i * 0.05 } }}
-                style={{ top: `calc(min(100%, 70vh) * ${i / 3})`, background: c }}
+                style={{ top: `calc(100svh * ${i / 3})`, background: c }}
               />
             ))}
             <motion.div initial={{ opacity: 0, y: 26 }} animate={{ opacity: 1, y: 0, transition: { duration: 0.6, ease: EASE, delay: 0.15 } }} exit={{ opacity: 0, transition: { duration: 0.2 } }}>
