@@ -5,6 +5,7 @@
 }
 .a-art {
   overflow: hidden;
+  gap: 16px;
   position: sticky;
   top: 12px;
   align-self: start;
@@ -131,7 +132,8 @@
 /* the art panel's motion graphic: the trail when idle, one scene per way in otherwise */
 .a-stage {
   position: relative;
-  height: clamp(170px, 30svh, 290px);
+  flex-shrink: 0;
+  height: clamp(150px, 26svh, 270px);
   display: flex;
   align-items: flex-end;
 }

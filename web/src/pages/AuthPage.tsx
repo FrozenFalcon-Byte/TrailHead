@@ -98,7 +98,7 @@ export default function AuthPage() {
         <Link to="/" style={{ textDecoration: 'none', position: 'relative' }}><Wordmark /></Link>
         <div style={{ position: 'relative' }}>
           <AnimatePresence mode="wait">
-            <motion.h1 key={mode} className="display" style={{ fontSize: 'clamp(52px, 6.6vw, 112px)', lineHeight: 0.95 }} exit={{ opacity: 0, y: -30, transition: { duration: 0.25 } }}>
+            <motion.h1 key={mode} className="display" style={{ fontSize: 'clamp(44px, min(6vw, 10svh), 104px)', lineHeight: 0.95 }} exit={{ opacity: 0, y: -30, transition: { duration: 0.25 } }}>
               {mode === 'login' ? (
                 <>
                   <SplitReveal text="Welcome" immediate delay={0.5} />
