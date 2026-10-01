@@ -1,0 +1,110 @@
+{
+ "key": "dbb7eac340441bd2a599b66acea9a56d06980991371a199b2e1d72252acea694",
+ "model_id": "jev-1.13.0",
+ "created_at": 1790821600.992897,
+ "state": {
+  "question": "Why must the Twisted reactor be imported locally inside functions instead of at the top of a module?",
+  "passages": {
+   "E4": "[pull request] downloader.webclient: make reactor import local\nAll reactor imports must be local not top level because twisted.internet.reactor import installs default reactor, and if you want to use non-default reactor like asyncio top level import will break things for you. \r\n\r\nIn my case I had a middleware imported in spider\r\n\r\nin spider\r\n```python\r\nfrom project.middlewares.retry import CustomRetryMiddleware\r\n```\r\n\r\nthis was importing\r\n\r\n```\r\nfrom scrapy.downloadermiddlewares import retry\r\n```\r\nthen retry was importing\r\n\r\n```\r\nfrom scrapy.core.downloader.handlers.http11 import TunnelError\r\n\r\n```\r\n\r\nand http11 was importing\r\n```\r\nfrom scrapy.core.downloader.webclient import _parse\r\n```\r\n\r\n",
+   "E6": "[issue] Easy to break installing the custom reactor\nI created a spider that imports `scrapy.mail` and got \"wrong reactor installed\" after setting `TWISTED_REACTOR`. This is because `scrapy.mail` imports `twisted.internet.reactor` at the top level and because `scrapy crawl` imports all spider modules.\r\n\r\nSo I think we should kill all top-level `twisted.internet.reactor` imports (it was partially done when adding the feature, so that importing `CrawlerProcess` doesn't install the reactor) and add documentation that the user code shouldn't do similar top-level imports."
+  },
+  "claims": {
+   "C1": {
+    "claim": "Twisted reactor imports must be local rather than top‑level because a top‑level `twisted.internet.reactor` import installs the default reactor and can break usage of a non‑default reactor such as asyncio",
+    "cites": [
+     "E4"
+    ]
+   },
+   "C2": {
+    "claim": "Top‑level reactor imports can cause a \"wrong reactor installed\" error when a custom reactor is set, as demonstrated by importing `scrapy.mail` which imports the reactor at module load time",
+    "cites": [
+     "E6"
+    ]
+   }
+  }
+ },
+ "questions": {
+  "support_c1": {
+   "type": "choice",
+   "instructions": "Do the passages that claim C1 cites support claim C1?",
+   "criteria": {
+    "supports": "The cited passages state the claim or clearly imply all of it.",
+    "contradicts": "The cited passages say the opposite of the claim.",
+    "unrelated": "The cited passages are about something else.",
+    "insufficient": "The cited passages are on the same topic but do not establish the claim, or they back only part of it, or the claim adds a reason, cause or detail the passages do not give."
+   }
+  },
+  "direct_c1": {
+   "type": "noul",
+   "instructions": "Do the passages that claim C1 cites state the claim explicitly, so that no inference is needed?"
+  },
+  "addresses_c1": {
+   "type": "noul",
+   "instructions": "Does claim C1 itself answer the question that was asked? Background that is true but leaves the question open does not count; for a why-question, a description of what was changed without the reason does not count."
+  },
+  "support_c2": {
+   "type": "choice",
+   "instructions": "Do the passages that claim C2 cites support claim C2?",
+   "criteria": {
+    "supports": "The cited passages state the claim or clearly imply all of it.",
+    "contradicts": "The cited passages say the opposite of the claim.",
+    "unrelated": "The cited passages are about something else.",
+    "insufficient": "The cited passages are on the same topic but do not establish the claim, or they back only part of it, or the claim adds a reason, cause or detail the passages do not give."
+   }
+  },
+  "direct_c2": {
+   "type": "noul",
+   "instructions": "Do the passages that claim C2 cites state the claim explicitly, so that no inference is needed?"
+  },
+  "addresses_c2": {
+   "type": "noul",
+   "instructions": "Does claim C2 itself answer the question that was asked? Background that is true but leaves the question open does not count; for a why-question, a description of what was changed without the reason does not count."
+  }
+ },
+ "answers": {
+  "support_c1": {
+   "type": "choice",
+   "choice": "supports",
+   "probabilities": {
+    "contradicts": 0.0,
+    "insufficient": 0.0,
+    "supports": 1.0,
+    "unrelated": 0.0
+   },
+   "confidence": 1.0
+  },
+  "direct_c1": {
+   "type": "noul",
+   "noul": 0.93
+  },
+  "addresses_c1": {
+   "type": "noul",
+   "noul": 0.94
+  },
+  "support_c2": {
+   "type": "choice",
+   "choice": "supports",
+   "probabilities": {
+    "contradicts": 0.0,
+    "insufficient": 0.0,
+    "supports": 1.0,
+    "unrelated": 0.0
+   },
+   "confidence": 1.0
+  },
+  "direct_c2": {
+   "type": "noul",
+   "noul": 0.86
+  },
+  "addresses_c2": {
+   "type": "noul",
+   "noul": 0.78
+  }
+ },
+ "model_returned": "jev-1.13-free",
+ "provider": "beatapi",
+ "input_tokens": 1201,
+ "output_tokens": 177,
+ "latency_ms": 654.5547090026957,
+ "request_id": "task_Li7bZfSpfulhdF04W4GiHnBPIv9f2aPE"
+}

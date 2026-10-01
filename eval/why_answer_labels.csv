@@ -1,0 +1,15 @@
+qid,question,system_status,system_answer,kept_evidence,label,provisional_label,notes
+w01,Why is the mitmproxy-dhparam.pem file committed to the repository?,answered,The mitmproxy-dhparam.pem file is committed because it is auto‑generated from the DEFAULT_DHPARAM constant during tests and there is no reason to exclude it since a similar key file is already committed [E10].,"E10 https://github.com/scrapy/scrapy/pull/6545
+E6 https://github.com/scrapy/scrapy/pull/6538#issuecomment-2470139374
+E8 https://github.com/scrapy/scrapy/pull/6538#issuecomment-2470122158
+E4 https://github.com/scrapy/scrapy/pull/6538",,,
+w02,Why must the Twisted reactor be imported locally inside functions instead of at the top of a module?,answered,"Twisted reactor imports must be local rather than top‑level because a top‑level `twisted.internet.reactor` import installs the default reactor and can break usage of a non‑default reactor such as asyncio [E4]. Top‑level reactor imports can cause a ""wrong reactor installed"" error when a custom reactor is set, as demonstrated by importing `scrapy.mail` which imports the reactor at module load time [E6].","E4 https://github.com/scrapy/scrapy/pull/5357
+E6 https://github.com/scrapy/scrapy/issues/4401
+E8 https://github.com/scrapy/scrapy/pull/4406#issuecomment-597944135",,,
+w03,Why was processing of cookies from the Cookie request header reverted?,answered,Processing of cookies from the Cookie request header was reverted because of the bug reported in #4717 [E2].,"E2 https://github.com/scrapy/scrapy/pull/4823
+E10 https://github.com/scrapy/scrapy/issues/1992#issuecomment-1900981138
+E1 https://github.com/scrapy/scrapy/commit/dba7e39f61cbe2c22d3c9064f32f6e36d74f14b2
+E16 https://github.com/scrapy/scrapy/pull/2400",,,
+w04,Why was a get_retry_request function chosen as the way to retry requests from spider callbacks?,answered,"The get_retry_request function was chosen because it provides a simpler implementation that refactors existing code, offers a similar API to the downloader‑middleware retry logic, and avoids modifying Request or Response objects [E1].","E1 https://github.com/scrapy/scrapy/pull/4902
+E5 https://github.com/scrapy/scrapy/pull/5625#issuecomment-1246414818
+E14 https://github.com/scrapy/scrapy/issues/3590",,,

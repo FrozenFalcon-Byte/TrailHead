@@ -1,0 +1,68 @@
+qid,claim_id,question,claim,cited_passages,system_status,p_support,label,provisional_label,notes
+w01,C1,Why is the mitmproxy-dhparam.pem file committed to the repository?,The mitmproxy-dhparam.pem file is committed because it is auto‑generated from the DEFAULT_DHPARAM constant during tests and there is no reason to exclude it since a similar key file is already committed,"E10 https://github.com/scrapy/scrapy/pull/6545
+[pull request] Commit mitmproxy-dhparam.pem.
+After we fixed #6258 mitmproxy actually started using `tests/keys` as its key store, and when it loads the keys from there it creates `mitmproxy-dhparam.pem` (if it doesn't exist) from the `DEFAULT_DHPARAM` constant in https://github.com/mitmproxy/mitmproxy/blob/main/mitmproxy/certs.py
+
+I don't see a reason to not commit it if we already commit `tests/keys/mitmproxy-ca.pem` (it's debatable whether that one should be committed and also whether `tests/keys` should be used as a key store instead of the user-default one but that's for a different discussion).
+
+Closes #6538",verified,0.97,,,
+w02,C1,Why must the Twisted reactor be imported locally inside functions instead of at the top of a module?,Twisted reactor imports must be local rather than top‑level because a top‑level `twisted.internet.reactor` import installs the default reactor and can break usage of a non‑default reactor such as asyncio,"E4 https://github.com/scrapy/scrapy/pull/5357
+[pull request] downloader.webclient: make reactor import local
+All reactor imports must be local not top level because twisted.internet.reactor import installs default reactor, and if you want to use non-default reactor like asyncio top level import will break things for you. 
+
+In my case I had a middleware imported in spider
+
+in spider
+```python
+from project.middlewares.retry import CustomRetryMiddleware
+```
+
+this was importing
+
+```
+from scrapy.downloadermiddlewares import retry
+```
+then retry was importing
+
+```
+from scrapy.core.downloader.handlers.http11 import TunnelError
+
+```
+
+and http11 was importing
+```
+from scrapy.core.downloader.webclient import _parse
+```
+
+",verified,1.00,,,
+w02,C2,Why must the Twisted reactor be imported locally inside functions instead of at the top of a module?,"Top‑level reactor imports can cause a ""wrong reactor installed"" error when a custom reactor is set, as demonstrated by importing `scrapy.mail` which imports the reactor at module load time","E6 https://github.com/scrapy/scrapy/issues/4401
+[issue] Easy to break installing the custom reactor
+I created a spider that imports `scrapy.mail` and got ""wrong reactor installed"" after setting `TWISTED_REACTOR`. This is because `scrapy.mail` imports `twisted.internet.reactor` at the top level and because `scrapy crawl` imports all spider modules.
+
+So I think we should kill all top-level `twisted.internet.reactor` imports (it was partially done when adding the feature, so that importing `CrawlerProcess` doesn't install the reactor) and add documentation that the user code shouldn't do similar top-level imports.",verified,1.00,,,
+w03,C1,Why was processing of cookies from the Cookie request header reverted?,Processing of cookies from the Cookie request header was reverted because of the bug reported in #4717,"E2 https://github.com/scrapy/scrapy/pull/4823
+[pull request] Do not process cookies from headers
+Fixes #4717
+
+Revert the behaviour introduced in #2400, because of the bug reported in #4717. Once we merge this, we'll need to either reopen #1992 or create a new issue to keep track of the work towards supporting cookies in the `Cookie` request header (#4812, for instance).
+
+Tasks:
+- [x] Update cookies middleware implementation
+- [x] Mark existing tests as `xfail`
+- [x] Docs: add warnings about the need to define cookies in the `Request.cookies` attribute (`Request.headers` attribute and `DEFAULT_REQUEST_HEADERS` setting)",verified,1.00,,,
+w04,C1,Why was a get_retry_request function chosen as the way to retry requests from spider callbacks?,"The get_retry_request function was chosen because it provides a simpler implementation that refactors existing code, offers a similar API to the downloader‑middleware retry logic, and avoids modifying Request or Response objects","E1 https://github.com/scrapy/scrapy/pull/4902
+[pull request] Implement a retry request function
+Alternative to #3685 for implementing request retry from spider callbacks.
+
+I prefer this approach because the implementation is simpler (basically a refactoring of existing code), while still providing a similar API, and going in line with the current implementation of retries as a downloader middleware, by not modifying `Request` or `Response` in any way.
+
+With this implementation, there is a function which can be used to retry a request from a spider callback:
+
+```python
+# …
+from scrapy.downloadermiddlewares.retry import get_retry_request
+
+class MySpider(Spider):
+    # …
+    def parse(self, response):
+        if not response.t",verified,1.00,,,
