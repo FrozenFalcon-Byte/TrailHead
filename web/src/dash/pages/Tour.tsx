@@ -93,7 +93,7 @@ export default function TourPage() {
 
   return (
     <>
-      <PageHead theme="pine" kicker="Guided tour" title="Your reading" oblique="trail" note="Tell it what you want to do. It hands you the files to read, in the order that makes sense.">
+      <PageHead theme="mint" kicker="Guided tour" title="Your reading" oblique="trail" note="Tell it what you want to do. It hands you the files to read, in the order that makes sense.">
         <form onSubmit={(e) => { e.preventDefault(); plan() }} style={{ marginTop: 26, maxWidth: 980, display: 'grid', gap: 10 }}>
           <textarea className="field" rows={3} value={goal} onChange={(e) => setGoal(e.target.value)} placeholder="I want to add a new retry policy that backs off exponentially." maxLength={1200} aria-label="Goal" style={{ resize: 'vertical' }} />
           <div className="d-row">
@@ -103,7 +103,7 @@ export default function TourPage() {
             </label>
           </div>
           <div className="d-row">
-            {GOALS.map((g) => <button key={g} type="button" className="d-chip" disabled={job.running} onClick={() => plan(g)} style={{ background: 'color-mix(in srgb, var(--lichen) 16%, transparent)', color: 'var(--lichen)' }}>{g}</button>)}
+            {GOALS.map((g) => <button key={g} type="button" className="d-chip" disabled={job.running} onClick={() => plan(g)} style={{ background: 'color-mix(in srgb, var(--green) 16%, transparent)', color: 'var(--green)' }}>{g}</button>)}
           </div>
         </form>
       </PageHead>
@@ -113,8 +113,8 @@ export default function TourPage() {
 
         {tour && (
           <>
-            <Card theme="pine" title={<>The trail · {tour.stops.length} stops</>} aside={<span className="small">{tour.requests} Jev requests · {tour.input_tokens.toLocaleString()} tokens</span>}>
-              <TrailPath key={tour.stops.map((s) => s.path).join('|')} stops={tour.stops.map((s) => ({ label: s.path.split('/').pop() ?? s.path, tentative: s.tentative }))} height={260} color="var(--lichen)" />
+            <Card theme="mint" title={<>The trail · {tour.stops.length} stops</>} aside={<span className="small">{tour.requests} Jev requests · {tour.input_tokens.toLocaleString()} tokens</span>}>
+              <TrailPath key={tour.stops.map((s) => s.path).join('|')} stops={tour.stops.map((s) => ({ label: s.path.split('/').pop() ?? s.path, tentative: s.tentative }))} height={260} color="var(--green)" />
               <p className="small" style={{ opacity: 0.7, marginTop: 8 }}>Solid blazes: Jev is confident you need the file (ordered so imports come first). Dashed: worth a look, but less certain.</p>
             </Card>
 
@@ -122,16 +122,16 @@ export default function TourPage() {
               {tour.stops.map((s, i) => {
                 const fb = feedback[s.path]
                 return (
-                  <motion.article key={s.path} layout initial={{ opacity: 0, y: 24 }} animate={{ opacity: fb ? 0.55 : 1, y: 0 }} transition={{ delay: i * 0.07, duration: 0.6, ease: EASE }} className="d-card" style={{ borderLeft: `8px ${s.tentative ? 'dashed' : 'solid'} var(--blaze)` }}>
+                  <motion.article key={s.path} layout initial={{ opacity: 0, y: 24 }} animate={{ opacity: fb ? 0.55 : 1, y: 0 }} transition={{ delay: i * 0.07, duration: 0.6, ease: EASE }} className="d-card" style={{ borderLeft: `8px ${s.tentative ? 'dashed' : 'solid'} var(--orange)` }}>
                     <button onClick={() => setOpen(open === i ? null : i)} style={{ all: 'unset', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 16, width: '100%' }} aria-expanded={open === i}>
-                      <span className="display" style={{ fontSize: 48, color: 'var(--blaze)', width: 44 }}>{i + 1}</span>
+                      <span className="display" style={{ fontSize: 48, color: 'var(--orange)', width: 44 }}>{i + 1}</span>
                       <span style={{ flex: 1, minWidth: 0 }}>
                         <span className="mono" style={{ fontWeight: 800, fontSize: 16, display: 'block', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.path}</span>
                         <span className="small" style={{ opacity: 0.65 }}>{s.sources.map((x) => SOURCE_LABEL[x] ?? x).join(' · ')}{s.tentative ? ' · tentative' : ''}</span>
                       </span>
                       <span className="small" style={{ display: 'grid', gap: 2, justifyItems: 'end' }}>
                         <span>need <Prob p={s.need} width={60} /></span>
-                        <span>start here <Prob p={s.entry} width={60} color="var(--lichen)" /></span>
+                        <span>start here <Prob p={s.entry} width={60} color="var(--green)" /></span>
                       </span>
                       <motion.span animate={{ rotate: open === i ? 90 : 0 }} style={{ fontWeight: 900 }}>›</motion.span>
                     </button>
@@ -141,7 +141,7 @@ export default function TourPage() {
                           <div style={{ paddingTop: 14, display: 'grid', gap: 10 }}>
                             {s.why ? <p className="body" style={{ margin: 0 }}>{s.why}</p> : <p className="body" style={{ margin: 0, opacity: 0.7 }}>{s.summary}</p>}
                             {s.look_at.length > 0 && (
-                              <div className="d-row"><span className="hand" style={{ fontSize: 22, color: 'var(--rust)' }}>look at →</span>{s.look_at.map((x) => <span key={x} className="pill mono" style={{ ['--fg' as string]: 'var(--lichen)' }}>{x}</span>)}</div>
+                              <div className="d-row"><span className="hand" style={{ fontSize: 22, color: 'var(--orange)' }}>look at →</span>{s.look_at.map((x) => <span key={x} className="pill mono" style={{ ['--fg' as string]: 'var(--green)' }}>{x}</span>)}</div>
                             )}
                             {s.history.length > 0 && (
                               <div className="small" style={{ display: 'grid', gap: 4 }}>
@@ -169,7 +169,7 @@ export default function TourPage() {
             <AnimatePresence>
               {Object.keys(feedback).length > 0 && (
                 <motion.div initial={{ y: 80, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 80, opacity: 0 }} transition={{ ease: EASE, duration: 0.5 }} style={{ position: 'sticky', bottom: 18, zIndex: 5 }}>
-                  <div className="d-row t-bark" style={{ padding: '14px 18px', borderRadius: 16, boxShadow: '0 20px 40px -20px rgba(156,61,18,.35)' }}>
+                  <div className="d-row t-peach" style={{ padding: '14px 18px', borderRadius: 16, boxShadow: 'inset 0 0 0 1.5px var(--line)' }}>
                     <span style={{ fontWeight: 700 }}>{Object.keys(feedback).length} stop{Object.keys(feedback).length > 1 ? 's' : ''} marked. Re-planning reuses Jev's earlier judgements, so it costs no new requests.</span>
                     <button className="btn small" onClick={replan} disabled={replanning} style={{ marginLeft: 'auto' }}><span>{replanning ? <TrailSpinner /> : 'Re-plan'}</span><span className="arrow">→</span></button>
                   </div>
@@ -192,7 +192,7 @@ export default function TourPage() {
                     <td className="mono">{c.path}</td>
                     <td className="small">{c.sources.map((x) => SOURCE_LABEL[x] ?? x).join(', ')}</td>
                     <td>{c.need != null ? <Prob p={c.need} width={50} /> : '—'}</td>
-                    <td>{c.entry != null ? <Prob p={c.entry} width={50} color="var(--lichen)" /> : '—'}</td>
+                    <td>{c.entry != null ? <Prob p={c.entry} width={50} color="var(--green)" /> : '—'}</td>
                   </tr>
                 ))}
               </tbody>

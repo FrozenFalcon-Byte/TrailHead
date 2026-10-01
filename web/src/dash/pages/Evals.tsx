@@ -15,7 +15,7 @@ function Bars({ rows, metric, color }: { rows: [string, Summary][]; metric: stri
         <div key={name} style={{ display: 'grid', gridTemplateColumns: 'minmax(140px, 220px) 1fr auto', gap: 12, alignItems: 'center' }}>
           <span style={{ fontWeight: 700 }}>{name}</span>
           <div style={{ height: 22, borderRadius: 6, background: 'color-mix(in srgb, currentColor 10%, transparent)', overflow: 'hidden' }}>
-            <motion.div initial={{ scaleX: 0 }} whileInView={{ scaleX: (s[metric] ?? 0) / max }} viewport={{ once: true }} transition={{ duration: 1, delay: i * 0.08, ease: EASE }} style={{ height: '100%', background: i === 0 ? 'var(--blaze)' : color, transformOrigin: 'left' }} />
+            <motion.div initial={{ scaleX: 0 }} whileInView={{ scaleX: (s[metric] ?? 0) / max }} viewport={{ once: true }} transition={{ duration: 1, delay: i * 0.08, ease: EASE }} style={{ height: '100%', background: i === 0 ? 'var(--orange)' : color, transformOrigin: 'left' }} />
           </div>
           <span className="display" style={{ fontSize: 26 }}>{(s[metric] ?? 0).toFixed(3)}</span>
         </div>
@@ -32,27 +32,27 @@ export default function Evals() {
 
   return (
     <>
-      <PageHead theme="bark" kicker="Receipts" title="Measured," oblique="not claimed" note="every number replays from cached calls with one command: bin/trailhead eval …" />
+      <PageHead theme="sky" kicker="Receipts" title="Measured," oblique="not claimed" note="every number replays from cached calls with one command: bin/trailhead eval …" />
       <div className="d-body">
         {error && <Note tone="error">{error}</Note>}
         {loading && !data && <Loading label="Counting" />}
         {data && (
           <>
             <Card title="Navigation · mean reciprocal rank" aside={<span className="small" style={{ opacity: 0.6 }}>find the file a past fix touched</span>}>
-              <Bars rows={nav} metric="mrr" color="var(--rust)" />
+              <Bars rows={nav} metric="mrr" color="var(--orange)" />
               <table className="d-table" style={{ marginTop: 18 }}>
                 <thead><tr><th>Method</th><th>n</th><th>Acc@1</th><th>Hit@3</th><th>Requests</th><th>Tokens</th><th>Latency</th></tr></thead>
                 <tbody>{nav.map(([n, s]) => <tr key={n}><td>{n}</td><td>{s.n}</td><td>{s.acc_at_1?.toFixed(3)}</td><td>{s.hit_at_3?.toFixed(3)}</td><td>{s.mean_requests?.toFixed(1)}</td><td>{Math.round(s.mean_input_tokens ?? 0).toLocaleString()}</td><td>{((s.mean_latency_ms ?? 0) / 1000).toFixed(2)}s</td></tr>)}</tbody>
               </table>
             </Card>
             <Card title="Tours · recall of the files the real fix changed" aside={<span className="small" style={{ opacity: 0.6 }}>closed good-first issues, planned as of the day they were opened</span>}>
-              <Bars rows={tour} metric="recall@7" color="var(--lichen)" />
+              <Bars rows={tour} metric="recall@7" color="var(--green)" />
               <table className="d-table" style={{ marginTop: 18 }}>
                 <thead><tr><th>Method</th><th>n</th><th>R@1</th><th>R@3</th><th>R@7</th><th>MRR</th><th>Requests</th></tr></thead>
                 <tbody>{tour.map(([n, s]) => <tr key={n}><td>{n}</td><td>{s.n}</td><td>{s['recall@1']?.toFixed(3)}</td><td>{s['recall@3']?.toFixed(3)}</td><td>{s['recall@7']?.toFixed(3)}</td><td>{s.mrr?.toFixed(3)}</td><td>{s.requests?.toFixed(1)}</td></tr>)}</tbody>
               </table>
             </Card>
-            <Card title="Why-questions · calibration" theme="bark">
+            <Card title="Why-questions · calibration" theme="peach">
               {Object.keys(why).length === 0 ? (
                 <p className="body" style={{ margin: 0 }}>Waiting on labels. Run <span className="mono">bin/trailhead eval why</span>, label <span className="mono">eval/why_claim_labels.csv</span>, then <span className="mono">bin/trailhead eval why --report-only</span> for the reliability diagram and ECE.</p>
               ) : (

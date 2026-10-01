@@ -2,46 +2,60 @@ import { AnimatePresence, motion } from 'motion/react'
 import { Fragment, useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { api, stream } from '../lib/api'
 import type { BeamStep } from '../motion/BeamColumns'
-import { Contours } from '../motion/Contours'
+import { Shape, STORY } from '../motion/Shapes'
 import { SplitReveal } from '../motion/SplitReveal'
 import { TrailSpinner } from '../motion/TrailSpinner'
 import { useDash } from './context'
 
 export const EASE = [0.22, 1, 0.36, 1] as const
-export type Theme = 'pine' | 'paper' | 'bark' | 'glacier' | 'plum'
+export type Theme = 'cream' | 'peach' | 'lilac' | 'mint' | 'butter' | 'sky' | 'lime'
 
-/** Colour-blocked page header: giant condensed caps, a hand-written note, and moving contour lines. */
+// Which story shape leads each page header, by backdrop.
+const HEAD_STORY: Record<Theme, number> = { cream: 0, lilac: 0, sky: 4, mint: 1, peach: 2, butter: 3, lime: 1 }
+
+/** Pastel page header, like a landing mile: an arrow tag, heavy display type with a lime highlight, and a
+ *  small cluster of story shapes that pop in and drift. */
 export function PageHead({ theme, kicker, title, oblique, note, children }: { theme: Theme; kicker: string; title: string; oblique?: string; note?: string; children?: ReactNode }) {
+  const k = HEAD_STORY[theme]
+  const trio = [STORY[k], STORY[(k + 2) % STORY.length], STORY[(k + 4) % STORY.length]]
   return (
     <header className={`d-head t-${theme}`}>
-      <Contours color="var(--fg)" opacity={0.1} rings={8} />
-      <div style={{ position: 'relative' }}>
-        <motion.div className="kicker" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: EASE, delay: 0.1 }} style={{ marginBottom: 14, opacity: 0.8 }}>
+      <div className="d-head__copy">
+        <motion.span className="tag" initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5, ease: EASE, delay: 0.05 }}>
           {kicker}
-        </motion.div>
-        <h1 className="display">
+        </motion.span>
+        <h1 className="display d-head__title">
           <SplitReveal text={title} immediate delay={0.12} />
           {oblique && (
             <>
               {' '}
-              <span className="oblique" style={{ color: 'var(--blaze)' }}>
-                <SplitReveal text={oblique} immediate delay={0.25} />
-              </span>
+              <motion.span className="d-hl" initial={{ clipPath: 'inset(0 100% 0 0 round 0.16em)' }} animate={{ clipPath: 'inset(0 0% 0 0 round 0.16em)' }} transition={{ duration: 0.7, ease: [0.76, 0, 0.24, 1], delay: 0.3 }}>
+                {oblique}
+              </motion.span>
             </>
           )}
         </h1>
         {note && (
-          <motion.p className="hand" initial={{ opacity: 0, rotate: -4, x: -10 }} animate={{ opacity: 1, rotate: -2, x: 0 }} transition={{ delay: 0.5, duration: 0.7, ease: EASE }} style={{ fontSize: 'clamp(22px, 2.2vw, 30px)', margin: '14px 0 0', maxWidth: 720 }}>
+          <motion.p className="body d-head__note" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45, duration: 0.6, ease: EASE }}>
             {note}
           </motion.p>
         )}
         {children}
       </div>
+      <div className="d-head__art" aria-hidden>
+        {trio.map((st, i) => (
+          <motion.div key={i} className={`d-head__shape is-${i}`} initial={{ scale: 0, rotate: -50 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: 'spring', stiffness: 200, damping: 13, delay: 0.2 + i * 0.12 }}>
+            <motion.div animate={{ y: [0, i % 2 ? 8 : -10, 0], rotate: [0, i % 2 ? -6 : 6, 0] }} transition={{ duration: 4 + i, repeat: Infinity, ease: 'easeInOut' }}>
+              <Shape kind={st.kind} color={st.color} glyph={st.glyph} size={0} style={{ width: '100%', height: 'auto' }} />
+            </motion.div>
+          </motion.div>
+        ))}
+      </div>
     </header>
   )
 }
 
-export function Stat({ label, value, theme = 'paper', i = 0 }: { label: string; value: ReactNode; theme?: Theme; i?: number }) {
+export function Stat({ label, value, theme = 'cream', i = 0 }: { label: string; value: ReactNode; theme?: Theme; i?: number }) {
   return (
     <motion.div className={`d-stat t-${theme}`} initial={{ opacity: 0, y: 24, rotate: i % 2 ? 1.5 : -1.5 }} animate={{ opacity: 1, y: 0, rotate: 0 }} transition={{ duration: 0.7, ease: EASE, delay: 0.1 + i * 0.06 }} whileHover={{ y: -4, rotate: i % 2 ? -1 : 1 }}>
       <span className="v">{value}</span>
@@ -65,7 +79,7 @@ export function Card({ children, title, aside, theme, style, delay = 0 }: { chil
 }
 
 export function Note({ tone = 'info', children }: { tone?: 'info' | 'error' | 'ok'; children: ReactNode }) {
-  const styles = { info: { background: 'var(--paper-2)', color: 'var(--ink)' }, error: { background: '#ffd9d4', color: '#7a1408' }, ok: { background: 'var(--lichen)', color: 'var(--pine)' } }[tone]
+  const styles = { info: { background: 'var(--chip)', color: 'var(--ink)' }, error: { background: 'color-mix(in srgb, var(--stop) 14%, var(--surface))', color: 'var(--stop)' }, ok: { background: 'var(--lime)', color: 'var(--solid)' } }[tone]
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} style={{ ...styles, borderRadius: 14, padding: '12px 16px', fontWeight: 600, fontSize: 14.5, lineHeight: 1.4 }} role={tone === 'error' ? 'alert' : 'status'}>
       {children}
@@ -78,7 +92,7 @@ export function Empty({ title, children }: { title: string; children?: ReactNode
     <div style={{ textAlign: 'center', padding: '48px 16px', display: 'grid', justifyItems: 'center', gap: 10 }}>
       <svg width={120} height={60} viewBox="0 0 120 60" aria-hidden>
         <motion.path d="M4 50 C 30 50, 30 14, 60 14 S 90 50, 116 50" fill="none" stroke="currentColor" strokeWidth={3} strokeDasharray="2 8" strokeLinecap="round" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 1.4, ease: EASE }} />
-        <motion.rect x={56} y={4} width={8} height={14} rx={2} fill="var(--blaze)" initial={{ scaleY: 0 }} animate={{ scaleY: 1 }} transition={{ delay: 1, type: 'spring' }} style={{ originY: 1 }} />
+        <motion.circle cx={60} cy={12} r={9} fill="var(--orange)" initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 1, type: 'spring' }} />
       </svg>
       <div className="chunk" style={{ fontSize: 26 }}>{title}</div>
       {children && <div className="body" style={{ maxWidth: 520, opacity: 0.75 }}>{children}</div>}
@@ -87,7 +101,7 @@ export function Empty({ title, children }: { title: string; children?: ReactNode
 }
 
 /** Probability bar that grows in. */
-export function Prob({ p, color = 'var(--blaze)', width = 90 }: { p: number; color?: string; width?: number }) {
+export function Prob({ p, color = 'var(--orange)', width = 90 }: { p: number; color?: string; width?: number }) {
   return (
     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
       <span style={{ width, height: 6, borderRadius: 3, background: 'color-mix(in srgb, currentColor 14%, transparent)', overflow: 'hidden', display: 'inline-block' }}>
@@ -99,7 +113,7 @@ export function Prob({ p, color = 'var(--blaze)', width = 90 }: { p: number; col
 }
 
 export function CalibBadge({ badge, status }: { badge?: string; status?: string }) {
-  const tone = status === 'dropped' ? ['var(--mute)', 'var(--ink)'] : badge === 'high' ? ['var(--lichen)', 'var(--pine)'] : badge === 'medium' ? ['var(--ice)', 'var(--glacier)'] : ['var(--blaze)', 'var(--ink)']
+  const tone = status === 'dropped' ? ['var(--dim)', 'var(--ink)'] : badge === 'high' ? ['var(--lime)', 'var(--solid)'] : badge === 'medium' ? ['var(--blue)', 'var(--on-solid)'] : ['var(--orange)', 'var(--solid)']
   return (
     <span className="d-badge" style={{ background: tone[0], color: tone[1] }}>
       {status === 'dropped' ? 'dropped' : status === 'flagged' ? 'flagged' : badge || status}
@@ -119,7 +133,7 @@ export function SlotMeter() {
         <span className="small mono">{offline ? '—' : engine !== 'jev' ? 'ready' : ready ? 'ready' : `${Math.ceil(nextSlot)}s`}</span>
       </div>
       <div style={{ height: 8, borderRadius: 4, marginTop: 8, overflow: 'hidden', background: 'color-mix(in srgb, var(--fg) 16%, transparent)' }}>
-        <motion.div animate={{ scaleX: offline ? 0 : ready || engine !== 'jev' ? 1 : 1 - frac, background: ready ? 'var(--lichen)' : 'var(--blaze)' }} transition={{ duration: 0.5, ease: 'linear' }} style={{ height: '100%', transformOrigin: 'left' }} />
+        <motion.div animate={{ scaleX: offline ? 0 : ready || engine !== 'jev' ? 1 : 1 - frac, background: ready ? 'var(--lime)' : 'var(--orange)' }} transition={{ duration: 0.5, ease: 'linear' }} style={{ height: '100%', transformOrigin: 'left' }} />
       </div>
     </div>
   )
@@ -152,7 +166,7 @@ export function Prose({ text, evidence = [] }: { text: string; evidence?: Eviden
             {part.slice(1, -1).split(/\s*,\s*/).map((label) => {
               const e = byLabel.get(label)
               return (
-                <a key={label} href={e?.url || undefined} target="_blank" rel="noreferrer noopener" title={e ? `${e.ref} — ${e.title ?? ''}` : label} style={{ margin: '0 2px', padding: '1px 5px', borderRadius: 5, background: 'var(--blaze)', color: 'var(--ink)', textDecoration: 'none', fontWeight: 800, fontSize: 11 }}>
+                <a key={label} href={e?.url || undefined} target="_blank" rel="noreferrer noopener" title={e ? `${e.ref} — ${e.title ?? ''}` : label} style={{ margin: '0 2px', padding: '1px 5px', borderRadius: 5, background: 'var(--orange)', color: 'var(--solid)', textDecoration: 'none', fontWeight: 800, fontSize: 11 }}>
                   {label}
                 </a>
               )
@@ -236,13 +250,13 @@ export function JobStatus({ running, stage, elapsed, onCancel }: { running: bool
     <AnimatePresence>
       {running && (
         <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} style={{ overflow: 'hidden' }}>
-          <div className="d-row" style={{ padding: '12px 16px', borderRadius: 14, background: 'var(--pine)', color: 'var(--lichen)' }}>
+          <div className="d-row" style={{ padding: '12px 16px', borderRadius: 14, background: 'var(--solid)', color: 'var(--on-solid)', boxShadow: 'inset 0 0 0 1.5px var(--line)' }}>
             <TrailSpinner label={stage} />
             <span className="small" style={{ opacity: 0.8 }}>
               {Math.round(elapsed)}s{engine === 'jev' && nextSlot > 1 ? ` · waiting ${Math.ceil(nextSlot)}s for the next Jev slot` : ''}
             </span>
             {onCancel && (
-              <button className="d-chip" onClick={onCancel} style={{ marginLeft: 'auto', background: 'transparent', color: 'var(--lichen)', boxShadow: 'inset 0 0 0 1.5px var(--lichen)' }}>
+              <button className="d-chip" onClick={onCancel} style={{ marginLeft: 'auto', background: 'transparent', color: 'var(--lime)', boxShadow: 'inset 0 0 0 1.5px var(--lime)' }}>
                 Stop
               </button>
             )}

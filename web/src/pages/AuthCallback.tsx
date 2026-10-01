@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { Contours } from '../motion/Contours'
-import { Hiker } from '../motion/Hiker'
+import { motion } from 'motion/react'
+import { Shape, STORY } from '../motion/Shapes'
 import { TrailSpinner } from '../motion/TrailSpinner'
 
 export const GH_TOKEN_KEY = 'th-gh-provider-token'
@@ -46,10 +46,15 @@ export default function AuthCallback() {
   }, [navigate])
 
   return (
-    <div className="t-pine" style={{ minHeight: '100vh', position: 'relative', display: 'grid', placeItems: 'center', overflow: 'hidden', padding: 24 }}>
-      <Contours color="var(--lichen)" opacity={0.14} />
+    <div className="t-lilac" style={{ minHeight: '100vh', position: 'relative', display: 'grid', placeItems: 'center', overflow: 'hidden', padding: 24 }}>
       <div style={{ position: 'relative', textAlign: 'center', display: 'grid', justifyItems: 'center', gap: 18 }}>
-        <Hiker size={120} />
+        <div style={{ display: 'flex', gap: 12 }} aria-hidden>
+          {STORY.map((st, i) => (
+            <motion.span key={i} animate={{ y: [0, -14, 0], rotate: [0, i % 2 ? 8 : -8, 0] }} transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut', delay: i * 0.12, repeatDelay: 0.6 }}>
+              <Shape kind={st.kind} color={st.color} glyph={st.glyph} size={48} play={false} />
+            </motion.span>
+          ))}
+        </div>
         {error ? (
           <>
             <p className="lead" style={{ maxWidth: 520 }}>{error}</p>

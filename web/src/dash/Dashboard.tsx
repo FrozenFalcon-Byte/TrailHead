@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { NavLink, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import './dash.css'
 import { useAuth } from '../lib/auth'
-import { Hiker } from '../motion/Hiker'
+import { Shape, STORY, type Glyph, type ShapeKind } from '../motion/Shapes'
 import { Wordmark } from '../motion/Mark'
 import { DashProvider, useDash } from './context'
 import { EASE, SlotMeter } from './ui'
@@ -18,17 +18,18 @@ import Evals from './pages/Evals'
 import Repos from './pages/Repos'
 import Profile from './pages/Profile'
 
-const NAV = [
-  { to: '/app', label: 'Overview', end: true },
-  { to: '/app/ask', label: 'Ask' },
-  { to: '/app/tour', label: 'Tour' },
-  { to: '/app/find', label: 'Find' },
-  { to: '/app/issues', label: 'First issues' },
-  { to: '/app/map', label: 'Map' },
-  { to: '/app/decisions', label: 'Decisions' },
-  { to: '/app/evals', label: 'Evals' },
-  { to: '/app/repos', label: 'Repositories' },
+const NAV: { to: string; label: string; end?: boolean; kind: ShapeKind; color: string; glyph: Glyph }[] = [
+  { to: '/app', label: 'Overview', end: true, kind: 'circle', color: 'var(--violet)', glyph: 'folder' },
+  { to: '/app/ask', label: 'Ask', kind: 'tag', color: 'var(--orange)', glyph: 'signal' },
+  { to: '/app/tour', label: 'Tour', kind: 'circle', color: 'var(--blue)', glyph: 'flag' },
+  { to: '/app/find', label: 'Find', kind: 'square', color: 'var(--green)', glyph: 'branch' },
+  { to: '/app/issues', label: 'First issues', kind: 'square', color: 'var(--yellow)', glyph: 'pr' },
+  { to: '/app/map', label: 'Map', kind: 'circle', color: 'var(--green)', glyph: 'pine' },
+  { to: '/app/decisions', label: 'Decisions', kind: 'tag', color: 'var(--violet)', glyph: 'check' },
+  { to: '/app/evals', label: 'Evals', kind: 'square', color: 'var(--blue)', glyph: 'grep' },
+  { to: '/app/repos', label: 'Repositories', kind: 'circle', color: 'var(--orange)', glyph: 'file' },
 ]
+const BANDS = ['var(--violet)', 'var(--lime)', 'var(--orange)']
 
 function TopBar({ onMenu }: { onMenu: () => void }) {
   const { repos, repo, setRepo, engine, setEngine, health } = useDash()
@@ -57,7 +58,7 @@ function TopBar({ onMenu }: { onMenu: () => void }) {
         {avatar ? (
           <img src={avatar} alt="" width={34} height={34} style={{ borderRadius: 10 }} referrerPolicy="no-referrer" />
         ) : (
-          <span style={{ width: 34, height: 34, borderRadius: 10, display: 'grid', placeItems: 'center', background: 'var(--blaze)', color: 'var(--ink)', fontFamily: 'var(--display)', fontSize: 18 }}>{(displayName || '?').slice(0, 1).toUpperCase()}</span>
+          <span style={{ width: 34, height: 34, borderRadius: 10, display: 'grid', placeItems: 'center', background: 'var(--orange)', color: 'var(--solid)', fontFamily: 'var(--display)', fontSize: 18 }}>{(displayName || '?').slice(0, 1).toUpperCase()}</span>
         )}
       </button>
     </div>
@@ -76,25 +77,31 @@ function Shell() {
 
   return (
     <div className="d-shell">
-      <aside className={`d-side t-pine ${open ? 'open' : ''}`}>
+      <aside className={`d-side ${open ? 'open' : ''}`}>
         <NavLink to="/" style={{ textDecoration: 'none', padding: '0 8px' }}><Wordmark /></NavLink>
         <nav className="d-nav" aria-label="Dashboard">
           {NAV.map((item, i) => (
             <NavLink key={item.to} to={item.to} end={item.end}>
               {({ isActive }) => (
                 <>
-                  {isActive && <motion.span layoutId="d-nav-pill" style={{ position: 'absolute', inset: 0, borderRadius: 12, background: 'var(--lichen)', zIndex: 0 }} transition={{ type: 'spring', stiffness: 420, damping: 36 }} />}
-                  <span className="d-num" style={{ position: 'relative' }}>{String(i + 1).padStart(2, '0')}</span>
+                  {isActive && <motion.span layoutId="d-nav-pill" className="d-nav__pill" transition={{ type: 'spring', stiffness: 420, damping: 36 }} />}
+                  <motion.span className="d-nav__icon" initial={{ scale: 0, rotate: -40 }} animate={{ scale: 1, rotate: isActive ? -8 : 0 }} transition={{ type: 'spring', stiffness: 320, damping: 16, delay: i * 0.03 }}>
+                    <Shape kind={item.kind} color={item.color} glyph={item.glyph} size={26} play={isActive} />
+                  </motion.span>
                   <span style={{ position: 'relative' }}>{item.label}</span>
-                  {isActive && <motion.span layoutId="d-nav-blaze" style={{ position: 'relative', marginLeft: 'auto', width: 7, height: 14, borderRadius: 2, background: 'var(--blaze)' }} />}
+                  {isActive && <motion.span layoutId="d-nav-arrow" className="d-nav__arrow">→</motion.span>}
                 </>
               )}
             </NavLink>
           ))}
         </nav>
         <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <div style={{ color: 'var(--lichen)', opacity: 0.9, display: 'flex', justifyContent: 'center' }}>
-            <Hiker size={70} speed={1.3} />
+          <div className="d-side__story" aria-hidden>
+            {STORY.map((st, i) => (
+              <motion.span key={i} animate={{ y: [0, -7, 0] }} transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut', delay: i * 0.14, repeatDelay: 1.2 }}>
+                <Shape kind={st.kind} color={st.color} glyph={st.glyph} size={30} play={false} />
+              </motion.span>
+            ))}
           </div>
           <SlotMeter />
           <button className="btn ghost small" onClick={async () => { await signOut(); navigate('/') }} style={{ alignSelf: 'flex-start' }}>
@@ -102,13 +109,23 @@ function Shell() {
           </button>
         </div>
       </aside>
-      <AnimatePresence>{open && <motion.div onClick={() => setOpen(false)} initial={{ opacity: 0 }} animate={{ opacity: 0.45 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, background: 'var(--ink)', zIndex: 55 }} />}</AnimatePresence>
+      <AnimatePresence>{open && <motion.div onClick={() => setOpen(false)} initial={{ opacity: 0 }} animate={{ opacity: 0.45 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, background: 'var(--solid)', zIndex: 55 }} />}</AnimatePresence>
       <main className="d-main">
         <TopBar onMenu={() => setOpen(true)} />
         <AnimatePresence mode="wait" initial={false}>
           <motion.div key={location.pathname} style={{ position: 'relative' }}>
-            {/* page switch: a blaze band sweeps across, the new page rises out from under it */}
-            <motion.div aria-hidden initial={{ scaleX: 1, originX: 1 }} animate={{ scaleX: 0, transition: { duration: 0.55, ease: EASE, delay: 0.05 } }} exit={{ scaleX: 1, originX: 0, transition: { duration: 0.35, ease: EASE } }} style={{ position: 'absolute', inset: 0, height: 'min(100%, 70vh)', background: 'var(--blaze)', zIndex: 10, pointerEvents: 'none' }} />
+            {/* page switch: three accent bands sweep across, like the landing's mile markers, and the new page rises out from under them */}
+            {BANDS.map((c, i) => (
+              <motion.div
+                key={c}
+                aria-hidden
+                className="d-band"
+                initial={{ scaleX: 1, originX: 1 }}
+                animate={{ scaleX: 0, transition: { duration: 0.5, ease: EASE, delay: 0.05 + i * 0.06 } }}
+                exit={{ scaleX: 1, originX: 0, transition: { duration: 0.3, ease: EASE, delay: i * 0.05 } }}
+                style={{ top: `calc(min(100%, 70vh) * ${i / 3})`, background: c }}
+              />
+            ))}
             <motion.div initial={{ opacity: 0, y: 26 }} animate={{ opacity: 1, y: 0, transition: { duration: 0.6, ease: EASE, delay: 0.15 } }} exit={{ opacity: 0, transition: { duration: 0.2 } }}>
               <Routes location={location}>
                 <Route index element={<Overview />} />

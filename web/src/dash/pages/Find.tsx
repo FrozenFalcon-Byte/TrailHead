@@ -27,20 +27,20 @@ export default function Find() {
 
   return (
     <>
-      <PageHead theme="bark" kicker="Navigation" title="Find the" oblique="file" note="no embeddings, no grep — Jev reads the tree one level at a time and keeps the three best branches.">
+      <PageHead theme="peach" kicker="Navigation" title="Find the" oblique="file" note="no embeddings, no grep — Jev reads the tree one level at a time and keeps the three best branches.">
         <form onSubmit={(e) => { e.preventDefault(); run() }} className="d-ask" style={{ marginTop: 26, maxWidth: 980 }}>
           <input className="field" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Where is the robots.txt check?" aria-label="What are you looking for" maxLength={500} />
           <button className="btn" type="submit" disabled={job.running || !repo || query.trim().length < 3}><span>{job.running ? 'Searching…' : 'Find'}</span><span className="arrow">→</span></button>
         </form>
         <div className="d-row" style={{ marginTop: 14 }}>
-          {EXAMPLES.map((ex) => <button key={ex} className="d-chip" disabled={job.running} onClick={() => run(ex)} style={{ background: 'color-mix(in srgb, var(--blaze) 16%, transparent)', color: 'var(--blaze)' }}>{ex}</button>)}
+          {EXAMPLES.map((ex) => <button key={ex} className="d-chip" disabled={job.running} onClick={() => run(ex)} style={{ background: 'color-mix(in srgb, var(--orange) 16%, transparent)', color: 'var(--orange)' }}>{ex}</button>)}
         </div>
       </PageHead>
       <div className="d-body">
         <JobStatus running={job.running} stage={depths.length ? `Depth ${depths.length + 1}: asking about the kept branches` : 'Reading the top of the tree'} elapsed={job.elapsed} onCancel={job.cancel} />
         {job.error && <Note tone="error">{job.error}</Note>}
         {r && (
-          <Card theme="bark" title="Most likely here" aside={<span className="small">{r.requests} requests ({r.cached_requests} cached) · {(r.latency_ms / 1000).toFixed(1)}s{r.separation_ratio ? ` · separation ${r.separation_ratio.toFixed(2)}` : ''}</span>}>
+          <Card theme="peach" title="Most likely here" aside={<span className="small">{r.requests} requests ({r.cached_requests} cached) · {(r.latency_ms / 1000).toFixed(1)}s{r.separation_ratio ? ` · separation ${r.separation_ratio.toFixed(2)}` : ''}</span>}>
             <div style={{ display: 'grid', gap: 14 }}>
               {r.paths.map((p, i) => (
                 <motion.div key={p.file} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.1, ease: EASE, duration: 0.6 }}>
@@ -48,7 +48,7 @@ export default function Find() {
                     <span className="display" style={{ fontSize: i === 0 ? 34 : 24, width: 34 }}>{i + 1}</span>
                     <Link to={`/app/map?file=${encodeURIComponent(p.file)}`} className="mono">{p.file}</Link>
                     {r.symbols[p.file] && <span className="small">→ <b>{r.symbols[p.file].name}</b> line {r.symbols[p.file].line}</span>}
-                    <span style={{ marginLeft: 'auto' }}><Prob p={p.score} color="var(--blaze)" /></span>
+                    <span style={{ marginLeft: 'auto' }}><Prob p={p.score} color="var(--orange)" /></span>
                   </div>
                   <div className="small mono" style={{ opacity: 0.7, paddingLeft: 44 }}>
                     {p.nodes.map((n, j) => <span key={n}>{j > 0 && ' → '}{n.split('/').pop() || '/'} <span style={{ opacity: 0.7 }}>({p.edge_probabilities[j]?.toFixed(2)})</span></span>)}

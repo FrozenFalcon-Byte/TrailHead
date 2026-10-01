@@ -12,10 +12,10 @@ type OverviewData = {
 }
 
 const ACTIONS: { to: string; title: string; text: string; theme: Theme }[] = [
-  { to: '/app/ask', title: 'Ask', text: 'Where, how and why — cited, or an honest “not sure”.', theme: 'glacier' },
-  { to: '/app/tour', title: 'Tour', text: 'Give a goal, get the files to read, in order.', theme: 'pine' },
-  { to: '/app/find', title: 'Find', text: 'Watch the beam walk the tree to the right file.', theme: 'bark' },
-  { to: '/app/issues', title: 'First issues', text: 'Open issues ranked by how gentle they are.', theme: 'plum' },
+  { to: '/app/ask', title: 'Ask', text: 'Where, how and why — cited, or an honest “not sure”.', theme: 'sky' },
+  { to: '/app/tour', title: 'Tour', text: 'Give a goal, get the files to read, in order.', theme: 'mint' },
+  { to: '/app/find', title: 'Find', text: 'Watch the beam walk the tree to the right file.', theme: 'peach' },
+  { to: '/app/issues', title: 'First issues', text: 'Open issues ranked by how gentle they are.', theme: 'lilac' },
 ]
 
 export default function Overview() {
@@ -34,11 +34,11 @@ export default function Overview() {
   const hour = new Date().getHours()
   const greeting = hour < 12 ? 'Morning' : hour < 18 ? 'Afternoon' : 'Evening'
   const layerTotal = data ? Object.values(data.layers).reduce((a, b) => a + b, 0) : 0
-  const layerColors = ['var(--lichen)', 'var(--blaze)', 'var(--ice)', 'var(--heather)', 'var(--rust)', '#9c94ee', '#7fb3d1', 'var(--mute)']
+  const layerColors = ['var(--violet)', 'var(--orange)', 'var(--green)', 'var(--yellow)', 'var(--blue)', 'var(--lime)', 'var(--stop)', 'var(--dim)']
 
   return (
     <>
-      <PageHead theme="pine" kicker={repo || 'No repository yet'} title={first ? `${greeting}, ${first}.` : 'Base camp.'} oblique="Pick a trail" note="every answer here is decided by Jev and backed by the repo's own history" />
+      <PageHead theme="lilac" kicker={repo || 'No repository yet'} title={first ? `${greeting}, ${first}.` : 'Base camp.'} oblique="Pick a trail" note="every answer here is decided by Jev and backed by the repo's own history" />
       <div className="d-body">
         {offline && <Note tone="error">The Trailhead API is not reachable. Start it with <span className="mono">bin/trailhead serve</span>.</Note>}
         {!repo && !offline && (
@@ -53,12 +53,12 @@ export default function Overview() {
         {data && (
           <>
             <div className="d-grid">
-              <Stat i={0} theme="pine" label="source files" value={data.files.toLocaleString()} />
-              <Stat i={1} theme="paper" label="tests" value={data.tests.toLocaleString()} />
-              <Stat i={2} theme="bark" label="symbols" value={data.symbols.toLocaleString()} />
-              <Stat i={3} theme="glacier" label="commits" value={data.commits.toLocaleString()} />
-              <Stat i={4} theme="plum" label="pull requests" value={data.pull_requests.toLocaleString()} />
-              <Stat i={5} theme="paper" label="issues" value={data.issues.toLocaleString()} />
+              <Stat i={0} theme="mint" label="source files" value={data.files.toLocaleString()} />
+              <Stat i={1} theme="cream" label="tests" value={data.tests.toLocaleString()} />
+              <Stat i={2} theme="peach" label="symbols" value={data.symbols.toLocaleString()} />
+              <Stat i={3} theme="sky" label="commits" value={data.commits.toLocaleString()} />
+              <Stat i={4} theme="lilac" label="pull requests" value={data.pull_requests.toLocaleString()} />
+              <Stat i={5} theme="cream" label="issues" value={data.issues.toLocaleString()} />
             </div>
 
             <div style={{ display: 'grid', gap: 16, gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))' }}>
@@ -111,7 +111,7 @@ export default function Overview() {
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                     {recent.map((r) => (
                       <Link key={r.id} to={`/app/${r.type}?saved=${r.id}`} style={{ textDecoration: 'none', display: 'flex', gap: 10, alignItems: 'baseline' }}>
-                        <span className="d-badge" style={{ background: r.type === 'ask' ? 'var(--glacier)' : 'var(--pine)', color: r.type === 'ask' ? 'var(--ice)' : 'var(--lichen)' }}>{r.type}</span>
+                        <span className="d-badge" style={{ background: r.type === 'ask' ? 'var(--sky)' : 'var(--solid)', color: r.type === 'ask' ? 'var(--blue)' : 'var(--green)' }}>{r.type}</span>
                         <span style={{ fontWeight: 650, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.title}</span>
                         <span className="small" style={{ opacity: 0.55 }}>{ago(r.created_at)}</span>
                       </Link>

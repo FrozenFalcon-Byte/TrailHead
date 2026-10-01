@@ -4,8 +4,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import './auth.css'
 import { useAuth, useSignedIn } from '../lib/auth'
 import { authBypass, supabaseConfigured } from '../lib/supabase'
-import { Contours } from '../motion/Contours'
-import { Hiker } from '../motion/Hiker'
+import { Shape, STORY } from '../motion/Shapes'
 import { Wordmark } from '../motion/Mark'
 import { SplitReveal } from '../motion/SplitReveal'
 import { TrailSpinner } from '../motion/TrailSpinner'
@@ -75,40 +74,45 @@ export default function AuthPage() {
 
   return (
     <div className="a-wrap">
-      <aside className="a-art t-pine">
-        <Contours color="var(--lichen)" opacity={0.14} rings={12} />
+      <aside className="a-art t-lilac">
         <Link to="/" style={{ textDecoration: 'none', position: 'relative' }}><Wordmark /></Link>
         <div style={{ position: 'relative' }}>
           <AnimatePresence mode="wait">
-            <motion.h1 key={mode} className="display" style={{ fontSize: 'clamp(64px, 9vw, 150px)' }} exit={{ opacity: 0, y: -30, transition: { duration: 0.25 } }}>
+            <motion.h1 key={mode} className="display" style={{ fontSize: 'clamp(52px, 6.6vw, 112px)', lineHeight: 0.95 }} exit={{ opacity: 0, y: -30, transition: { duration: 0.25 } }}>
               {mode === 'login' ? (
                 <>
                   <SplitReveal text="Welcome" immediate delay={0.5} />
                   <br />
-                  <span className="oblique"><SplitReveal text="back" immediate delay={0.6} /></span> <SplitReveal text="to the trail" immediate delay={0.65} />
+                  <span className="a-hl"><SplitReveal text="back" immediate delay={0.6} /></span> <SplitReveal text="to the trail" immediate delay={0.65} />
                 </>
               ) : (
                 <>
                   <SplitReveal text="Your first" immediate delay={0.5} />
                   <br />
-                  <span className="oblique"><SplitReveal text="step" immediate delay={0.6} /></span> <SplitReveal text="starts here" immediate delay={0.65} />
+                  <span className="a-hl"><SplitReveal text="step" immediate delay={0.6} /></span> <SplitReveal text="starts here" immediate delay={0.65} />
                 </>
               )}
             </motion.h1>
           </AnimatePresence>
-          <p className="hand" style={{ fontSize: 28, color: 'var(--blaze)', marginTop: 18 }}>one repo, one goal, one clear path</p>
+          <p className="body" style={{ fontSize: 20, color: 'var(--fg-soft)', marginTop: 18 }}>One repo, one goal, one clear path.</p>
         </div>
-        <motion.div className="a-hiker" initial={{ x: 80, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.6, duration: 1, ease: EASE }}>
-          <Hiker size={150} />
-        </motion.div>
+        <div className="a-trail" aria-hidden>
+          {STORY.map((st, i) => (
+            <motion.span key={i} className="a-trail__stop" style={{ ['--i' as string]: i }} initial={{ scale: 0, rotate: -60 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: 'spring', stiffness: 220, damping: 13, delay: 0.5 + i * 0.12 }}>
+              <motion.span animate={{ y: [0, -8, 0] }} transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut', delay: i * 0.25 }} style={{ display: 'block', lineHeight: 0 }}>
+                <Shape kind={st.kind} color={st.color} glyph={st.glyph} size={0} style={{ width: '100%', height: 'auto' }} />
+              </motion.span>
+            </motion.span>
+          ))}
+        </div>
       </aside>
 
-      <section className="a-form t-paper">
+      <section className="a-form t-cream">
         <div style={{ maxWidth: 460, width: '100%', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div className="a-tabs" role="tablist">
             {(['login', 'signup'] as const).map((m) => (
-              <Link key={m} to={m === 'login' ? '/login' : '/signup'} replace state={location.state} role="tab" aria-selected={mode === m} style={{ color: mode === m ? 'var(--paper)' : 'var(--ink)', transition: 'color .3s' }}>
-                {mode === m && <motion.span layoutId="auth-tab" style={{ position: 'absolute', inset: 0, borderRadius: 10, background: 'var(--ink)', zIndex: -1 }} transition={{ type: 'spring', stiffness: 400, damping: 32 }} />}
+              <Link key={m} to={m === 'login' ? '/login' : '/signup'} replace state={location.state} role="tab" aria-selected={mode === m} style={{ color: mode === m ? 'var(--on-solid)' : 'var(--ink)', transition: 'color .3s' }}>
+                {mode === m && <motion.span layoutId="auth-tab" style={{ position: 'absolute', inset: 0, borderRadius: 999, background: 'var(--solid)', zIndex: -1 }} transition={{ type: 'spring', stiffness: 400, damping: 32 }} />}
                 {m === 'login' ? 'Log in' : 'Sign up'}
               </Link>
             ))}
@@ -117,7 +121,7 @@ export default function AuthPage() {
           <h2 className="chunk" style={{ fontSize: 'clamp(34px, 4vw, 52px)' }}>{mode === 'login' ? 'Log in to Trailhead' : 'Create your account'}</h2>
 
           {!supabaseConfigured && (
-            <div className="a-note" style={{ background: 'var(--paper-2)' }}>
+            <div className="a-note" style={{ background: 'var(--chip)' }}>
               Sign-in is not configured yet. Add <span className="mono">VITE_SUPABASE_URL</span> and <span className="mono">VITE_SUPABASE_ANON_KEY</span> to <span className="mono">web/.env</span> (see <span className="mono">docs/supabase.md</span>).
               {authBypass && (
                 <div style={{ marginTop: 10 }}>
@@ -129,15 +133,15 @@ export default function AuthPage() {
             </div>
           )}
           {signedIn && supabaseConfigured && (
-            <div className="a-note" style={{ background: 'var(--lichen)', color: 'var(--pine)' }}>
+            <div className="a-note" style={{ background: 'var(--lime)', color: 'var(--solid)' }}>
               You are signed in as {auth.displayName}. <Link to="/app">Open your dashboard →</Link>
             </div>
           )}
 
-          <button className="a-provider" style={{ background: 'var(--ink)', color: 'var(--paper)' }} disabled={disabled} onClick={run('github', () => auth.signInWith('github'))}>
+          <button className="a-provider" style={{ background: 'var(--solid)', color: 'var(--on-solid)', boxShadow: 'inset 0 0 0 1.5px var(--line)' }} disabled={disabled} onClick={run('github', () => auth.signInWith('github'))}>
             {busy === 'github' ? <TrailSpinner /> : <GitHubIcon />} Continue with GitHub
           </button>
-          <button className="a-provider" style={{ background: '#fff', color: 'var(--ink)', boxShadow: 'inset 0 0 0 2px var(--ink)' }} disabled={disabled} onClick={run('google', () => auth.signInWith('google'))}>
+          <button className="a-provider" style={{ background: 'var(--surface)', color: 'var(--ink)', boxShadow: 'inset 0 0 0 2px var(--ink)' }} disabled={disabled} onClick={run('google', () => auth.signInWith('google'))}>
             {busy === 'google' ? <TrailSpinner /> : <GoogleIcon />} Continue with Google
           </button>
 
@@ -173,7 +177,7 @@ export default function AuthPage() {
 
           <AnimatePresence>
             {(error || info) && (
-              <motion.div key={error || info} className="a-note" initial={{ opacity: 0, y: 10, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0 }} style={{ background: error ? '#ffd9d4' : 'var(--lichen)', color: error ? '#7a1408' : 'var(--pine)' }} role={error ? 'alert' : 'status'}>
+              <motion.div key={error || info} className="a-note" initial={{ opacity: 0, y: 10, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0 }} style={{ background: error ? 'color-mix(in srgb, var(--stop) 14%, var(--surface))' : 'var(--lime)', color: error ? 'var(--stop)' : 'var(--solid)' }} role={error ? 'alert' : 'status'}>
                 {error || info}
               </motion.div>
             )}

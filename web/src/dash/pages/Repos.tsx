@@ -15,13 +15,13 @@ function RepoTile({ r, active, onPick, i }: { r: RepoInfo; active: boolean; onPi
   const failed = r.status === 'failed'
   return (
     <motion.button onClick={onPick} disabled={r.status !== 'ready'} initial={{ opacity: 0, y: 20, rotate: i % 2 ? 1.5 : -1.5 }} animate={{ opacity: 1, y: 0, rotate: 0 }} transition={{ delay: i * 0.06, ease: EASE, duration: 0.6 }} whileHover={r.status === 'ready' ? { y: -5 } : undefined}
-      className={active ? 't-pine' : 'd-card'} style={{ textAlign: 'left', border: 0, borderRadius: 'var(--radius)', padding: 20, cursor: r.status === 'ready' ? 'pointer' : 'default', display: 'grid', gap: 8 }}>
+      className={active ? 'd-card tinted t-lime' : 'd-card'} style={{ textAlign: 'left', border: 0, borderRadius: 'var(--radius)', padding: 20, cursor: r.status === 'ready' ? 'pointer' : 'default', display: 'grid', gap: 8 }}>
       <span className="d-row" style={{ justifyContent: 'space-between' }}>
         <span className="mono" style={{ fontWeight: 800, fontSize: 17 }}>{r.repo}</span>
-        <span className="d-badge" style={{ background: failed ? 'var(--danger)' : running ? 'var(--blaze)' : active ? 'var(--pine)' : 'var(--paper-2)', color: 'var(--ink)' }}>{active ? 'current' : r.status}</span>
+        <span className="d-badge" style={{ background: failed ? 'var(--stop)' : running ? 'var(--orange)' : active ? 'var(--solid)' : 'var(--chip)', color: 'var(--ink)' }}>{active ? 'current' : r.status}</span>
       </span>
       {running && <TrailSpinner label="Cloning and reading history. This can take a few minutes." />}
-      {failed && <span className="small" style={{ color: '#7a1408' }}>{r.error}</span>}
+      {failed && <span className="small" style={{ color: 'var(--stop)' }}>{r.error}</span>}
       {r.status === 'ready' && (
         <span className="small" style={{ opacity: 0.75 }}>
           {r.files?.toLocaleString()} files · {r.symbols?.toLocaleString()} symbols · {r.commits?.toLocaleString()} commits · {r.pull_requests?.toLocaleString()} PRs · {r.issues?.toLocaleString()} issues
@@ -95,7 +95,7 @@ export default function Repos() {
 
   return (
     <>
-      <PageHead theme="paper" kicker="Repositories" title="Pick your" oblique="mountain" note="onboard any public GitHub repository — ingest reads, it never runs" />
+      <PageHead theme="peach" kicker="Repositories" title="Pick your" oblique="mountain" note="onboard any public GitHub repository — ingest reads, it never runs" />
       <div className="d-body">
         {error && <Note tone="error">{error}</Note>}
         {info && <Note tone="ok">{info}</Note>}
@@ -103,7 +103,7 @@ export default function Repos() {
           {repos.map((r, i) => <RepoTile key={r.repo} r={r} i={i} active={r.repo === repo} onPick={() => setRepo(r.repo)} />)}
         </div>
 
-        <Card title="Add a repository" theme="pine">
+        <Card title="Add a repository" theme="mint">
           <form onSubmit={(e) => { e.preventDefault(); onboard(name.trim()) }} className="d-ask">
             <input className="field mono" value={name} onChange={(e) => setName(e.target.value)} placeholder="owner/name" aria-label="Repository" />
             <button className="btn" type="submit" disabled={!name.trim()}><span>Onboard</span><span className="arrow">→</span></button>
@@ -132,7 +132,7 @@ export default function Repos() {
               {gh.map((r, i) => {
                 const known = repos.some((x) => x.repo.toLowerCase() === r.full_name.toLowerCase())
                 return (
-                  <motion.div key={r.full_name} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: Math.min(i, 20) * 0.03 }} style={{ padding: 14, borderRadius: 14, background: 'var(--paper-2)', display: 'grid', gap: 6 }}>
+                  <motion.div key={r.full_name} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: Math.min(i, 20) * 0.03 }} style={{ padding: 14, borderRadius: 14, background: 'var(--chip)', display: 'grid', gap: 6 }}>
                     <span className="mono" style={{ fontWeight: 800, overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.full_name}</span>
                     <span className="small" style={{ opacity: 0.7, minHeight: 18 }}>{r.description?.slice(0, 110)}</span>
                     <span className="d-row small" style={{ justifyContent: 'space-between' }}>

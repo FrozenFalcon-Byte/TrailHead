@@ -5,7 +5,7 @@ export type EvidenceItem = { ref: string; title: string; kind: string; relevance
 /** One passage of evidence with the stamp code gave it after Jev screened it. */
 export function EvidenceCard({ e, i = 0, stamp = true }: { e: EvidenceItem; i?: number; stamp?: boolean }) {
   const verdict = e.injection ? 'INJECTION' : e.kept ? 'KEPT' : 'DROPPED'
-  const tone = e.injection ? 'var(--danger)' : e.kept ? 'var(--lichen)' : 'var(--mute)'
+  const tone = e.injection ? 'var(--stop)' : e.kept ? 'var(--green)' : 'var(--dim)'
   return (
     <motion.div
       initial={{ opacity: 0, x: -30, rotate: -3 }}

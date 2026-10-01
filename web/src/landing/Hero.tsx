@@ -1,4 +1,4 @@
-import { AnimatePresence, motion, useScroll, useTransform } from 'motion/react'
+import { motion, useScroll, useTransform } from 'motion/react'
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Shape, STORY } from '../motion/Shapes'
@@ -14,6 +14,38 @@ function Rise({ children, delay, ready }: { children: React.ReactNode; delay: nu
       <motion.span style={{ display: 'inline-block' }} initial={{ y: '110%', rotate: 3 }} animate={ready ? { y: '0%', rotate: 0 } : undefined} transition={{ duration: 1, delay, ease: [0.76, 0, 0.24, 1] }}>
         {children}
       </motion.span>
+    </span>
+  )
+}
+
+/** The changing word. Every word sits in the same slot, so the slot is always as wide as the widest one and
+    the line never reflows; the letters roll through it instead, the old word out the top, the new one up from below. */
+function Swap({ word }: { word: number }) {
+  const prev = useRef(word)
+  const [last, setLast] = useState(-1)
+  useEffect(() => {
+    if (prev.current !== word) setLast(prev.current)
+    prev.current = word
+  }, [word])
+  return (
+    <span className="l-hero__swap">
+      {WORDS.map((w, i) => (
+        <span key={w} className="l-hero__word" aria-hidden={i !== word}>
+          {[...w].map((ch, k) => {
+            const state = i === word ? 'on' : i === last ? 'out' : 'below'
+            return (
+              <motion.span
+                key={k}
+                initial={false}
+                animate={state === 'on' ? { y: '0%', rotate: 0 } : state === 'out' ? { y: '-115%', rotate: -8 } : { y: '115%', rotate: 8 }}
+                transition={state === 'below' ? { duration: 0 } : { duration: 0.55, delay: k * 0.028 + (state === 'on' ? 0.12 : 0), ease: [0.76, 0, 0.24, 1] }}
+              >
+                {ch === ' ' ? '\u00a0' : ch}
+              </motion.span>
+            )
+          })}
+        </span>
+      ))}
     </span>
   )
 }
@@ -51,13 +83,7 @@ export function Hero({ ready, settled }: { ready: boolean; settled: boolean }) {
           <span className="l-hero__line">
             <motion.span style={{ display: 'inline-block' }} initial={{ y: '110%', rotate: 3 }} animate={ready ? { y: '0%', rotate: 0 } : undefined} transition={{ duration: 1, delay: base + 0.15, ease: [0.76, 0, 0.24, 1] }}>
               has a{' '}
-              <span className="l-hero__swap">
-                <AnimatePresence mode="popLayout" initial={false}>
-                  <motion.span key={word} style={{ display: 'inline-block' }} initial={{ y: '100%', opacity: 0 }} animate={{ y: '0%', opacity: 1 }} exit={{ y: '-100%', opacity: 0 }} transition={{ duration: 0.6, ease: [0.76, 0, 0.24, 1] }}>
-                    {WORDS[word]}
-                  </motion.span>
-                </AnimatePresence>
-              </span>
+              <Swap word={word} />
             </motion.span>
           </span>
         </h1>

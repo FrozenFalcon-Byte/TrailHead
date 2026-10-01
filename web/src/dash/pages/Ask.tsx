@@ -83,7 +83,7 @@ export default function Ask() {
 
   return (
     <>
-      <PageHead theme="glacier" kicker="Ask the codebase" title="Ask it" oblique="straight" note="Jev routes the question, walks the tree, screens every passage and checks every claim.">
+      <PageHead theme="sky" kicker="Ask the codebase" title="Ask it" oblique="straight" note="Jev routes the question, walks the tree, screens every passage and checks every claim.">
         <form onSubmit={(e) => { e.preventDefault(); run() }} className="d-ask" style={{ marginTop: 26, maxWidth: 980 }}>
           <input className="field" value={question} onChange={(e) => setQuestion(e.target.value)} placeholder="Where are failed requests retried?" maxLength={500} aria-label="Question" />
           <button className="btn" type="submit" disabled={job.running || !repo || question.trim().length < 3}>
@@ -92,7 +92,7 @@ export default function Ask() {
         </form>
         <div className="d-row" style={{ marginTop: 14 }}>
           {EXAMPLES.map((ex) => (
-            <button key={ex} type="button" className="d-chip" disabled={job.running} onClick={() => run(ex)} style={{ background: 'color-mix(in srgb, var(--ice) 16%, transparent)', color: 'var(--ice)' }}>{ex}</button>
+            <button key={ex} type="button" className="d-chip" disabled={job.running} onClick={() => run(ex)} style={{ background: 'color-mix(in srgb, var(--blue) 16%, transparent)', color: 'var(--blue)' }}>{ex}</button>
           ))}
         </div>
       </PageHead>
@@ -105,19 +105,19 @@ export default function Ask() {
         <AnimatePresence>
           {v.route && (
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="d-row">
-              <span className="d-badge" style={{ background: 'var(--glacier)', color: 'var(--ice)', fontSize: 16 }}>route · {ROUTE_NAMES[v.route.route] ?? v.route.route}</span>
+              <span className="d-badge" style={{ background: 'var(--sky)', color: 'var(--blue)', fontSize: 16 }}>route · {ROUTE_NAMES[v.route.route] ?? v.route.route}</span>
               <span className="small" style={{ opacity: 0.65 }}>{v.route.reason}</span>
               {Object.entries<number>(v.route.probabilities ?? {}).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([k, p]) => (
-                <span key={k} className="small" style={{ display: 'inline-flex', gap: 6, alignItems: 'center' }}>{ROUTE_NAMES[k] ?? k} <Prob p={p as number} width={50} color="var(--ice)" /></span>
+                <span key={k} className="small" style={{ display: 'inline-flex', gap: 6, alignItems: 'center' }}>{ROUTE_NAMES[k] ?? k} <Prob p={p as number} width={50} color="var(--blue)" /></span>
               ))}
             </motion.div>
           )}
         </AnimatePresence>
 
         {answer && (
-          <Card theme={answer.status === 'answered' ? 'paper' : 'bark'} style={{ boxShadow: 'inset 0 0 0 2px var(--ink)' }}>
+          <Card theme={answer.status === 'answered' ? 'cream' : 'peach'} style={{ boxShadow: 'inset 0 0 0 2px var(--ink)' }}>
             <div className="d-row" style={{ justifyContent: 'space-between', marginBottom: 12 }}>
-              <motion.span className="display" initial={{ scale: 1.6, rotate: -8, opacity: 0 }} animate={{ scale: 1, rotate: -3, opacity: 1 }} transition={{ type: 'spring', stiffness: 380, damping: 18 }} style={{ fontSize: 30, padding: '2px 12px', borderRadius: 8, boxShadow: 'inset 0 0 0 3px currentColor', color: answer.status === 'answered' ? 'var(--lichen)' : 'var(--blaze)' }}>
+              <motion.span className="display" initial={{ scale: 1.6, rotate: -8, opacity: 0 }} animate={{ scale: 1, rotate: -3, opacity: 1 }} transition={{ type: 'spring', stiffness: 380, damping: 18 }} style={{ fontSize: 30, padding: '2px 12px', borderRadius: 8, boxShadow: 'inset 0 0 0 3px currentColor', color: answer.status === 'answered' ? 'var(--green)' : 'var(--orange)' }}>
                 {answer.status === 'answered' ? 'Answered' : 'Not sure — abstained'}
               </motion.span>
               {answer.confidence != null && <span className="small">confidence <Prob p={answer.confidence} /></span>}
@@ -136,7 +136,7 @@ export default function Ask() {
                     </div>
                     <div style={{ display: 'grid', gap: 2, justifyItems: 'end' }} className="small">
                       <span>support <Prob p={c.p_support} width={50} /></span>
-                      <span>direct <Prob p={c.directness} width={50} color="var(--ice)" /></span>
+                      <span>direct <Prob p={c.directness} width={50} color="var(--blue)" /></span>
                     </div>
                   </motion.div>
                 ))}
@@ -147,7 +147,7 @@ export default function Ask() {
         )}
 
         {(v.steps.length > 0 || v.nav) && (
-          <Card title="The beam, depth by depth" theme="glacier" aside={v.nav && <span className="small">{v.nav.requests} Jev request{v.nav.requests === 1 ? '' : 's'}{v.nav.separation_ratio ? ` · separation ${v.nav.separation_ratio.toFixed(2)}` : ''}</span>}>
+          <Card title="The beam, depth by depth" theme="sky" aside={v.nav && <span className="small">{v.nav.requests} Jev request{v.nav.requests === 1 ? '' : 's'}{v.nav.separation_ratio ? ` · separation ${v.nav.separation_ratio.toFixed(2)}` : ''}</span>}>
             <BeamColumns steps={toBeamSteps(v.steps)} compact />
             {v.nav?.paths?.length > 0 && (
               <div style={{ marginTop: 14, display: 'grid', gap: 6 }}>
@@ -155,7 +155,7 @@ export default function Ask() {
                   <div key={p.file} className="d-row" style={{ fontWeight: i === 0 ? 800 : 550 }}>
                     <span className="mono">{p.file}</span>
                     {v.nav.symbols?.[p.file] && <span className="small" style={{ opacity: 0.7 }}>→ {v.nav.symbols[p.file].name}:{v.nav.symbols[p.file].line}</span>}
-                    <span style={{ marginLeft: 'auto' }}><Prob p={p.score} color="var(--ice)" /></span>
+                    <span style={{ marginLeft: 'auto' }}><Prob p={p.score} color="var(--blue)" /></span>
                   </div>
                 ))}
               </div>

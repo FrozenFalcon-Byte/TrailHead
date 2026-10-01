@@ -2,12 +2,11 @@ import { motion, useMotionValue, useSpring, useTransform, useVelocity } from 'mo
 import { useEffect, useRef, useState } from 'react'
 
 /* The Trailhead cursor. One object, no follower: a solid teardrop whose sharp corner is the hotspot.
-   - Moving leaves a short dotted trail behind it, like a marked path, that fades as you stop.
    - Over links the teardrop stretches into an orange label pill ("Open →", "Visit ↗", or data-cursor).
    - Over buttons, nav links and chips it leaves the pointer and wraps the control as a ring, which leans
      toward you, magnet-style.
    - Over text fields it narrows into a violet I-beam.
-   - Pressing squishes it; releasing sends a ripple and a burst of story shapes, and shifts the trail colour.
+   - Pressing squishes it; releasing sends a ripple and a burst of story shapes, and shifts the ring colour.
    - Cards with [data-tilt] tilt in 3D under it.
    Fine pointers only; off under reduced motion. */
 
@@ -19,7 +18,6 @@ const LINK = 'a, button, [role="button"], summary, label, select, [data-cursor]'
 const TEXT = 'input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), textarea, [contenteditable="true"]'
 const COLORS = ['var(--orange)', 'var(--violet)', 'var(--green)', 'var(--blue)', 'var(--yellow)']
 const KINDS = ['50%', '6px', '50% 50% 50% 6px'] as const
-const TRAIL_MS = 260
 const SPRING = { type: 'spring', stiffness: 520, damping: 32, mass: 0.7 } as const
 
 let ctx: CanvasRenderingContext2D | null = null
@@ -39,7 +37,6 @@ export function TrailCursor() {
   const [tint, setTint] = useState(0)
   const [ring, setRing] = useState<Ring | null>(null)
   const layer = useRef<HTMLDivElement>(null)
-  const trail = useRef<SVGPolylineElement>(null)
   const tintRef = useRef(0)
 
   const px = useMotionValue(-100)
@@ -59,8 +56,6 @@ export function TrailCursor() {
     let stuck: HTMLElement | null = null
     let tilt: HTMLElement | null = null
     let chaseUntil = 0
-    let raf = 0
-    const points: { x: number; y: number; t: number }[] = []
     const ease = 'transform 0.5s cubic-bezier(0.22, 1, 0.36, 1)'
 
     const follow = (x: number, y: number) => {
@@ -86,15 +81,6 @@ export function TrailCursor() {
       tilt.style.transform = ''
       tilt = null
     }
-
-    // The dotted trail: recent pointer positions, trimmed by age every frame.
-    const draw = () => {
-      const now = performance.now()
-      while (points.length && now - points[0].t > TRAIL_MS) points.shift()
-      trail.current?.setAttribute('points', points.map((p) => `${p.x},${p.y}`).join(' '))
-      raf = requestAnimationFrame(draw)
-    }
-    raf = requestAnimationFrame(draw)
 
     const release = (x: number, y: number) => {
       const host = layer.current
@@ -156,12 +142,10 @@ export function TrailCursor() {
         by.set(r.top - pad + oy)
         setRing({ x: r.left, y: r.top, w: r.width + pad * 2, h, r: Math.min(radius + pad, h / 2) })
         setMode('stick')
-        points.length = 0
       } else {
         unstick()
         follow(x, y)
         setMode(text ? 'text' : link ? 'link' : 'idle')
-        if (!text && e.type === 'pointermove') points.push({ x, y, t: performance.now() })
       }
       const named = link?.closest<HTMLElement>('[data-cursor]')?.dataset.cursor
       setLabel(named ?? (link ? (link.tagName === 'A' && (link as HTMLAnchorElement).target === '_blank' ? 'Visit ↗' : link.tagName === 'A' ? 'Open →' : 'Click') : ''))
@@ -191,7 +175,6 @@ export function TrailCursor() {
       setAway(true)
       unstick()
       untilt()
-      points.length = 0
     }
     // Content moves under a still pointer while scrolling: re-read what is beneath it once per frame.
     let pending = 0
@@ -213,7 +196,6 @@ export function TrailCursor() {
     window.addEventListener('scroll', scroll, { passive: true })
     document.documentElement.addEventListener('pointerleave', leave)
     return () => {
-      cancelAnimationFrame(raf)
       cancelAnimationFrame(pending)
       window.removeEventListener('pointermove', move)
       window.removeEventListener('pointerdown', press)
@@ -250,9 +232,6 @@ export function TrailCursor() {
 
   return (
     <div ref={layer} className="tc-layer" style={{ opacity: away ? 0 : 1, transition: 'opacity 0.25s' }} aria-hidden>
-      <svg className="tc-trail">
-        <polyline ref={trail} fill="none" stroke={color} strokeWidth={4} strokeLinecap="round" strokeLinejoin="round" strokeDasharray="0.1 10" style={{ transition: 'stroke 0.3s' }} />
-      </svg>
       <motion.div className="tc-pos" style={{ x: bx, y: by }}>
         <motion.div style={{ scale: mode === 'idle' ? stretch : 1, originX: 0, originY: 0 }}>
           <motion.div

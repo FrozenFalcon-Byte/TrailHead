@@ -6,9 +6,10 @@ import { Hero } from '../landing/Hero'
 import { Nav } from '../landing/Nav'
 import { Lost } from '../landing/Lost'
 import { Signposts } from '../landing/Signposts'
-import { Faq, Footer, HowItWorks, Quote, Receipts, Rules } from '../landing/Sections'
+import { Faq, Footer, HowItWorks, Quote, Rules } from '../landing/Sections'
+import { Receipts } from '../landing/ReceiptsMile'
 import { Statement } from '../landing/Statement'
-import { ChevronWipe, Rise } from '../motion/Wipe'
+import { MileWipe } from '../motion/Wipe'
 
 export default function Landing({ ready, settled = true }: { ready: boolean; settled?: boolean }) {
   const lenis = useRef<Lenis | null>(null)
@@ -40,14 +41,20 @@ export default function Landing({ ready, settled = true }: { ready: boolean; set
       <Nav onJump={jump} settled={settled} />
       <Hero ready={ready} settled={settled} />
       <Statement />
-      <ChevronWipe from="var(--paper)" to="var(--lilac)" label="Mile 1 →" />
+      <MileWipe kind="chevron" from="var(--paper)" to="var(--lilac)" label="Mile 1 →" />
       <Lost />
+      <MileWipe kind="iris" from="var(--lime)" to="var(--peach)" label="Mile 2 →" />
       <Signposts />
-      <Rise as="div"><Climb /></Rise>
+      <MileWipe kind="shutters" from="var(--peach)" to="var(--peach)" label="Mile 3 →" />
+      <Climb />
+      <MileWipe kind="tiles" from="var(--mint)" to="var(--butter)" label="Mile 4 →" />
       <HowItWorks />
       <Quote />
+      <MileWipe kind="stripes" from="var(--paper)" to="var(--sky)" label="Mile 5 →" />
       <Receipts />
+      <MileWipe kind="doors" from="var(--sky)" to="var(--mint)" label="Mile 6 →" />
       <Rules />
+      <MileWipe kind="ripple" from="var(--mint)" to="var(--peach)" label="Mile 7 →" />
       <Faq />
       <Footer onJump={jump} />
     </main>

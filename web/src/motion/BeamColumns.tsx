@@ -20,7 +20,7 @@ export function BeamColumns({ steps, kept, visible = steps.length, compact = fal
             animate={{ opacity: 1, y: 0, rotate: 0 }}
             transition={{ duration: 0.7, delay: delay + i * 0.12, ease: [0.22, 1, 0.36, 1] }}
             style={{
-              minWidth: compact ? 170 : 210, flex: '0 0 auto', borderRadius: 16, padding: compact ? 12 : 16,
+              minWidth: compact ? 0 : 210, flex: compact ? '1 1 0' : '0 0 auto', borderRadius: 16, padding: compact ? 12 : 16,
               background: 'color-mix(in srgb, var(--fg) 8%, transparent)', boxShadow: 'inset 0 0 0 1.5px color-mix(in srgb, var(--fg) 22%, transparent)',
             }}
           >
@@ -33,7 +33,7 @@ export function BeamColumns({ steps, kept, visible = steps.length, compact = fal
               return (
                 <div key={o.name} style={{ marginBottom: 7, opacity: lit ? 1 : 0.5 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, fontWeight: lit ? 780 : 560, fontSize: compact ? 13 : 14 }}>
-                    <span className="mono" style={{ textDecoration: !lit && o.p < 0.05 ? 'line-through' : 'none', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: compact ? 120 : 150 }}>{o.name}</span>
+                    <span className="mono" style={{ textDecoration: !lit && o.p < 0.05 ? 'line-through' : 'none', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: compact ? 'calc(100% - 38px)' : 150 }}>{o.name}</span>
                     <span>{o.p.toFixed(2)}</span>
                   </div>
                   <div style={{ height: 5, borderRadius: 3, background: 'color-mix(in srgb, var(--fg) 14%, transparent)', overflow: 'hidden', marginTop: 3 }}>

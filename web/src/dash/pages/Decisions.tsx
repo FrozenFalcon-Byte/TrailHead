@@ -16,7 +16,7 @@ export default function Decisions() {
 
   return (
     <>
-      <PageHead theme="paper" kicker="Audit log" title="Every" oblique="decision" note="each judgement Jev made, with its probabilities, what code did with it, and whether it came from the cache" />
+      <PageHead theme="lilac" kicker="Audit log" title="Every" oblique="decision" note="each judgement Jev made, with its probabilities, what code did with it, and whether it came from the cache" />
       <div className="d-body">
         {error && <Note tone="error">{error}</Note>}
         <div className="d-row">
@@ -43,13 +43,13 @@ export default function Decisions() {
                           <td className="mono small">{d.question_id}</td>
                           <td style={{ fontWeight: 700, maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{d.answer}</td>
                           <td>{d.confidence != null ? <Prob p={d.confidence} width={40} /> : '—'}</td>
-                          <td className="small">{d.engine}{d.cached ? <span className="pill" style={{ marginLeft: 6, ['--fg' as string]: 'var(--lichen)' }}>cached</span> : ''}</td>
+                          <td className="small">{d.engine}{d.cached ? <span className="pill" style={{ marginLeft: 6, ['--fg' as string]: 'var(--green)' }}>cached</span> : ''}</td>
                           <td className="small" style={{ maxWidth: 260 }}>{d.action || '—'}</td>
                         </tr>
                         <AnimatePresence>
                           {open === d.id && (
                             <tr>
-                              <td colSpan={7} style={{ background: 'var(--paper-2)' }}>
+                              <td colSpan={7} style={{ background: 'var(--chip)' }}>
                                 <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} transition={{ ease: EASE, duration: 0.3 }} style={{ overflow: 'hidden', display: 'grid', gap: 6 }}>
                                   <div className="small">{d.question_type} · {d.model_id} via {d.provider} · {Math.round(d.latency_ms)} ms · {d.input_tokens} input tokens · call <span className="mono">{d.call_id.slice(0, 12)}</span></div>
                                   <div className="d-row">{Object.entries(probs).sort((a, b) => b[1] - a[1]).slice(0, 8).map(([k, v]) => <span key={k} className="small" style={{ display: 'inline-flex', gap: 6 }}><span className="mono">{k}</span> <Prob p={v} width={50} /></span>)}</div>

@@ -1,5 +1,5 @@
-import { AnimatePresence, motion, useInView, useMotionValueEvent, useScroll, useTransform } from 'motion/react'
-import { useEffect, useRef, useState } from 'react'
+import { AnimatePresence, motion, useMotionValueEvent, useScroll, useTransform, type MotionValue } from 'motion/react'
+import { useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { BeamColumns } from '../motion/BeamColumns'
 import { EvidenceCard } from '../motion/EvidenceCard'
@@ -8,12 +8,15 @@ import { ScrubText } from '../motion/ScrubText'
 import { Shape, STORY, type Glyph, type ShapeKind } from '../motion/Shapes'
 import { SplitReveal } from '../motion/SplitReveal'
 import { TrailPath } from '../motion/TrailPath'
-import { Rise } from '../motion/Wipe'
 import { useSignedIn } from '../lib/auth'
 import { EVIDENCE_DEMO, NAV_DEMO, TOUR_DEMO } from './demo'
-import { COSTS, INJECTION, NAV_RESULTS, TOUR_RESULTS } from './receipts'
 
 const EASE = [0.22, 1, 0.36, 1] as const
+const clamp01 = (v: number) => Math.min(1, Math.max(0, v))
+const smooth = (a: number, b: number, v: number) => {
+  const t = clamp01((v - a) / (b - a))
+  return t * t * (3 - 2 * t)
+}
 
 /** Section heading: an arrow-tag step number, a label, and a big line of display type that rises in. */
 function Heading({ n, label, children, center }: { n: string; label: string; children: string; center?: boolean }) {
@@ -53,27 +56,19 @@ function IngestGraphic() {
   )
 }
 
-function NavigateGraphic() {
-  const [shown, setShown] = useState(0)
-  const ref = useRef<HTMLDivElement>(null)
-  const inView = useInView(ref, { once: true })
-  useEffect(() => {
-    if (!inView || shown >= NAV_DEMO.steps.length) return
-    const timer = setTimeout(() => setShown((s) => s + 1), shown === 0 ? 200 : 900)
-    return () => clearTimeout(timer)
-  }, [inView, shown])
+/** Driven by scroll: each column of the beam search opens as you move through the step, so it keeps pace with you. */
+function NavigateGraphic({ local }: { local: MotionValue<number> }) {
+  const total = NAV_DEMO.steps.length
+  const [shown, setShown] = useState(1)
+  useMotionValueEvent(local, 'change', (t) => setShown(Math.max(1, Math.min(total, 1 + Math.floor(t * (total + 0.4))))))
   const kept = new Set(['scrapy/', 'downloadermiddlewares/', 'retry.py'])
   return (
-    <div ref={ref} style={{ width: '100%' }}>
+    <div style={{ width: '100%' }}>
       <div className="lead" style={{ fontSize: 20, marginBottom: 12 }}>“{NAV_DEMO.question}”</div>
       <BeamColumns steps={NAV_DEMO.steps} visible={shown} kept={kept} compact />
-      <AnimatePresence>
-        {shown >= NAV_DEMO.steps.length && (
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }} className="small" style={{ marginTop: 12 }}>
-            → <span className="mono">{NAV_DEMO.answer}</span> · path score {NAV_DEMO.score} · {NAV_DEMO.separation}× ahead of the runner-up
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <motion.div initial={false} animate={{ opacity: shown >= total ? 1 : 0, y: shown >= total ? 0 : 10 }} transition={{ duration: 0.4 }} className="small" style={{ marginTop: 12 }}>
+        → <span className="mono">{NAV_DEMO.answer}</span> · path score {NAV_DEMO.score} · {NAV_DEMO.separation}× ahead of the runner-up
+      </motion.div>
     </div>
   )
 }
@@ -96,20 +91,43 @@ function WalkGraphic() {
 }
 
 export function HowItWorks() {
-  const ref = useRef<HTMLDivElement>(null)
+  const ref = useRef<HTMLElement>(null)
+  const n = STEPS.length
   const [active, setActive] = useState(0)
-  const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end end'] })
-  useMotionValueEvent(scrollYProgress, 'change', (v) => setActive(Math.min(STEPS.length - 1, Math.max(0, Math.floor(v * STEPS.length * 0.999)))))
-  const bar = useTransform(scrollYProgress, (v) => v)
-  const graphics = [<IngestGraphic key="i" />, <NavigateGraphic key="n" />, <VerifyGraphic key="v" />, <WalkGraphic key="w" />]
+  const { scrollYProgress: p } = useScroll({ target: ref, offset: ['start start', 'end end'] })
+  // The first screen of scroll is the intro: the heading starts big and docks into the corner as the steps come up.
+  const introEnd = 1 / (n + 1)
+  const intro = useTransform(p, (v) => smooth(0, introEnd, v))
+  const q = useTransform(p, (v) => clamp01((v - introEnd) / (1 - introEnd)))
+  useMotionValueEvent(q, 'change', (v) => setActive(Math.min(n - 1, Math.floor(v * n * 0.999))))
+  const local = useTransform(q, (v) => clamp01(v * n - 1))
+  const headY = useTransform(intro, (t) => `${((1 - t) * 24).toFixed(2)}svh`)
+  const headScale = useTransform(intro, (t) => 1 - t * 0.62)
+  const chips = useTransform(intro, (t) => 1 - smooth(0, 0.45, t))
+  const body = useTransform(intro, (t) => smooth(0.55, 1, t))
+  const bodyY = useTransform(body, (t) => (1 - t) * 60)
+  const graphics = [<IngestGraphic key="i" />, <NavigateGraphic key="n" local={local} />, <VerifyGraphic key="v" />, <WalkGraphic key="w" />]
   const step = STEPS[active]
   return (
-    <Rise id="how" className="t-butter">
-      <div className="l-section" style={{ paddingBottom: 0 }}>
-        <Heading n="Mile 4" label="How it works">From clone to clarity</Heading>
-      </div>
-      <div ref={ref} className="l-how" style={{ height: `${STEPS.length * 100}vh` }}>
-        <div className="l-how__sticky">
+    <section ref={ref} id="how" className="l-how t-butter" style={{ height: `${(n + 1) * 100 + 20}vh` }}>
+      <div className="l-how__sticky">
+        <motion.div className="l-how__intro" style={{ y: headY, scale: headScale }}>
+          <div className="l-head__tags">
+            <span className="tag">Mile 4</span>
+            <span className="l-hero__chip">How it works</span>
+          </div>
+          <h2 className="display l-giant">From clone to clarity</h2>
+          <motion.div className="l-how__chips" style={{ opacity: chips }}>
+            {STEPS.map((s, i) => (
+              <motion.span key={s.n} className="l-how__chip" initial={{ opacity: 0, y: 30, rotate: -6 }} whileInView={{ opacity: 1, y: 0, rotate: 0 }} viewport={{ once: true }} transition={{ type: 'spring', stiffness: 220, damping: 16, delay: 0.1 + i * 0.08 }}>
+                <Shape kind={s.shape.kind} color={s.shape.color} glyph={s.shape.glyph} size={44} />
+                <b>{s.n}</b> {s.title}
+              </motion.span>
+            ))}
+          </motion.div>
+        </motion.div>
+
+        <motion.div className="l-how__body" style={{ opacity: body, y: bodyY }}>
           <div className="l-how__stage">
             <AnimatePresence mode="wait">
               <motion.div key={active} className="l-how__step" initial="in" animate="on" exit="out">
@@ -129,7 +147,7 @@ export function HowItWorks() {
           </div>
           <div className="l-how__stage">
             <AnimatePresence mode="wait">
-              <motion.div key={active} className="l-how__card" initial={{ opacity: 0, x: 80, rotate: 4 }} animate={{ opacity: 1, x: 0, rotate: 0 }} exit={{ opacity: 0, x: -80, rotate: -4 }} transition={{ duration: 0.55, ease: [0.76, 0, 0.24, 1] }}>
+              <motion.div key={active} className="l-how__card" initial={{ opacity: 0, y: 60, rotate: 3 }} animate={{ opacity: 1, y: 0, rotate: 0 }} exit={{ opacity: 0, y: -60, rotate: -3 }} transition={{ duration: 0.4, ease: [0.76, 0, 0.24, 1] }}>
                 {graphics[active]}
               </motion.div>
             </AnimatePresence>
@@ -138,11 +156,11 @@ export function HowItWorks() {
             {STEPS.map((s, i) => (
               <span key={s.n} className={`small${i === active ? ' is-on' : ''}`}>{s.n} {s.title}</span>
             ))}
-            <div className="l-how__bar"><motion.div style={{ scaleX: bar, originX: 0 }} /></div>
+            <div className="l-how__bar"><motion.div style={{ scaleX: q, originX: 0 }} /></div>
           </div>
-        </div>
+        </motion.div>
       </div>
-    </Rise>
+    </section>
   )
 }
 
@@ -171,63 +189,6 @@ export function Quote() {
   )
 }
 
-/* ---------- Receipts: a bento of numbers ---------- */
-function Bar({ value, label, n, ours, i }: { value: number; label: string; n: number; ours?: boolean; i: number }) {
-  return (
-    <div style={{ marginBottom: 16 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: ours ? 800 : 600, marginBottom: 6 }}>
-        <span>{label}</span>
-        <span>{value.toFixed(3)} <span className="small" style={{ opacity: 0.6 }}>n={n}</span></span>
-      </div>
-      <div style={{ height: 18, borderRadius: 999, background: 'color-mix(in srgb, var(--ink) 10%, transparent)', overflow: 'hidden' }}>
-        <motion.div initial={{ scaleX: 0 }} whileInView={{ scaleX: value }} viewport={{ once: true }} transition={{ duration: 1.2, delay: i * 0.12, ease: EASE }} style={{ height: '100%', originX: 0, borderRadius: 999, background: ours ? 'var(--violet)' : 'color-mix(in srgb, var(--ink) 35%, transparent)' }} />
-      </div>
-    </div>
-  )
-}
-
-function Card({ children, className = '', style, i = 0 }: { children: React.ReactNode; className?: string; style?: React.CSSProperties; i?: number }) {
-  return (
-    <motion.div className={`l-stat ${className}`} style={style} data-tilt="6"
-      initial={{ opacity: 0, y: 60, scale: 0.94 }} whileInView={{ opacity: 1, y: 0, scale: 1 }} viewport={{ once: true, amount: 0.3 }} transition={{ duration: 0.8, delay: i * 0.08, ease: EASE }}>
-      {children}
-    </motion.div>
-  )
-}
-
-export function Receipts() {
-  return (
-    <Rise id="receipts" className="l-section t-sky">
-      <Heading n="Mile 5" label="Measured on scrapy/scrapy" center>The receipts</Heading>
-      <div className="l-stats">
-        <Card className="is-wide">
-          <div className="small" style={{ marginBottom: 14, opacity: 0.75 }}>Finding the right file · mean reciprocal rank on hand-written where-is questions</div>
-          {NAV_RESULTS.map((r, i) => <Bar key={r.method} value={r.mrr} label={r.method} n={r.n} ours={r.ours} i={i} />)}
-        </Card>
-        <Card i={1} style={{ background: 'var(--violet)', color: 'var(--solid)' }}>
-          <div className="display" style={{ fontSize: 'clamp(64px, 8vw, 120px)' }}>{COSTS.requestsPerSearch}</div>
-          <div className="chunk" style={{ fontSize: 22 }}>Jev requests per search</div>
-          <p className="small" style={{ marginTop: 10 }}>One request per tree depth, with every open branch asked at once. About {COSTS.tokensPerSearch} input tokens.</p>
-        </Card>
-        <Card i={2} style={{ background: 'var(--lime)', color: 'var(--solid)' }}>
-          <div className="display" style={{ fontSize: 'clamp(56px, 6.4vw, 96px)' }}>{COSTS.retrievalPassages}</div>
-          <div className="chunk" style={{ fontSize: 22 }}>passages screened in one call</div>
-          <p className="small" style={{ marginTop: 10 }}>Relevance, directness and injection in a single {COSTS.retrievalTokens}-token request. Jev caught {INJECTION.jevCaught} of {INJECTION.attacks} attacks with {INJECTION.falseAlarms} false alarms across {INJECTION.benign} look-alikes.</p>
-        </Card>
-        <Card i={3}>
-          <div className="display" style={{ fontSize: 'clamp(56px, 6.4vw, 96px)' }}>{TOUR_RESULTS.jevMrr.toFixed(2)}</div>
-          <div className="chunk" style={{ fontSize: 22 }}>tour MRR on closed good-first issues</div>
-          <p className="small" style={{ marginTop: 10, color: 'var(--fg-soft)' }}>Fixing pull request hidden, n={TOUR_RESULTS.n}. Recall@7 {TOUR_RESULTS.jevRecall7} vs BM25 {TOUR_RESULTS.bm25Recall7} and similar-history {TOUR_RESULTS.historyRecall7}; MRR vs {TOUR_RESULTS.bm25Mrr} and {TOUR_RESULTS.historyMrr}.</p>
-        </Card>
-        <Card i={4} style={{ background: 'var(--orange)', color: 'var(--solid)' }}>
-          <div className="chunk" style={{ fontSize: 'clamp(24px, 2.4vw, 34px)' }}>“No recorded rationale found.”</div>
-          <p className="small" style={{ marginTop: 12 }}>What Trailhead says when nobody wrote down why. Calibration is scored on labelled why-questions: reliability diagram, ECE, abstention rate.</p>
-        </Card>
-      </div>
-    </Rise>
-  )
-}
-
 /* ---------- Rules of the trail ---------- */
 const RULES: [string, string, Glyph, string][] = [
   ['Repo text is data, never instructions', 'Every passage is screened for text aimed at an AI. It is escaped, delimited and never obeyed.', 'signal', 'var(--orange)'],
@@ -239,7 +200,7 @@ const RULES: [string, string, Glyph, string][] = [
 
 export function Rules() {
   return (
-    <Rise id="rules" className="l-section t-mint">
+    <section id="rules" className="l-section t-mint">
       <div style={{ maxWidth: 1180, margin: '0 auto' }}>
         <Heading n="Mile 6" label="Guardrails">Rules of the trail</Heading>
         <ol className="l-rules">
@@ -257,7 +218,7 @@ export function Rules() {
           ))}
         </ol>
       </div>
-    </Rise>
+    </section>
   )
 }
 
@@ -273,7 +234,7 @@ const FAQ = [
 export function Faq() {
   const [open, setOpen] = useState<number>(0)
   return (
-    <Rise id="faq" className="l-section t-peach">
+    <section id="faq" className="l-section t-peach">
       <Heading n="Mile 7" label="Ask away" center>Trail questions</Heading>
       <div className="l-chat">
         <div className="l-chat__qs">
@@ -300,7 +261,7 @@ export function Faq() {
           </AnimatePresence>
         </div>
       </div>
-    </Rise>
+    </section>
   )
 }
 
@@ -313,7 +274,7 @@ export function Footer({ onJump }: { onJump: (id: string) => void }) {
     onJump(id)
   }
   return (
-    <Rise as="div" className="l-foot t-cream">
+    <div className="l-foot t-cream">
       <footer className="l-bento">
         <motion.div className="l-bento__cta" initial={{ opacity: 0, y: 60 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.8, ease: EASE }}>
           <SplitReveal as="h2" className="display l-bento__title" text="Ready to hit the trail?" />
@@ -358,6 +319,6 @@ export function Footer({ onJump }: { onJump: (id: string) => void }) {
           <span>Jev decides · the LLM writes · code owns control flow</span>
         </div>
       </footer>
-    </Rise>
+    </div>
   )
 }
