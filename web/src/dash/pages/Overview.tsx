@@ -34,7 +34,7 @@ export default function Overview() {
   const hour = new Date().getHours()
   const greeting = hour < 12 ? 'Morning' : hour < 18 ? 'Afternoon' : 'Evening'
   const layerTotal = data ? Object.values(data.layers).reduce((a, b) => a + b, 0) : 0
-  const layerColors = ['var(--lichen)', 'var(--blaze)', 'var(--ice)', 'var(--heather)', 'var(--rust)', '#7fb08f', '#7fb3d1', 'var(--mute)']
+  const layerColors = ['var(--lichen)', 'var(--blaze)', 'var(--ice)', 'var(--heather)', 'var(--rust)', '#9c94ee', '#7fb3d1', 'var(--mute)']
 
   return (
     <>

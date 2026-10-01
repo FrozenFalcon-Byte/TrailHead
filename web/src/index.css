@@ -1,37 +1,83 @@
 /* Trailhead design system.
-   Colour-blocked sections, each a two-tone pair; ultra-condensed display caps for headlines,
-   a chunky grotesque for everything else, and a hand-written accent for margin notes. */
+   Light by default, with a dark theme behind a switch (html[data-theme="dark"]).
+   Backdrops are soft pastels; the vivid trail colours (orange, violet, green, yellow, blue, lime) are kept
+   for shapes, tags and signals. Display type is a heavy, extended grotesque; everything is flat, no gradients. */
 
 :root {
-  /* Light, airy colour blocks. Each section is a pastel ground with one deep ink of the same hue:
-     pine/lichen = sage + forest, bark/rust = peach + burnt orange, glacier/ice = sky + deep sea,
-     plum/heather = lilac + violet, paper/ink = cream + near-black. Blaze is the one loud accent. */
-  --pine: #e6f4e0;
-  --pine-2: #d6ecce;
-  --lichen: #1f5c3c;
-  --paper: #fcf9f3;
-  --paper-2: #f2ecdf;
-  --ink: #1c1b18;
-  --bark: #ffe9da;
-  --rust: #9c3d12;
-  --blaze: #f26a21;
-  --glacier: #e0f0fb;
-  --ice: #165b80;
-  --plum: #f1e6fb;
-  --heather: #6b3091;
-  --mute: #cfc7b7;
-  --danger: #d93a3a;
+  /* Vivid trail colours: shapes, tags, signals. Same in both themes. */
+  --orange: #ff5b2e;
+  --violet: #6c63ff;
+  --green: #1fa456;
+  --yellow: #ffbd1a;
+  --blue: #3f74f6;
+  --lime: #c6f35e;
+  --stop: #ef4b33;
+  --go: #1fa456;
 
-  --display: 'Anton', 'Impact', 'Arial Narrow', sans-serif;
-  --chunk: 'Bricolage Grotesque Variable', 'Arial', sans-serif;
-  --hand: 'Caveat', 'Comic Sans MS', cursive;
+  /* Always-dark and always-light surfaces (the nav tag, buttons, signal housings). */
+  --solid: #17161b;
+  --solid-2: #26252c;
+  --on-solid: #fbf8f1;
+
+  /* Theme-dependent: page, text, pastel backdrops. */
+  --paper: #fbf8f1;
+  --surface: #ffffff;
+  --ink: #17161b;
+  --ink-soft: #5f5c66;
+  --line: rgba(23, 22, 27, 0.12);
+  --peach: #ffe4d8;
+  --lilac: #e9e6ff;
+  --mint: #dcf3e3;
+  --butter: #fff2c9;
+  --sky: #dfe9ff;
+  --limeade: #effbd0;
+  --dim: #d9d4ca;
+
+  /* Older names, mapped onto the new palette so every component speaks one language. */
+  --paper-2: var(--peach);
+  --stone: var(--dim);
+  --slate: var(--ink-soft);
+  --ink-2: var(--solid-2);
+  --signal: var(--yellow);
+  --pine: var(--paper);
+  --pine-2: var(--surface);
+  --lichen: var(--ink);
+  --bark: var(--peach);
+  --rust: var(--orange);
+  --blaze: var(--orange);
+  --glacier: var(--sky);
+  --ice: var(--blue);
+  --plum: var(--lilac);
+  --heather: var(--lilac);
+  --mute: var(--dim);
+  --danger: var(--stop);
+
+  --display: 'Archivo Variable', 'Arial Black', sans-serif;
+  --chunk: 'Archivo Variable', 'Arial', sans-serif;
+  --hand: 'Archivo Variable', 'Arial', sans-serif;
 
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-in-out: cubic-bezier(0.76, 0, 0.24, 1);
-  --radius: 18px;
+  --radius: 22px;
   --gutter: clamp(16px, 4vw, 48px);
 
   color-scheme: light;
+}
+
+html[data-theme='dark'] {
+  --paper: #131217;
+  --surface: #1d1c23;
+  --ink: #f5f1e8;
+  --ink-soft: #aaa6b3;
+  --line: rgba(245, 241, 232, 0.14);
+  --peach: #33221c;
+  --lilac: #222040;
+  --mint: #172c20;
+  --butter: #312a12;
+  --sky: #18233d;
+  --limeade: #252f12;
+  --dim: #3a3843;
+  color-scheme: dark;
 }
 
 *,
@@ -52,14 +98,18 @@ body {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
+html.theme-swap,
+html.theme-swap * {
+  transition: background-color 0.5s var(--ease-out), color 0.5s var(--ease-out), border-color 0.5s var(--ease-out), fill 0.5s var(--ease-out) !important;
+}
 
 body {
   overflow-x: hidden;
 }
 
 ::selection {
-  background: var(--blaze);
-  color: var(--ink);
+  background: var(--lime);
+  color: var(--solid);
 }
 
 a {
@@ -91,39 +141,76 @@ html.lenis body {
   overflow: hidden;
 }
 
-/* ---------- Section themes: every block is one pair ---------- */
+/* ---------- Section themes: pastel backdrops ---------- */
+.t-paper,
+.t-cream,
 .t-pine {
-  --bg: var(--pine);
-  --fg: var(--lichen);
-  --fg-soft: #4f7d62;
-  background: var(--bg);
-  color: var(--fg);
-}
-.t-paper {
   --bg: var(--paper);
   --fg: var(--ink);
-  --fg-soft: #57524a;
+  --fg-soft: var(--ink-soft);
+  --tint: var(--surface);
   background: var(--bg);
   color: var(--fg);
 }
+.t-peach,
 .t-bark {
-  --bg: var(--bark);
-  --fg: var(--rust);
-  --fg-soft: #b8714a;
+  --bg: var(--peach);
+  --fg: var(--ink);
+  --fg-soft: var(--ink-soft);
+  --tint: var(--surface);
   background: var(--bg);
   color: var(--fg);
 }
-.t-glacier {
-  --bg: var(--glacier);
-  --fg: var(--ice);
-  --fg-soft: #5b8aa3;
-  background: var(--bg);
-  color: var(--fg);
-}
+.t-lilac,
 .t-plum {
-  --bg: var(--plum);
-  --fg: var(--heather);
-  --fg-soft: #8f66aa;
+  --bg: var(--lilac);
+  --fg: var(--ink);
+  --fg-soft: var(--ink-soft);
+  --tint: var(--surface);
+  background: var(--bg);
+  color: var(--fg);
+}
+.t-mint {
+  --bg: var(--mint);
+  --fg: var(--ink);
+  --fg-soft: var(--ink-soft);
+  --tint: var(--surface);
+  background: var(--bg);
+  color: var(--fg);
+}
+.t-butter,
+.t-stone,
+.t-signal {
+  --bg: var(--butter);
+  --fg: var(--ink);
+  --fg-soft: var(--ink-soft);
+  --tint: var(--surface);
+  background: var(--bg);
+  color: var(--fg);
+}
+.t-sky,
+.t-glacier {
+  --bg: var(--sky);
+  --fg: var(--ink);
+  --fg-soft: var(--ink-soft);
+  --tint: var(--surface);
+  background: var(--bg);
+  color: var(--fg);
+}
+.t-lime {
+  --bg: var(--limeade);
+  --fg: var(--ink);
+  --fg-soft: var(--ink-soft);
+  --tint: var(--surface);
+  background: var(--bg);
+  color: var(--fg);
+}
+/* The one dark block, used for small things (tags, tooltips, the nav), never for page backdrops. */
+.t-ink {
+  --bg: var(--solid);
+  --fg: var(--on-solid);
+  --fg-soft: #b3afba;
+  --tint: var(--solid-2);
   background: var(--bg);
   color: var(--fg);
 }
@@ -131,52 +218,54 @@ html.lenis body {
 /* ---------- Type ---------- */
 .display {
   font-family: var(--display);
-  font-weight: 400;
-  text-transform: uppercase;
-  line-height: 0.98;
-  letter-spacing: -0.005em;
+  font-weight: 900;
+  font-stretch: 125%;
+  line-height: 0.92;
+  letter-spacing: -0.045em;
   margin: 0;
 }
 .display em,
 .display .oblique {
   font-style: normal;
   display: inline-block;
-  transform: skewX(-11deg);
 }
 .chunk {
   font-family: var(--chunk);
-  font-weight: 800;
-  font-stretch: 86%;
-  letter-spacing: -0.035em;
+  font-weight: 850;
+  font-stretch: 112%;
+  letter-spacing: -0.04em;
   line-height: 1.02;
   margin: 0;
 }
 .hand {
-  font-family: var(--hand);
-  font-weight: 600;
-  letter-spacing: 0;
-  line-height: 1;
+  font-family: var(--chunk);
+  font-weight: 700;
+  font-stretch: 100%;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
 }
 .kicker {
-  font-family: var(--display);
-  text-transform: uppercase;
-  letter-spacing: 0.01em;
-  font-size: clamp(18px, 2.2vw, 28px);
+  font-family: var(--chunk);
+  font-weight: 800;
+  font-stretch: 112%;
+  letter-spacing: -0.02em;
+  font-size: clamp(14px, 1.3vw, 17px);
   line-height: 1;
 }
 .lead {
-  font-family: var(--display);
-  text-transform: uppercase;
-  font-size: clamp(22px, 3vw, 40px);
-  line-height: 1.06;
-  letter-spacing: 0.005em;
+  font-family: var(--chunk);
+  font-weight: 800;
+  font-stretch: 112%;
+  font-size: clamp(20px, 2.2vw, 30px);
+  line-height: 1.12;
+  letter-spacing: -0.035em;
   margin: 0;
 }
 .body {
-  font-size: clamp(16px, 1.25vw, 19px);
-  line-height: 1.38;
-  font-weight: 560;
-  letter-spacing: -0.015em;
+  font-size: clamp(16px, 1.2vw, 18px);
+  line-height: 1.45;
+  font-weight: 500;
+  letter-spacing: -0.01em;
 }
 .small {
   font-size: 13px;
@@ -190,65 +279,85 @@ html.lenis body {
   letter-spacing: 0;
 }
 
-/* ---------- Buttons: split pill (label + arrow block) ---------- */
+/* ---------- Buttons: rounded pills ---------- */
 .btn {
-  --btn-bg: var(--fg);
-  --btn-fg: var(--bg);
+  --btn-bg: var(--solid);
+  --btn-fg: var(--on-solid);
   display: inline-flex;
   align-items: stretch;
-  gap: 3px;
+  gap: 4px;
   border: 0;
   padding: 0;
   background: none;
   cursor: pointer;
   text-decoration: none;
   font-weight: 750;
-  font-size: 16px;
+  font-stretch: 108%;
+  font-size: 15.5px;
   letter-spacing: -0.02em;
 }
 .btn > span {
   background: var(--btn-bg);
   color: var(--btn-fg);
-  border-radius: 12px;
-  padding: 13px 18px;
+  border-radius: 999px;
+  padding: 13px 22px;
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  transition: transform 0.35s var(--ease-out), border-radius 0.35s var(--ease-out);
+  box-shadow: inset 0 0 0 1.5px var(--solid);
+  transition: transform 0.4s var(--ease-out), background-color 0.3s, color 0.3s;
 }
 .btn > span.arrow {
-  padding: 13px 14px;
+  padding: 13px 16px;
 }
 .btn:hover > span:first-child {
   transform: translateX(-2px);
-  border-radius: 16px 8px 8px 16px;
 }
 .btn:hover > span.arrow {
-  transform: translateX(4px) rotate(-6deg);
+  transform: translateX(4px) rotate(-12deg);
+  background: var(--orange);
+  color: var(--solid);
 }
 .btn:active > span {
-  transform: scale(0.97);
+  transform: scale(0.96);
 }
 .btn:disabled {
   opacity: 0.45;
   cursor: not-allowed;
 }
+.btn.lime > span {
+  --btn-bg: var(--lime);
+  --btn-fg: var(--solid);
+}
 .btn.ghost > span {
   background: transparent;
-  color: var(--fg);
-  box-shadow: inset 0 0 0 2px var(--fg);
+  color: var(--fg, var(--ink));
+  box-shadow: inset 0 0 0 1.5px currentColor;
 }
 .btn.small > span {
-  padding: 8px 12px;
+  padding: 8px 14px;
   font-size: 14px;
-  border-radius: 10px;
 }
 .btn:focus-visible {
   outline: none;
 }
 .btn:focus-visible > span {
-  outline: 3px solid var(--blaze);
+  outline: 3px solid var(--violet);
   outline-offset: 2px;
+}
+
+/* An arrow-tipped tag, the shape of a trail sign. */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 22px 6px 12px;
+  background: var(--solid);
+  color: var(--on-solid);
+  font-weight: 750;
+  font-size: 13px;
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 0 100%);
+  border-radius: 6px 0 0 6px;
 }
 
 .pill {
@@ -260,30 +369,29 @@ html.lenis body {
   font-size: 12.5px;
   font-weight: 700;
   letter-spacing: -0.005em;
-  background: color-mix(in srgb, var(--fg) 14%, transparent);
-  color: var(--fg);
+  background: color-mix(in srgb, var(--fg, var(--ink)) 10%, transparent);
+  color: var(--fg, var(--ink));
   white-space: nowrap;
 }
 
 .field {
   width: 100%;
   border: 0;
-  border-radius: 14px;
+  border-radius: 16px;
   padding: 16px 18px;
-  background: color-mix(in srgb, var(--fg) 9%, transparent);
-  color: var(--fg);
-  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--fg) 22%, transparent);
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: inset 0 0 0 1.5px var(--line);
   font-weight: 600;
   font-size: 17px;
-  transition: box-shadow 0.25s var(--ease-out), background 0.25s var(--ease-out);
+  transition: box-shadow 0.25s var(--ease-out);
 }
 .field::placeholder {
-  color: color-mix(in srgb, var(--fg) 45%, transparent);
+  color: color-mix(in srgb, var(--ink) 42%, transparent);
 }
 .field:focus {
   outline: none;
-  box-shadow: inset 0 0 0 2px var(--fg);
-  background: color-mix(in srgb, var(--fg) 13%, transparent);
+  box-shadow: inset 0 0 0 2px var(--violet);
 }
 
 .visually-hidden {
@@ -293,6 +401,103 @@ html.lenis body {
   overflow: hidden;
   clip: rect(0 0 0 0);
   white-space: nowrap;
+}
+
+/* ---------- Theme switch (bottom-right pill) ---------- */
+.theme-switch {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 70;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--solid);
+  color: var(--on-solid);
+  font-weight: 750;
+  font-size: 13px;
+  cursor: pointer;
+  box-shadow: 0 0 0 1.5px color-mix(in srgb, var(--on-solid) 18%, transparent);
+}
+.theme-switch__knob {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: var(--solid);
+}
+.theme-switch__label {
+  padding: 0 8px;
+  min-width: 38px;
+  text-align: center;
+}
+
+/* ---------- Cursor ---------- */
+html.tc-on,
+html.tc-on * {
+  cursor: none !important;
+}
+.tc-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+}
+.tc-trail {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: visible;
+}
+.tc-pos {
+  position: fixed;
+  left: 0;
+  top: 0;
+  pointer-events: none;
+  will-change: transform;
+}
+/* The body: one shape that morphs between teardrop, label pill, ring and I-beam. */
+.tc-body {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  white-space: nowrap;
+  transform-origin: 0 0;
+}
+.tc-text {
+  padding: 0 12px 0 14px;
+  font-weight: 800;
+  font-stretch: 112%;
+  font-size: 13px;
+  letter-spacing: -0.01em;
+  color: var(--solid);
+}
+.tc-ripple {
+  position: fixed;
+  width: 44px;
+  height: 44px;
+  margin: -22px 0 0 -22px;
+  border-radius: 50%;
+  pointer-events: none;
+}
+.tc-burst {
+  position: fixed;
+  width: 10px;
+  height: 10px;
+  margin: -5px 0 0 -5px;
+  pointer-events: none;
+}
+[data-tilt] {
+  position: relative;
+  transform-style: preserve-3d;
 }
 
 @media (prefers-reduced-motion: reduce) {

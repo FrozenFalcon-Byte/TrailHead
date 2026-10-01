@@ -32,7 +32,7 @@ export function TrailPath({ stops, height = 320, color = 'currentColor', progres
           style={{ originX: `${p.x}px`, originY: `${p.y}px` }}
         >
           <rect x={p.x - 22} y={p.y - 30} width={44} height={60} rx={8} fill={stops[i].tentative ? 'var(--bg)' : 'var(--blaze)'} stroke={stops[i].tentative ? 'var(--blaze)' : 'none'} strokeWidth={3} strokeDasharray={stops[i].tentative ? '6 5' : undefined} transform={`rotate(${i % 2 ? 6 : -6} ${p.x} ${p.y})`} />
-          <text x={p.x} y={p.y + 12} textAnchor="middle" fontFamily="Anton, Impact" fontSize={34} fill={stops[i].tentative ? 'var(--blaze)' : 'var(--ink)'}>{i + 1}</text>
+          <text x={p.x} y={p.y + 12} textAnchor="middle" fontFamily="Archivo Variable, Arial Black" fontWeight={900} fontSize={30} fill={stops[i].tentative ? 'var(--blaze)' : 'var(--solid)'}>{i + 1}</text>
           <text x={p.x} y={p.y + 62} textAnchor="middle" fontFamily="ui-monospace, Menlo" fontSize={17} fontWeight={700} fill={color}>{stops[i].label}</text>
         </motion.g>
       ))}

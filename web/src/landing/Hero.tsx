@@ -1,94 +1,105 @@
-import { motion, useScroll, useTransform } from 'motion/react'
-import { useRef, useState } from 'react'
+import { AnimatePresence, motion, useScroll, useTransform } from 'motion/react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Contours } from '../motion/Contours'
-import { Hiker } from '../motion/Hiker'
+import { Shape, STORY } from '../motion/Shapes'
 import { useSignedIn } from '../lib/auth'
 
 const EASE = [0.22, 1, 0.36, 1] as const
+const WORDS = ['trailhead.', 'first step.', 'best path.']
 
-function Rise({ children, delay, className, style }: { children: React.ReactNode; delay: number; className?: string; style?: React.CSSProperties }) {
+/** A line of type that rises out of a mask. */
+function Rise({ children, delay, ready }: { children: React.ReactNode; delay: number; ready: boolean }) {
   return (
-    <span className={className} style={{ display: 'inline-block', overflow: 'hidden', paddingTop: '0.04em', paddingBottom: '0.04em', ...style }}>
-      <motion.span style={{ display: 'inline-block' }} initial={{ y: '108%' }} animate={{ y: '0%' }} transition={{ duration: 1.1, delay, ease: EASE }}>
+    <span className="l-hero__line">
+      <motion.span style={{ display: 'inline-block' }} initial={{ y: '110%', rotate: 3 }} animate={ready ? { y: '0%', rotate: 0 } : undefined} transition={{ duration: 1, delay, ease: [0.76, 0, 0.24, 1] }}>
         {children}
       </motion.span>
     </span>
   )
 }
 
-function MiniTree() {
-  return (
-    <svg width={40} height={30} viewBox="0 0 40 30" aria-hidden>
-      <motion.path d="M20 4 L20 12 M20 12 L8 22 M20 12 L20 24 M20 12 L32 22" stroke="currentColor" strokeWidth={3} strokeLinecap="round" fill="none"
-        initial={{ pathLength: 0 }} animate={{ pathLength: [0, 1, 1, 0] }} transition={{ duration: 2.4, repeat: Infinity, times: [0, 0.4, 0.8, 1] }} />
-      <motion.rect x={16} y={22} width={8} height={7} rx={1.5} fill="var(--blaze)" animate={{ scale: [0, 0, 1, 1, 0] }} transition={{ duration: 2.4, repeat: Infinity, times: [0, 0.35, 0.45, 0.8, 1] }} style={{ originX: '20px', originY: '25px' }} />
-    </svg>
-  )
-}
-
-export function Hero({ ready }: { ready: boolean }) {
+export function Hero({ ready, settled }: { ready: boolean; settled: boolean }) {
   const ref = useRef<HTMLElement>(null)
   const signedIn = useSignedIn()
-  const [mode, setMode] = useState<'walk' | 'search'>('walk')
-  const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] })
-  const y = useTransform(scrollYProgress, [0, 1], ['0%', '28%'])
-  const fade = useTransform(scrollYProgress, [0, 0.7], [1, 0])
-  const base = ready ? 0.15 : 99 // hold the entrance until the loader has lifted
+  const [word, setWord] = useState(0)
+  // When the loader plays, its shapes land on the conveyor; until then the conveyor's own copies stay hidden.
+  const [morph] = useState(() => !settled)
+  const handoff = morph && !settled ? { visibility: 'hidden' as const } : undefined
+
+  useEffect(() => {
+    if (!settled) return
+    const t = setInterval(() => setWord((w) => (w + 1) % WORDS.length), 2600)
+    return () => clearInterval(t)
+  }, [settled])
+
+  const { scrollYProgress: p } = useScroll({ target: ref, offset: ['start start', 'end start'] })
+  const lift = useTransform(p, (v) => `${(-v * 18).toFixed(2)}vh`)
+  const shrink = useTransform(p, (v) => 1 - v * 0.12)
+  const fade = useTransform(p, (v) => 1 - Math.min(1, v * 1.6))
+  const sink = useTransform(p, (v) => `${(v * 22).toFixed(2)}vh`)
+  const base = 0.1
 
   return (
-    <section ref={ref} id="top" className="l-hero t-pine">
-      <Contours color="var(--lichen)" opacity={0.1} rings={10} />
-      <motion.span className="hand l-hero__note" initial={{ opacity: 0, scale: 0.8 }} animate={ready ? { opacity: 1, scale: 1 } : {}} transition={{ delay: 1.4, duration: 0.6 }}>
-        given a repo + a goal ↘
-      </motion.span>
-      <motion.div style={{ y, opacity: fade, position: 'relative' }}>
-        <motion.div className="l-hero__pills" initial={{ opacity: 0, y: 20 }} animate={ready ? { opacity: 1, y: 0 } : {}} transition={{ delay: base, duration: 0.7, ease: EASE }}>
-          <button className="l-hero__pill" aria-pressed={mode === 'walk'} onClick={() => setMode('walk')} aria-label="The guided tour">
-            <Hiker size={26} speed={0.7} walking={mode === 'walk'} stick={false} color="currentColor" pack="var(--blaze)" />
-          </button>
-          <button className="l-hero__pill" aria-pressed={mode === 'search'} onClick={() => setMode('search')} aria-label="The beam search">
-            <MiniTree />
-          </button>
+    <section ref={ref} id="top" className="l-hero t-cream">
+      <motion.div className="l-hero__copy" style={{ y: lift, scale: shrink, opacity: fade }}>
+        <motion.div className="l-hero__tags" initial={{ opacity: 0, y: 14 }} animate={ready ? { opacity: 1, y: 0 } : undefined} transition={{ delay: base, duration: 0.6, ease: EASE }}>
+          <span className="tag">Mile 0</span>
+          <span className="l-hero__chip">Codebase onboarding, decided by Jev</span>
         </motion.div>
-        <h1 className="display l-headline">
-          <span className="l-headline__row">
-            <Rise className="l-headline__small" delay={base + 0.25}>Every</Rise>
-            <Rise delay={base + 0.1}>Codebase</Rise>
-            <Rise className="l-headline__small" delay={base + 0.3}>has a</Rise>
-          </span>
-          <span className="l-headline__row">
-            <Rise delay={base + 0.2}><span className="oblique">{mode === 'walk' ? 'Trail' : 'Beam'}</span></Rise>
-            <Rise delay={base + 0.28}>{mode === 'walk' ? 'head' : 'path'}</Rise>
+        <h1 className="display l-hero__title">
+          <Rise ready={ready} delay={base + 0.05}>Every codebase</Rise>
+          <span className="l-hero__line">
+            <motion.span style={{ display: 'inline-block' }} initial={{ y: '110%', rotate: 3 }} animate={ready ? { y: '0%', rotate: 0 } : undefined} transition={{ duration: 1, delay: base + 0.15, ease: [0.76, 0, 0.24, 1] }}>
+              has a{' '}
+              <span className="l-hero__swap">
+                <AnimatePresence mode="popLayout" initial={false}>
+                  <motion.span key={word} style={{ display: 'inline-block' }} initial={{ y: '100%', opacity: 0 }} animate={{ y: '0%', opacity: 1 }} exit={{ y: '-100%', opacity: 0 }} transition={{ duration: 0.6, ease: [0.76, 0, 0.24, 1] }}>
+                    {WORDS[word]}
+                  </motion.span>
+                </AnimatePresence>
+              </span>
+            </motion.span>
           </span>
         </h1>
-        <motion.p className="body l-hero__sub" initial={{ opacity: 0, y: 16 }} animate={ready ? { opacity: 1, y: 0 } : {}} transition={{ delay: base + 0.7, duration: 0.8, ease: EASE }}>
-          {mode === 'walk'
-            ? 'Point Trailhead at a GitHub repository, say what you want to do, and get a reading path through the code — every stop explained, every answer cited to the commit, pull request or discussion it came from.'
-            : 'Under the hood, Jev walks the directory tree one decision at a time, keeps the three most likely branches, and prunes the rest. No embeddings, no guessing: every step is a logged, cached probability.'}
+        <motion.p className="body l-hero__sub" initial={{ opacity: 0, y: 14 }} animate={ready ? { opacity: 1, y: 0 } : undefined} transition={{ delay: base + 0.45, duration: 0.7, ease: EASE }}>
+          Point Trailhead at a GitHub repository and say what you want to do. Get a reading path through the code, with every answer cited to the commit, pull request or discussion behind it.
         </motion.p>
-        <motion.div className="l-hero__cta" initial={{ opacity: 0, y: 16 }} animate={ready ? { opacity: 1, y: 0 } : {}} transition={{ delay: base + 0.85, duration: 0.8, ease: EASE }}>
-          <Link className="btn" to={signedIn ? '/app' : '/signup'}>
-            <span>{signedIn ? 'Open your dashboard' : 'Start the trail — free'}</span>
-            <span className="arrow">→</span>
+        <motion.div className="l-hero__cta" initial={{ opacity: 0, y: 14 }} animate={ready ? { opacity: 1, y: 0 } : undefined} transition={{ delay: base + 0.55, duration: 0.7, ease: EASE }}>
+          <Link className="btn lime" to={signedIn ? '/app' : '/signup'}>
+            <span>{signedIn ? 'Open your dashboard' : 'Start the trail, free'}</span>
           </Link>
-          <a className="btn ghost" href="#how">
-            <span>See how it decides</span>
+          <a className="btn ghost" href="#story">
+            <span>See the story ↓</span>
           </a>
         </motion.div>
       </motion.div>
-      <div className="l-hero__walk">
-        <svg width="100%" height="100%" preserveAspectRatio="none" viewBox="0 0 100 20" style={{ position: 'absolute', inset: 0 }} aria-hidden>
-          <line x1={0} y1={19} x2={100} y2={19} stroke="var(--lichen)" strokeWidth={0.4} strokeDasharray="0.6 1.6" opacity={0.6} />
-        </svg>
-        <motion.div style={{ position: 'absolute', bottom: 2, color: 'var(--lichen)' }} initial={{ left: '-10%' }} animate={{ left: '105%' }} transition={{ duration: 26, repeat: Infinity, ease: 'linear', delay: 1 }}>
-          <Hiker size={66} speed={0.95} />
+
+      <motion.div className="l-conveyor" style={{ y: sink }} aria-hidden>
+        <motion.div
+          className="l-conveyor__track"
+          animate={settled ? { x: ['0%', '-50%'] } : { x: '0%' }}
+          transition={settled ? { duration: 34, ease: 'linear', repeat: Infinity } : { duration: 0 }}
+        >
+          {[0, 1].map((copy) => (
+            <div key={copy} className="l-conveyor__set">
+              {[...STORY, ...STORY].map((s, i) => (
+                <motion.div
+                  key={i}
+                  className="l-conveyor__item"
+                  data-morph={copy === 0 && i < STORY.length ? `shape-${i}` : undefined}
+                  style={{ width: s.kind === 'tag' ? 'calc(var(--s) * 1.1)' : 'var(--s)', ...(copy === 0 && i < STORY.length ? handoff : undefined) }}
+                  initial={morph ? false : { scale: 0, rotate: -25 }}
+                  animate={ready ? { scale: 1, rotate: 0 } : undefined}
+                  transition={{ type: 'spring', stiffness: 220, damping: 16, delay: 0.2 + (i % 5) * 0.07 }}
+                  whileHover={{ y: -18, rotate: i % 2 ? 6 : -6, transition: { type: 'spring', stiffness: 300, damping: 14 } }}
+                >
+                  <Shape kind={s.kind} color={s.color} glyph={s.glyph} size={0} style={{ width: '100%', height: 'auto' }} />
+                </motion.div>
+              ))}
+            </div>
+          ))}
         </motion.div>
-        {[18, 46, 77].map((x, i) => (
-          <motion.div key={x} style={{ position: 'absolute', left: `${x}%`, bottom: 4, width: 14, height: 30, borderRadius: 3, background: i === 1 ? 'var(--blaze)' : 'var(--lichen)', originY: 1, rotate: i % 2 ? 6 : -6 }}
-            initial={{ scaleY: 0 }} animate={ready ? { scaleY: 1 } : {}} transition={{ delay: base + 1 + i * 0.15, type: 'spring', stiffness: 300, damping: 14 }} />
-        ))}
-      </div>
+      </motion.div>
     </section>
   )
 }

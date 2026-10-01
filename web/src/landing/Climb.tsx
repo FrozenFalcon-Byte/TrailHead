@@ -1,6 +1,7 @@
 import { AnimatePresence, motion, useMotionValue, useMotionValueEvent, useScroll, useTransform, type MotionValue } from 'motion/react'
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { Hiker } from '../motion/Hiker'
+import { Shape } from '../motion/Shapes'
+import { useTheme } from '../lib/theme'
 
 /* A scroll-driven scene: the hiker climbs from the README trailhead to the file that answers the question.
    The scene is drawn in a 1600×900 world. A camera follows the hiker, zoomed in at the start and pulling back
@@ -35,6 +36,12 @@ const PHASES = [
   { n: '03', title: 'Narrow it down', body: 'Each step down the tree is one cheap decision. The beam keeps alternatives in case the first path dead-ends.' },
   { n: '04', title: 'Reach the summit', body: 'The file that answers it, every claim cited to evidence, and a clear note of what is still uncertain.' },
 ]
+
+// The scene keeps its soft pastel landscape in light mode and a dusk version in dark mode.
+const PALETTE = {
+  light: { sky: ['#ffe4d8', '#dfe9ff', '#e9e6ff'], far: '#d9d2fb', mid: '#c7dbfb', front: '#cdeccf', flank: '#bce3c3', ground: '#acd9b4', snow: '#ffffff', tree: ['#1fa456', '#5cc07f'] },
+  dark: { sky: ['#2b1f1c', '#18233d', '#211f3d'], far: '#2c2954', mid: '#213259', front: '#1e3a28', flank: '#1a3323', ground: '#152c1d', snow: '#d9dcff', tree: ['#1fa456', '#3f8f5c'] },
+} as const
 
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t
 const smooth = (e0: number, e1: number, x: number) => {
@@ -131,7 +138,9 @@ export function Climb() {
   })
   useEffect(() => () => window.clearTimeout(idle.current), [])
 
-  const sky = useTransform(p, [0, 0.45, 1], ['#ffe4cf', '#dcf0fb', '#efe3fb'])
+  const [theme] = useTheme()
+  const pal = PALETTE[theme]
+  const sky = useTransform(p, [0, 0.45, 1], [...pal.sky])
   const sunY = useTransform(p, [0, 1], ['78%', '14%'])
   const sunScale = useTransform(p, [0, 1], [1.25, 0.85])
   const cloudDrift = useTransform(p, [0, 1], [0, -260])
@@ -163,13 +172,13 @@ export function Climb() {
 
         <motion.div style={{ ...worldBox, ...far }} aria-hidden>
           <svg viewBox="0 0 1600 900" width="100%" height="100%" style={{ overflow: 'visible' }}>
-            <path d={FAR} fill="#e4d4f1" />
-            <path d="M180 230 L222 262 L200 258 L180 270 L160 256 L140 262 Z M640 180 L690 214 L660 210 L640 224 L620 210 L596 212 Z" fill="#fff" opacity={0.85} />
+            <path d={FAR} fill={pal.far} />
+            <path d="M180 230 L222 262 L200 258 L180 270 L160 256 L140 262 Z M640 180 L690 214 L660 210 L640 224 L620 210 L596 212 Z" fill={pal.snow} opacity={0.85} />
           </svg>
         </motion.div>
         <motion.div style={{ ...worldBox, ...mid }} aria-hidden>
           <svg viewBox="0 0 1600 900" width="100%" height="100%" style={{ overflow: 'visible' }}>
-            <path d={MID} fill="#cbe3f1" />
+            <path d={MID} fill={pal.mid} />
           </svg>
         </motion.div>
 
@@ -188,23 +197,25 @@ export function Climb() {
         {/* The world the camera follows */}
         <motion.div style={{ ...worldBox, x: camX, y: camY, scale: zoom, transformOrigin: origin }}>
           <svg viewBox="0 0 1600 900" width="100%" height="100%" style={{ overflow: 'visible' }} aria-hidden>
-            <path d={FRONT} fill="#d3eac8" />
-            <path d="M1186 160 C 1260 180, 1380 260, 1520 330 C 1800 450, 2200 520, 2600 560 L2600 1900 L1300 1900 C 1260 1200, 1240 600, 1186 160 Z" fill="#c2e0b5" />
-            <path d={SNOW} fill="#fff" />
-            <path d="M-900 1900 L-900 860 C -200 830, 400 880, 900 900 C 1400 920, 2000 870, 2600 880 L2600 1900 Z" fill="#b5d9a6" />
-            {TREES.map(([x, y, s], i) => <Tree key={i} x={x} y={y} s={s} />)}
-            <path d={TRAIL} fill="none" stroke="var(--lichen)" strokeOpacity={0.35} strokeWidth={4} strokeDasharray="2 14" strokeLinecap="round" />
+            <path d={FRONT} fill={pal.front} />
+            <path d="M1186 160 C 1260 180, 1380 260, 1520 330 C 1800 450, 2200 520, 2600 560 L2600 1900 L1300 1900 C 1260 1200, 1240 600, 1186 160 Z" fill={pal.flank} />
+            <path d={SNOW} fill={pal.snow} />
+            <path d="M-900 1900 L-900 860 C -200 830, 400 880, 900 900 C 1400 920, 2000 870, 2600 880 L2600 1900 Z" fill={pal.ground} />
+            {TREES.map(([x, y, s], i) => <Tree key={i} x={x} y={y} s={s} colors={pal.tree} />)}
+            <path d={TRAIL} fill="none" stroke="var(--ink)" strokeOpacity={0.35} strokeWidth={4} strokeDasharray="2 14" strokeLinecap="round" />
             <motion.path ref={trail} d={TRAIL} fill="none" stroke="var(--blaze)" strokeWidth={7} strokeLinecap="round" style={{ pathLength: p }} />
             {pins.map((pin, i) => <Post key={i} x={pin.x} y={pin.y} at={STOPS[i].at} p={p} />)}
             <g transform="translate(1182 196)"><motion.g style={{ scaleY: flag, originY: 1 }}>
-              <rect x={-3} y={-96} width={6} height={96} rx={2} fill="var(--ink)" />
+              <rect x={-3} y={-96} width={6} height={96} rx={2} fill="var(--solid)" />
               <motion.path d="M3 -94 L60 -80 L3 -62 Z" fill="var(--blaze)" animate={{ d: ['M3 -94 L60 -80 L3 -62 Z', 'M3 -94 L56 -74 L3 -62 Z', 'M3 -94 L60 -80 L3 -62 Z'] }} transition={{ duration: 1.4, repeat: Infinity }} />
             </motion.g></g>
             <g ref={hiker} transform="translate(150 842)">
               <g transform={`scale(${facing} 1)`}>
-                <g transform="translate(-34 -88)">
-                  <Hiker size={70} color="var(--ink)" walking={walking} speed={0.55} />
-                </g>
+                <motion.g animate={walking ? { y: [0, -8, 0] } : { y: 0 }} transition={walking ? { duration: 0.4, repeat: Infinity } : { duration: 0.2 }}>
+                  <g transform="translate(-33 -66)">
+                    <Shape kind="tag" color="var(--orange)" glyph="flag" size={60} />
+                  </g>
+                </motion.g>
               </g>
             </g>
           </svg>
@@ -215,7 +226,7 @@ export function Climb() {
         <div className="l-climb__caption">
           <AnimatePresence mode="wait">
             <motion.div key={phase} initial={{ opacity: 0, y: 28 }} animate={{ opacity: 1, y: 0, transition: { duration: 0.55, ease: EASE } }} exit={{ opacity: 0, y: -20, transition: { duration: 0.25 } }}>
-              <div className="kicker" style={{ color: 'var(--blaze)' }}>{PHASES[phase].n} / 04</div>
+              <span className="tag" style={{ background: 'var(--orange)', color: 'var(--solid)' }}>{PHASES[phase].n} / 04</span>
               <h3 className="display l-climb__title">{PHASES[phase].title}</h3>
               <p className="body l-climb__body">{PHASES[phase].body}</p>
             </motion.div>
@@ -223,7 +234,7 @@ export function Climb() {
         </div>
         <div className="l-climb__alt" aria-hidden>
           <div className="small">altitude</div>
-          <motion.div className="display" style={{ fontSize: 30 }}>{alt}</motion.div>
+          <motion.div className="display" style={{ fontSize: 26 }}>{alt}</motion.div>
           <div className="l-climb__meter"><motion.div style={{ scaleY: meter, originY: 1 }} /></div>
         </div>
         <div className="l-climb__hint small" aria-hidden>keep scrolling ↓</div>
@@ -234,7 +245,7 @@ export function Climb() {
 
 function Cloud({ x, y, s }: { x: number; y: number; s: number }) {
   return (
-    <g transform={`translate(${x} ${y}) scale(${s})`} fill="#fff" opacity={0.92}>
+    <g transform={`translate(${x} ${y}) scale(${s})`} fill="var(--surface)" opacity={0.92}>
       <rect x={0} y={20} width={220} height={44} rx={22} />
       <rect x={40} y={0} width={90} height={60} rx={30} />
       <rect x={100} y={-14} width={80} height={70} rx={35} />
@@ -242,12 +253,12 @@ function Cloud({ x, y, s }: { x: number; y: number; s: number }) {
   )
 }
 
-function Tree({ x, y, s }: { x: number; y: number; s: number }) {
+function Tree({ x, y, s, colors }: { x: number; y: number; s: number; colors: readonly string[] }) {
   return (
     <g transform={`translate(${x} ${y}) scale(${s})`}>
-      <rect x={-3} y={-6} width={6} height={12} fill="#7a5a3a" />
-      <path d="M0 -46 L16 -6 L-16 -6 Z" fill="#5f9c6c" />
-      <path d="M0 -58 L12 -28 L-12 -28 Z" fill="#7bb685" />
+      <rect x={-3} y={-6} width={6} height={12} fill="var(--solid)" />
+      <path d="M0 -46 L16 -6 L-16 -6 Z" fill={colors[0]} />
+      <path d="M0 -58 L12 -28 L-12 -28 Z" fill={colors[1]} />
     </g>
   )
 }
@@ -258,8 +269,8 @@ function Post({ x, y, at, p }: { x: number; y: number; at: number; p: MotionValu
   return (
     <g transform={`translate(${x} ${y})`}>
       <motion.g style={{ scale: s, originY: 1 }}>
-        <rect x={-5} y={-44} width={10} height={44} rx={2} fill="var(--ink)" />
-        <rect x={-11} y={-56} width={22} height={18} rx={3} fill="var(--blaze)" />
+        <rect x={-5} y={-44} width={10} height={44} rx={2} fill="var(--solid)" />
+        <rect x={-11} y={-56} width={22} height={18} rx={3} fill="var(--orange)" />
       </motion.g>
     </g>
   )
@@ -279,7 +290,7 @@ function StopCard({ stop, x, y, k, p }: { stop: (typeof STOPS)[number]; x: numbe
     >
       <div className="small" style={{ opacity: 0.6 }}>{stop.kicker}</div>
       <div className="l-climb__card-title mono">{stop.title}</div>
-      <span className="pill" style={{ ['--fg' as string]: 'var(--lichen)' }}>{stop.note}</span>
+      <span className="pill">{stop.note}</span>
     </motion.div>
   )
 }

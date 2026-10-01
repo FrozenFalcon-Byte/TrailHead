@@ -4,9 +4,13 @@ import '../landing/landing.css'
 import { Climb } from '../landing/Climb'
 import { Hero } from '../landing/Hero'
 import { Nav } from '../landing/Nav'
-import { Cta, Faq, Footer, HowItWorks, Mosaic, NoGuesswork, Quote, Receipts, Rules, Statement } from '../landing/Sections'
+import { Lost } from '../landing/Lost'
+import { Signposts } from '../landing/Signposts'
+import { Faq, Footer, HowItWorks, Quote, Receipts, Rules } from '../landing/Sections'
+import { Statement } from '../landing/Statement'
+import { ChevronWipe, Rise } from '../motion/Wipe'
 
-export default function Landing({ ready }: { ready: boolean }) {
+export default function Landing({ ready, settled = true }: { ready: boolean; settled?: boolean }) {
   const lenis = useRef<Lenis | null>(null)
   useEffect(() => {
     const instance = new Lenis({ duration: 1.15, easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), smoothWheel: true })
@@ -32,19 +36,19 @@ export default function Landing({ ready }: { ready: boolean }) {
     if (target !== null) lenis.current?.scrollTo(target, { offset: 0, duration: 1.6 })
   }, [])
   return (
-    <main>
-      <Nav onJump={jump} />
-      <Hero ready={ready} />
+    <main className="l-flow">
+      <Nav onJump={jump} settled={settled} />
+      <Hero ready={ready} settled={settled} />
       <Statement />
-      <Climb />
-      <NoGuesswork />
-      <Quote />
+      <ChevronWipe from="var(--paper)" to="var(--lilac)" label="Mile 1 →" />
+      <Lost />
+      <Signposts />
+      <Rise as="div"><Climb /></Rise>
       <HowItWorks />
-      <Mosaic />
+      <Quote />
       <Receipts />
       <Rules />
       <Faq />
-      <Cta />
       <Footer onJump={jump} />
     </main>
   )
