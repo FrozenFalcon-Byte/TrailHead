@@ -39,14 +39,14 @@ export default function Evals() {
         {data && (
           <>
             <Card title="Navigation · mean reciprocal rank" aside={<span className="small" style={{ opacity: 0.6 }}>find the file a past fix touched</span>}>
-              <Bars rows={nav} metric="mrr" color="var(--bark)" />
+              <Bars rows={nav} metric="mrr" color="var(--rust)" />
               <table className="d-table" style={{ marginTop: 18 }}>
                 <thead><tr><th>Method</th><th>n</th><th>Acc@1</th><th>Hit@3</th><th>Requests</th><th>Tokens</th><th>Latency</th></tr></thead>
                 <tbody>{nav.map(([n, s]) => <tr key={n}><td>{n}</td><td>{s.n}</td><td>{s.acc_at_1?.toFixed(3)}</td><td>{s.hit_at_3?.toFixed(3)}</td><td>{s.mean_requests?.toFixed(1)}</td><td>{Math.round(s.mean_input_tokens ?? 0).toLocaleString()}</td><td>{((s.mean_latency_ms ?? 0) / 1000).toFixed(2)}s</td></tr>)}</tbody>
               </table>
             </Card>
             <Card title="Tours · recall of the files the real fix changed" aside={<span className="small" style={{ opacity: 0.6 }}>closed good-first issues, planned as of the day they were opened</span>}>
-              <Bars rows={tour} metric="recall@7" color="var(--pine)" />
+              <Bars rows={tour} metric="recall@7" color="var(--lichen)" />
               <table className="d-table" style={{ marginTop: 18 }}>
                 <thead><tr><th>Method</th><th>n</th><th>R@1</th><th>R@3</th><th>R@7</th><th>MRR</th><th>Requests</th></tr></thead>
                 <tbody>{tour.map(([n, s]) => <tr key={n}><td>{n}</td><td>{s.n}</td><td>{s['recall@1']?.toFixed(3)}</td><td>{s['recall@3']?.toFixed(3)}</td><td>{s['recall@7']?.toFixed(3)}</td><td>{s.mrr?.toFixed(3)}</td><td>{s.requests?.toFixed(1)}</td></tr>)}</tbody>

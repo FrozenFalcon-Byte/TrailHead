@@ -58,7 +58,7 @@
 }
 .a-provider:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 24px -12px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 10px 24px -12px rgba(28, 27, 24, 0.22);
 }
 .a-provider:disabled {
   opacity: 0.5;

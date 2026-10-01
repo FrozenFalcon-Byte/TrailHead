@@ -99,7 +99,7 @@ export function Prob({ p, color = 'var(--blaze)', width = 90 }: { p: number; col
 }
 
 export function CalibBadge({ badge, status }: { badge?: string; status?: string }) {
-  const tone = status === 'dropped' ? ['var(--mute)', 'var(--ink)'] : badge === 'high' ? ['var(--lichen)', 'var(--pine)'] : badge === 'medium' ? ['var(--ice)', 'var(--glacier)'] : ['var(--blaze)', 'var(--bark)']
+  const tone = status === 'dropped' ? ['var(--mute)', 'var(--ink)'] : badge === 'high' ? ['var(--lichen)', 'var(--pine)'] : badge === 'medium' ? ['var(--ice)', 'var(--glacier)'] : ['var(--blaze)', 'var(--ink)']
   return (
     <span className="d-badge" style={{ background: tone[0], color: tone[1] }}>
       {status === 'dropped' ? 'dropped' : status === 'flagged' ? 'flagged' : badge || status}

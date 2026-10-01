@@ -2,7 +2,7 @@ import { motion } from 'motion/react'
 import type { ReactNode } from 'react'
 import { Mark } from './Mark'
 
-const PANELS = ['var(--lichen)', 'var(--blaze)', 'var(--ice)', 'var(--heather)']
+const PANELS = ['var(--pine)', 'var(--bark)', 'var(--glacier)', 'var(--plum)']
 const EASE = [0.76, 0, 0.24, 1] as const
 
 /** Page switch: four blazes of colour rise to cover the old page, then lift off the new one. */

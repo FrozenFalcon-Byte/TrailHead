@@ -43,7 +43,7 @@ export default function Decisions() {
                           <td className="mono small">{d.question_id}</td>
                           <td style={{ fontWeight: 700, maxWidth: 220, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{d.answer}</td>
                           <td>{d.confidence != null ? <Prob p={d.confidence} width={40} /> : '—'}</td>
-                          <td className="small">{d.engine}{d.cached ? <span className="pill" style={{ marginLeft: 6, ['--fg' as string]: 'var(--pine)' }}>cached</span> : ''}</td>
+                          <td className="small">{d.engine}{d.cached ? <span className="pill" style={{ marginLeft: 6, ['--fg' as string]: 'var(--lichen)' }}>cached</span> : ''}</td>
                           <td className="small" style={{ maxWidth: 260 }}>{d.action || '—'}</td>
                         </tr>
                         <AnimatePresence>

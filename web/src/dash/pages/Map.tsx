@@ -46,7 +46,7 @@ export default function MapPage() {
                     <span className="small" style={{ opacity: 0.72, display: '-webkit-box', WebkitLineClamp: selected ? 12 : 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{c.summary || 'No summary.'}</span>
                     {Object.keys(c.annotations).length > 0 && (
                       <span className="d-row" style={{ gap: 5 }}>
-                        {Object.entries(c.annotations).slice(0, 4).map(([k, v]) => <span key={k} className="pill" style={{ ['--fg' as string]: 'var(--glacier)' }}>{k.replace(/_/g, ' ')}: {fmt(v)}</span>)}
+                        {Object.entries(c.annotations).slice(0, 4).map(([k, v]) => <span key={k} className="pill" style={{ ['--fg' as string]: 'var(--ice)' }}>{k.replace(/_/g, ' ')}: {fmt(v)}</span>)}
                       </span>
                     )}
                     {selected && c.kind === 'file' && <Link to="/app/tour" className="small" onClick={(e) => e.stopPropagation()}>Plan a tour that starts here →</Link>}

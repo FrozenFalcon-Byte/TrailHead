@@ -26,7 +26,7 @@ export default function Profile() {
         {bypass && <Note>Local mode: sign-in is off, so there is no account and saved items live in this browser only.</Note>}
         <Card title="You">
           <div className="d-row" style={{ gap: 18, alignItems: 'center' }}>
-            {avatar ? <img src={avatar} alt="" width={72} height={72} style={{ borderRadius: 18 }} referrerPolicy="no-referrer" /> : <span style={{ width: 72, height: 72, borderRadius: 18, background: 'var(--heather)', display: 'grid', placeItems: 'center', fontFamily: 'var(--display)', fontSize: 36 }}>{(displayName || '?')[0].toUpperCase()}</span>}
+            {avatar ? <img src={avatar} alt="" width={72} height={72} style={{ borderRadius: 18 }} referrerPolicy="no-referrer" /> : <span style={{ width: 72, height: 72, borderRadius: 18, background: 'var(--plum)', color: 'var(--heather)', display: 'grid', placeItems: 'center', fontFamily: 'var(--display)', fontSize: 36 }}>{(displayName || '?')[0].toUpperCase()}</span>}
             <div style={{ display: 'grid', gap: 4 }}>
               <b>{user?.email ?? 'local developer'}</b>
               <span className="small" style={{ opacity: 0.6 }}>signed in with {providers.join(', ') || (bypass ? 'nothing (local mode)' : 'email')}</span>
@@ -43,7 +43,7 @@ export default function Profile() {
           <Card title="Connected accounts">
             <div className="d-row">
               {(['github', 'google', 'email'] as const).map((p) => (
-                <span key={p} className="d-badge" style={{ background: providers.includes(p) ? 'var(--lichen)' : 'var(--paper-2)', color: 'var(--ink)', fontSize: 15 }}>{p} {providers.includes(p) ? '✓' : ''}</span>
+                <span key={p} className="d-badge" style={{ background: providers.includes(p) ? 'var(--pine)' : 'var(--paper-2)', color: 'var(--ink)', fontSize: 15 }}>{p} {providers.includes(p) ? '✓' : ''}</span>
               ))}
               {!providers.includes('github') && <button className="d-chip" onClick={() => connectGitHub().catch((e) => setMsg({ tone: 'error', text: e.message }))}>Connect GitHub ↗</button>}
             </div>

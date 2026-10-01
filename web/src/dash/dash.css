@@ -41,7 +41,7 @@
   width: 18px;
 }
 .d-nav a:hover:not(.active) {
-  color: var(--paper);
+  color: var(--ink);
 }
 .d-nav a.active {
   color: var(--pine);
@@ -149,7 +149,7 @@
 }
 .d-chip:hover {
   transform: translateY(-2px);
-  background: var(--lichen);
+  background: var(--pine);
 }
 .d-row {
   display: flex;
@@ -181,7 +181,7 @@
   transition: background 0.2s;
 }
 .d-table tbody tr:hover {
-  background: color-mix(in srgb, var(--lichen) 30%, transparent);
+  background: color-mix(in srgb, var(--pine) 70%, transparent);
 }
 .d-claim {
   display: grid;

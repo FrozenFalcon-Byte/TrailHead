@@ -34,7 +34,7 @@ export default function Overview() {
   const hour = new Date().getHours()
   const greeting = hour < 12 ? 'Morning' : hour < 18 ? 'Afternoon' : 'Evening'
   const layerTotal = data ? Object.values(data.layers).reduce((a, b) => a + b, 0) : 0
-  const layerColors = ['var(--pine)', 'var(--blaze)', 'var(--glacier)', 'var(--heather)', 'var(--lichen)', 'var(--bark)', 'var(--ice)', 'var(--mute)']
+  const layerColors = ['var(--lichen)', 'var(--blaze)', 'var(--ice)', 'var(--heather)', 'var(--rust)', '#7fb08f', '#7fb3d1', 'var(--mute)']
 
   return (
     <>
@@ -111,7 +111,7 @@ export default function Overview() {
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                     {recent.map((r) => (
                       <Link key={r.id} to={`/app/${r.type}?saved=${r.id}`} style={{ textDecoration: 'none', display: 'flex', gap: 10, alignItems: 'baseline' }}>
-                        <span className="d-badge" style={{ background: r.type === 'ask' ? 'var(--ice)' : 'var(--lichen)', color: 'var(--ink)' }}>{r.type}</span>
+                        <span className="d-badge" style={{ background: r.type === 'ask' ? 'var(--glacier)' : 'var(--pine)', color: r.type === 'ask' ? 'var(--ice)' : 'var(--lichen)' }}>{r.type}</span>
                         <span style={{ fontWeight: 650, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.title}</span>
                         <span className="small" style={{ opacity: 0.55 }}>{ago(r.created_at)}</span>
                       </Link>

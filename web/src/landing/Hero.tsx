@@ -9,7 +9,7 @@ const EASE = [0.22, 1, 0.36, 1] as const
 
 function Rise({ children, delay, className, style }: { children: React.ReactNode; delay: number; className?: string; style?: React.CSSProperties }) {
   return (
-    <span className={className} style={{ display: 'inline-block', overflow: 'hidden', paddingBottom: '0.03em', ...style }}>
+    <span className={className} style={{ display: 'inline-block', overflow: 'hidden', paddingTop: '0.04em', paddingBottom: '0.04em', ...style }}>
       <motion.span style={{ display: 'inline-block' }} initial={{ y: '108%' }} animate={{ y: '0%' }} transition={{ duration: 1.1, delay, ease: EASE }}>
         {children}
       </motion.span>

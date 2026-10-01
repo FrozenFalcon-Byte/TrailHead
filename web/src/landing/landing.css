@@ -86,7 +86,7 @@
   font-family: var(--display);
   text-transform: uppercase;
   font-size: clamp(56px, 16vw, 120px);
-  line-height: 0.9;
+  line-height: 1;
   text-decoration: none;
 }
 
@@ -202,7 +202,7 @@
   width: min(520px, 86vw);
   border-radius: 22px;
   padding: 22px;
-  box-shadow: 0 0 0 6px var(--lichen), 0 30px 60px -20px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 0 0 6px var(--lichen), 0 30px 60px -24px rgba(31, 92, 60, 0.35);
   color: var(--ink);
   background: var(--paper);
   text-align: left;
@@ -373,5 +373,113 @@
 @media (max-width: 760px) {
   .l-footer__cols {
     grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* ---------- Climb: scroll-driven scene ---------- */
+.l-climb {
+  position: relative;
+  height: 520vh;
+}
+.l-climb__stage {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100svh;
+  overflow: hidden;
+  color: var(--ink);
+}
+.l-climb__sun {
+  position: absolute;
+  left: 70%;
+  width: clamp(120px, 16vw, 230px);
+  aspect-ratio: 1;
+  margin: calc(clamp(120px, 16vw, 230px) / -2) 0 0 calc(clamp(120px, 16vw, 230px) / -2);
+  border-radius: 50%;
+  background: radial-gradient(circle, #ffd0a8 0 52%, rgba(255, 196, 150, 0.35) 53% 70%, transparent 71%);
+}
+.l-climb__clouds {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.l-climb__birds {
+  position: absolute;
+  top: 18%;
+}
+.l-climb__card {
+  position: absolute;
+  min-width: 170px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 18px 36px -18px rgba(31, 92, 60, 0.45), inset 0 0 0 2px var(--ink);
+  color: var(--ink);
+  display: grid;
+  gap: 6px;
+  justify-items: start;
+  pointer-events: none;
+}
+.l-climb__card-title {
+  font-weight: 800;
+  font-size: 17px;
+}
+.l-climb__caption {
+  position: absolute;
+  left: var(--gutter);
+  top: clamp(84px, 13vh, 130px);
+  max-width: min(520px, calc(100% - 2 * var(--gutter)));
+}
+.l-climb__title {
+  font-size: clamp(40px, 6.4vw, 96px);
+  margin: 8px 0 12px;
+}
+.l-climb__body {
+  margin: 0;
+  max-width: 440px;
+  color: #3d3a34;
+}
+.l-climb__alt {
+  position: absolute;
+  right: var(--gutter);
+  top: clamp(84px, 13vh, 130px);
+  text-align: right;
+  display: grid;
+  justify-items: end;
+  gap: 4px;
+}
+.l-climb__meter {
+  width: 8px;
+  height: 160px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--ink) 12%, transparent);
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+}
+.l-climb__meter > div {
+  width: 100%;
+  height: 100%;
+  background: var(--blaze);
+}
+.l-climb__hint {
+  position: absolute;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
+  opacity: 0.6;
+}
+@media (max-width: 820px) {
+  .l-climb__alt {
+    display: none;
+  }
+  .l-climb__card {
+    min-width: 140px;
+    padding: 9px 11px;
+  }
+  .l-climb__card-title {
+    font-size: 14px;
   }
 }

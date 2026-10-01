@@ -12,7 +12,7 @@ import { SplitReveal } from '../motion/SplitReveal'
 import { TrailPath } from '../motion/TrailPath'
 import { useSignedIn } from '../lib/auth'
 import { EVIDENCE_DEMO, NAV_DEMO, TOUR_DEMO } from './demo'
-import { COSTS, NAV_RESULTS, TOUR_BASELINES } from './receipts'
+import { COSTS, NAV_RESULTS, TOUR_RESULTS } from './receipts'
 
 const EASE = [0.22, 1, 0.36, 1] as const
 
@@ -22,8 +22,8 @@ export function Statement() {
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] })
   const spread = useTransform(scrollYProgress, [0.1, 0.55], [0, 1])
   const cards = [
-    { rot: -9, x: -150, y: 20, bg: 'var(--ice)', body: <CardAnswer /> },
-    { rot: 7, x: 150, y: -10, bg: 'var(--heather)', body: <CardEvidence /> },
+    { rot: -9, x: -150, y: 20, bg: 'var(--glacier)', body: <CardAnswer /> },
+    { rot: 7, x: 150, y: -10, bg: 'var(--plum)', body: <CardEvidence /> },
     { rot: -2, x: 0, y: 0, bg: 'var(--paper)', body: <CardStop /> },
   ]
   return (
@@ -56,7 +56,7 @@ function CardStop() {
   return (
     <div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-        <span className="display" style={{ fontSize: 44, lineHeight: 0.8, background: 'var(--blaze)', color: 'var(--bark)', borderRadius: 8, padding: '4px 10px' }}>1</span>
+        <span className="display" style={{ fontSize: 44, lineHeight: 0.8, background: 'var(--blaze)', color: 'var(--ink)', borderRadius: 8, padding: '4px 10px' }}>1</span>
         <div>
           <div className="small" style={{ opacity: 0.6 }}>Tour stop · need {s.need.toFixed(2)}</div>
           <div className="mono" style={{ fontWeight: 700 }}>{s.path}</div>
@@ -76,8 +76,8 @@ function CardEvidence() {
       <div className="small" style={{ opacity: 0.6, marginBottom: 6 }}>Evidence · screened by Jev</div>
       <div style={{ fontWeight: 800, fontSize: 22, letterSpacing: '-0.03em', lineHeight: 1.05 }}>PR #2643 — Add feature to set RETRY_TIMES per request</div>
       <div className="small" style={{ marginTop: 10, display: 'flex', gap: 8 }}>
-        <span className="pill" style={{ background: 'var(--ink)', color: 'var(--heather)' }}>relevant 0.93</span>
-        <span className="pill" style={{ background: 'var(--ink)', color: 'var(--heather)' }}>injection 0.01</span>
+        <span className="pill" style={{ background: 'var(--heather)', color: 'var(--plum)' }}>relevant 0.93</span>
+        <span className="pill" style={{ background: 'var(--heather)', color: 'var(--plum)' }}>injection 0.01</span>
       </div>
     </div>
   )
@@ -87,10 +87,10 @@ function CardAnswer() {
     <div>
       <div className="small" style={{ opacity: 0.6, marginBottom: 6 }}>Answer · verified claims only</div>
       <div style={{ fontWeight: 700, lineHeight: 1.3 }}>
-        Retries are handled by <span className="mono">RetryMiddleware</span>, and a request can override the limit through <span className="mono">max_retry_times</span> in its meta <span className="pill" style={{ background: 'var(--glacier)', color: 'var(--ice)' }}>E2</span>
+        Retries are handled by <span className="mono">RetryMiddleware</span>, and a request can override the limit through <span className="mono">max_retry_times</span> in its meta <span className="pill" style={{ background: 'var(--ice)', color: 'var(--glacier)' }}>E2</span>
       </div>
       <div className="small" style={{ marginTop: 10 }}>
-        <span className="pill" style={{ background: 'var(--glacier)', color: 'var(--ice)' }}>P(supports) 0.91 · high</span>
+        <span className="pill" style={{ background: 'var(--ice)', color: 'var(--glacier)' }}>P(supports) 0.91 · high</span>
       </div>
     </div>
   )
@@ -165,7 +165,7 @@ function IngestGraphic() {
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10, width: '100%' }}>
       {stats.map(([v, l], i) => (
         <motion.div key={l} initial={{ opacity: 0, y: 30, rotate: i % 2 ? 3 : -3 }} animate={{ opacity: 1, y: 0, rotate: 0 }} transition={{ delay: i * 0.07, duration: 0.6, ease: EASE }}
-          style={{ borderRadius: 16, padding: '16px 18px', background: i === 2 ? 'var(--blaze)' : 'color-mix(in srgb, var(--fg) 10%, transparent)', color: i === 2 ? 'var(--bark)' : 'var(--fg)' }}>
+          style={{ borderRadius: 16, padding: '16px 18px', background: i === 2 ? 'var(--blaze)' : 'color-mix(in srgb, var(--fg) 10%, transparent)', color: i === 2 ? 'var(--ink)' : 'var(--fg)' }}>
           <div className="display" style={{ fontSize: 'clamp(34px, 4vw, 58px)' }}>{v}</div>
           <div className="small">{l}</div>
         </motion.div>
@@ -298,7 +298,7 @@ function Bar({ value, label, n, ours, i }: { value: number; label: string; n: nu
         <span>{value.toFixed(3)} <span className="small" style={{ opacity: 0.6 }}>n={n}</span></span>
       </div>
       <div style={{ height: 18, borderRadius: 6, background: 'color-mix(in srgb, var(--fg) 12%, transparent)', overflow: 'hidden' }}>
-        <motion.div initial={{ scaleX: 0 }} whileInView={{ scaleX: value }} viewport={{ once: true }} transition={{ duration: 1.2, delay: i * 0.12, ease: EASE }} style={{ height: '100%', originX: 0, background: ours ? 'var(--ice)' : 'color-mix(in srgb, var(--fg) 45%, transparent)' }} />
+        <motion.div initial={{ scaleX: 0 }} whileInView={{ scaleX: value }} viewport={{ once: true }} transition={{ duration: 1.2, delay: i * 0.12, ease: EASE }} style={{ height: '100%', originX: 0, background: ours ? 'var(--blaze)' : 'color-mix(in srgb, var(--fg) 45%, transparent)' }} />
       </div>
     </div>
   )
@@ -327,9 +327,9 @@ export function Receipts() {
           <p className="small" style={{ marginTop: 10, color: 'var(--fg-soft)' }}>Relevance, directness and injection, all answered in a single {COSTS.retrievalTokens}-token request.</p>
         </div>
         <div className="l-stat">
-          <div className="display" style={{ fontSize: 'clamp(60px, 7vw, 100px)' }}>{TOUR_BASELINES.issues}</div>
-          <div style={{ fontWeight: 800, fontSize: 20, letterSpacing: '-0.03em' }}>closed good-first issues</div>
-          <p className="small" style={{ marginTop: 10, color: 'var(--fg-soft)' }}>Tour eval with the fixing pull request hidden. Baselines to beat: BM25 recall@7 {TOUR_BASELINES.bm25Recall7}, similar-history {TOUR_BASELINES.historyRecall7}.</p>
+          <div className="display" style={{ fontSize: 'clamp(60px, 7vw, 100px)' }}>{TOUR_RESULTS.jevMrr.toFixed(2)}</div>
+          <div style={{ fontWeight: 800, fontSize: 20, letterSpacing: '-0.03em' }}>tour MRR on closed good-first issues</div>
+          <p className="small" style={{ marginTop: 10, color: 'var(--fg-soft)' }}>Fixing pull request hidden, n={TOUR_RESULTS.n}. Recall@7 {TOUR_RESULTS.jevRecall7} vs BM25 {TOUR_RESULTS.bm25Recall7} and similar-history {TOUR_RESULTS.historyRecall7}; MRR vs {TOUR_RESULTS.bm25Mrr} and {TOUR_RESULTS.historyMrr}.</p>
         </div>
         <div className="l-stat" style={{ background: 'var(--glacier)', boxShadow: 'inset 0 0 0 2px var(--ice)' }}>
           <div className="hand" style={{ fontSize: 34, color: 'var(--ice)' }}>“No recorded rationale found.”</div>
@@ -434,7 +434,7 @@ function TrailSign() {
       <motion.rect x={100} y={40} width={14} height={220} rx={3} fill="var(--ink)" variants={{ hidden: { scaleY: 0 }, shown: { scaleY: 1 } }} style={{ originY: 1 }} transition={{ duration: 0.8, ease: EASE }} />
       <motion.g variants={{ hidden: { opacity: 0, x: -40, rotate: -12 }, shown: { opacity: 1, x: 0, rotate: -4 } }} transition={{ delay: 0.5, type: 'spring', stiffness: 200, damping: 14 }}>
         <path d="M20 50 H170 L200 72 L170 94 H20 Z" fill="var(--blaze)" />
-        <text x={32} y={82} fontFamily="Anton, Impact" fontSize={30} fill="var(--bark)">TRAILHEAD</text>
+        <text x={32} y={82} fontFamily="Anton, Impact" fontSize={30} fill="var(--ink)">TRAILHEAD</text>
       </motion.g>
       <motion.g variants={{ hidden: { opacity: 0, x: 40, rotate: 12 }, shown: { opacity: 1, x: 0, rotate: 3 } }} transition={{ delay: 0.7, type: 'spring', stiffness: 200, damping: 14 }}>
         <path d="M190 110 H44 L16 130 L44 150 H190 Z" fill="var(--pine)" />

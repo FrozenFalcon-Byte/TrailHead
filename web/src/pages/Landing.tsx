@@ -1,6 +1,7 @@
 import Lenis from 'lenis'
 import { useCallback, useEffect, useRef } from 'react'
 import '../landing/landing.css'
+import { Climb } from '../landing/Climb'
 import { Hero } from '../landing/Hero'
 import { Nav } from '../landing/Nav'
 import { Cta, Faq, Footer, HowItWorks, Mosaic, NoGuesswork, Quote, Receipts, Rules, Statement } from '../landing/Sections'
@@ -35,6 +36,7 @@ export default function Landing({ ready }: { ready: boolean }) {
       <Nav onJump={jump} />
       <Hero ready={ready} />
       <Statement />
+      <Climb />
       <NoGuesswork />
       <Quote />
       <HowItWorks />

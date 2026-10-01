@@ -18,7 +18,7 @@ function RepoTile({ r, active, onPick, i }: { r: RepoInfo; active: boolean; onPi
       className={active ? 't-pine' : 'd-card'} style={{ textAlign: 'left', border: 0, borderRadius: 'var(--radius)', padding: 20, cursor: r.status === 'ready' ? 'pointer' : 'default', display: 'grid', gap: 8 }}>
       <span className="d-row" style={{ justifyContent: 'space-between' }}>
         <span className="mono" style={{ fontWeight: 800, fontSize: 17 }}>{r.repo}</span>
-        <span className="d-badge" style={{ background: failed ? 'var(--danger)' : running ? 'var(--blaze)' : active ? 'var(--lichen)' : 'var(--paper-2)', color: 'var(--ink)' }}>{active ? 'current' : r.status}</span>
+        <span className="d-badge" style={{ background: failed ? 'var(--danger)' : running ? 'var(--blaze)' : active ? 'var(--pine)' : 'var(--paper-2)', color: 'var(--ink)' }}>{active ? 'current' : r.status}</span>
       </span>
       {running && <TrailSpinner label="Cloning and reading history. This can take a few minutes." />}
       {failed && <span className="small" style={{ color: '#7a1408' }}>{r.error}</span>}

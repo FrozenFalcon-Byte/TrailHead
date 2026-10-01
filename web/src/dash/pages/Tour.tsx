@@ -131,7 +131,7 @@ export default function TourPage() {
                       </span>
                       <span className="small" style={{ display: 'grid', gap: 2, justifyItems: 'end' }}>
                         <span>need <Prob p={s.need} width={60} /></span>
-                        <span>start here <Prob p={s.entry} width={60} color="var(--pine)" /></span>
+                        <span>start here <Prob p={s.entry} width={60} color="var(--lichen)" /></span>
                       </span>
                       <motion.span animate={{ rotate: open === i ? 90 : 0 }} style={{ fontWeight: 900 }}>›</motion.span>
                     </button>
@@ -141,7 +141,7 @@ export default function TourPage() {
                           <div style={{ paddingTop: 14, display: 'grid', gap: 10 }}>
                             {s.why ? <p className="body" style={{ margin: 0 }}>{s.why}</p> : <p className="body" style={{ margin: 0, opacity: 0.7 }}>{s.summary}</p>}
                             {s.look_at.length > 0 && (
-                              <div className="d-row"><span className="hand" style={{ fontSize: 22, color: 'var(--bark)' }}>look at →</span>{s.look_at.map((x) => <span key={x} className="pill mono" style={{ ['--fg' as string]: 'var(--pine)' }}>{x}</span>)}</div>
+                              <div className="d-row"><span className="hand" style={{ fontSize: 22, color: 'var(--rust)' }}>look at →</span>{s.look_at.map((x) => <span key={x} className="pill mono" style={{ ['--fg' as string]: 'var(--lichen)' }}>{x}</span>)}</div>
                             )}
                             {s.history.length > 0 && (
                               <div className="small" style={{ display: 'grid', gap: 4 }}>
@@ -169,7 +169,7 @@ export default function TourPage() {
             <AnimatePresence>
               {Object.keys(feedback).length > 0 && (
                 <motion.div initial={{ y: 80, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 80, opacity: 0 }} transition={{ ease: EASE, duration: 0.5 }} style={{ position: 'sticky', bottom: 18, zIndex: 5 }}>
-                  <div className="d-row t-bark" style={{ padding: '14px 18px', borderRadius: 16, boxShadow: '0 20px 40px -20px rgba(0,0,0,.5)' }}>
+                  <div className="d-row t-bark" style={{ padding: '14px 18px', borderRadius: 16, boxShadow: '0 20px 40px -20px rgba(156,61,18,.35)' }}>
                     <span style={{ fontWeight: 700 }}>{Object.keys(feedback).length} stop{Object.keys(feedback).length > 1 ? 's' : ''} marked. Re-planning reuses Jev's earlier judgements, so it costs no new requests.</span>
                     <button className="btn small" onClick={replan} disabled={replanning} style={{ marginLeft: 'auto' }}><span>{replanning ? <TrailSpinner /> : 'Re-plan'}</span><span className="arrow">→</span></button>
                   </div>
@@ -192,7 +192,7 @@ export default function TourPage() {
                     <td className="mono">{c.path}</td>
                     <td className="small">{c.sources.map((x) => SOURCE_LABEL[x] ?? x).join(', ')}</td>
                     <td>{c.need != null ? <Prob p={c.need} width={50} /> : '—'}</td>
-                    <td>{c.entry != null ? <Prob p={c.entry} width={50} color="var(--pine)" /> : '—'}</td>
+                    <td>{c.entry != null ? <Prob p={c.entry} width={50} color="var(--lichen)" /> : '—'}</td>
                   </tr>
                 ))}
               </tbody>

@@ -108,7 +108,7 @@ export default function Ask() {
               <span className="d-badge" style={{ background: 'var(--glacier)', color: 'var(--ice)', fontSize: 16 }}>route · {ROUTE_NAMES[v.route.route] ?? v.route.route}</span>
               <span className="small" style={{ opacity: 0.65 }}>{v.route.reason}</span>
               {Object.entries<number>(v.route.probabilities ?? {}).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([k, p]) => (
-                <span key={k} className="small" style={{ display: 'inline-flex', gap: 6, alignItems: 'center' }}>{ROUTE_NAMES[k] ?? k} <Prob p={p as number} width={50} color="var(--glacier)" /></span>
+                <span key={k} className="small" style={{ display: 'inline-flex', gap: 6, alignItems: 'center' }}>{ROUTE_NAMES[k] ?? k} <Prob p={p as number} width={50} color="var(--ice)" /></span>
               ))}
             </motion.div>
           )}
@@ -117,7 +117,7 @@ export default function Ask() {
         {answer && (
           <Card theme={answer.status === 'answered' ? 'paper' : 'bark'} style={{ boxShadow: 'inset 0 0 0 2px var(--ink)' }}>
             <div className="d-row" style={{ justifyContent: 'space-between', marginBottom: 12 }}>
-              <motion.span className="display" initial={{ scale: 1.6, rotate: -8, opacity: 0 }} animate={{ scale: 1, rotate: -3, opacity: 1 }} transition={{ type: 'spring', stiffness: 380, damping: 18 }} style={{ fontSize: 30, padding: '2px 12px', borderRadius: 8, boxShadow: 'inset 0 0 0 3px currentColor', color: answer.status === 'answered' ? 'var(--pine)' : 'var(--blaze)' }}>
+              <motion.span className="display" initial={{ scale: 1.6, rotate: -8, opacity: 0 }} animate={{ scale: 1, rotate: -3, opacity: 1 }} transition={{ type: 'spring', stiffness: 380, damping: 18 }} style={{ fontSize: 30, padding: '2px 12px', borderRadius: 8, boxShadow: 'inset 0 0 0 3px currentColor', color: answer.status === 'answered' ? 'var(--lichen)' : 'var(--blaze)' }}>
                 {answer.status === 'answered' ? 'Answered' : 'Not sure — abstained'}
               </motion.span>
               {answer.confidence != null && <span className="small">confidence <Prob p={answer.confidence} /></span>}
@@ -136,7 +136,7 @@ export default function Ask() {
                     </div>
                     <div style={{ display: 'grid', gap: 2, justifyItems: 'end' }} className="small">
                       <span>support <Prob p={c.p_support} width={50} /></span>
-                      <span>direct <Prob p={c.directness} width={50} color="var(--glacier)" /></span>
+                      <span>direct <Prob p={c.directness} width={50} color="var(--ice)" /></span>
                     </div>
                   </motion.div>
                 ))}

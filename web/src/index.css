@@ -3,20 +3,24 @@
    a chunky grotesque for everything else, and a hand-written accent for margin notes. */
 
 :root {
-  --pine: #0b2b20;
-  --pine-2: #103a2b;
-  --lichen: #c8f169;
-  --paper: #f5f0e6;
-  --paper-2: #ebe4d6;
-  --ink: #151412;
-  --bark: #2b1507;
-  --blaze: #ff8a3d;
-  --glacier: #08202c;
-  --ice: #8ce6ff;
-  --plum: #2a0f2e;
-  --heather: #e7a6ff;
+  /* Light, airy colour blocks. Each section is a pastel ground with one deep ink of the same hue:
+     pine/lichen = sage + forest, bark/rust = peach + burnt orange, glacier/ice = sky + deep sea,
+     plum/heather = lilac + violet, paper/ink = cream + near-black. Blaze is the one loud accent. */
+  --pine: #e6f4e0;
+  --pine-2: #d6ecce;
+  --lichen: #1f5c3c;
+  --paper: #fcf9f3;
+  --paper-2: #f2ecdf;
+  --ink: #1c1b18;
+  --bark: #ffe9da;
+  --rust: #9c3d12;
+  --blaze: #f26a21;
+  --glacier: #e0f0fb;
+  --ice: #165b80;
+  --plum: #f1e6fb;
+  --heather: #6b3091;
   --mute: #cfc7b7;
-  --danger: #ff5d5d;
+  --danger: #d93a3a;
 
   --display: 'Anton', 'Impact', 'Arial Narrow', sans-serif;
   --chunk: 'Bricolage Grotesque Variable', 'Arial', sans-serif;
@@ -40,8 +44,8 @@ html,
 body {
   margin: 0;
   padding: 0;
-  background: var(--pine);
-  color: var(--paper);
+  background: var(--paper);
+  color: var(--ink);
   font-family: var(--chunk);
   font-weight: 500;
   letter-spacing: -0.01em;
@@ -91,7 +95,7 @@ html.lenis body {
 .t-pine {
   --bg: var(--pine);
   --fg: var(--lichen);
-  --fg-soft: #a7c98a;
+  --fg-soft: #4f7d62;
   background: var(--bg);
   color: var(--fg);
 }
@@ -104,22 +108,22 @@ html.lenis body {
 }
 .t-bark {
   --bg: var(--bark);
-  --fg: var(--blaze);
-  --fg-soft: #d79a6d;
+  --fg: var(--rust);
+  --fg-soft: #b8714a;
   background: var(--bg);
   color: var(--fg);
 }
 .t-glacier {
   --bg: var(--glacier);
   --fg: var(--ice);
-  --fg-soft: #8fb9c7;
+  --fg-soft: #5b8aa3;
   background: var(--bg);
   color: var(--fg);
 }
 .t-plum {
   --bg: var(--plum);
   --fg: var(--heather);
-  --fg-soft: #c592d6;
+  --fg-soft: #8f66aa;
   background: var(--bg);
   color: var(--fg);
 }
@@ -129,7 +133,7 @@ html.lenis body {
   font-family: var(--display);
   font-weight: 400;
   text-transform: uppercase;
-  line-height: 0.84;
+  line-height: 0.98;
   letter-spacing: -0.005em;
   margin: 0;
 }
@@ -144,7 +148,7 @@ html.lenis body {
   font-weight: 800;
   font-stretch: 86%;
   letter-spacing: -0.035em;
-  line-height: 0.92;
+  line-height: 1.02;
   margin: 0;
 }
 .hand {
@@ -164,7 +168,7 @@ html.lenis body {
   font-family: var(--display);
   text-transform: uppercase;
   font-size: clamp(22px, 3vw, 40px);
-  line-height: 0.98;
+  line-height: 1.06;
   letter-spacing: 0.005em;
   margin: 0;
 }
