@@ -135,7 +135,8 @@ def kept(settings: Settings, db: Path) -> bool | None:
 
 def _list(client: httpx.Client, settings: Settings) -> list[str]:
     res = client.post(f"{settings.supabase_url}/storage/v1/object/list/{settings.snapshot_bucket}", json={"prefix": "", "limit": 1000, "offset": 0})
-    if res.status_code in (400, 404):  # no bucket yet: nothing was ever saved
+    # no bucket yet means nothing was ever saved; Storage also answers a bad key with 400, so read the reason
+    if res.status_code in (400, 404) and "not found" in res.text.lower() and "unauthorized" not in res.text.lower():
         return []
     res.raise_for_status()
     rows: list[dict[str, Any]] = res.json()
