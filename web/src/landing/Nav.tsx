@@ -52,6 +52,7 @@ export function Nav({ onJump, settled = true }: { onJump: (id: string) => void; 
                 <span style={{ position: 'relative' }}>{s.label}</span>
               </a>
             ))}
+            <Link to="/guide">Guide</Link>
             {!signedIn && <Link to="/login" className="l-nav__login">Log in</Link>}
           </div>
           <button className="l-nav__menu" onClick={() => setOpen((o) => !o)} aria-expanded={open} aria-label="Menu">
@@ -72,9 +73,9 @@ export function Nav({ onJump, settled = true }: { onJump: (id: string) => void; 
             exit={{ clipPath: 'polygon(100% 0, 100% 0, 100% 100%, 100% 100%)' }}
             transition={{ duration: 0.65, ease: [0.76, 0, 0.24, 1] }}
           >
-            {[...SECTIONS, { id: 'login', label: signedIn ? 'Dashboard' : 'Log in' }].map((s, i) => (
+            {[...SECTIONS, { id: 'guide', label: 'Field guide' }, { id: 'login', label: signedIn ? 'Dashboard' : 'Log in' }].map((s, i) => (
               <motion.div key={s.id} initial={{ x: -60, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.2 + i * 0.06, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}>
-                {s.id === 'login' ? <Link to={signedIn ? '/app' : '/login'}>{s.label}</Link> : <a href={`#${s.id}`} onClick={jump(s.id)}>{s.label}</a>}
+                {s.id === 'guide' ? <Link to="/guide">{s.label}</Link> : s.id === 'login' ? <Link to={signedIn ? '/app' : '/login'}>{s.label}</Link> : <a href={`#${s.id}`} onClick={jump(s.id)}>{s.label}</a>}
               </motion.div>
             ))}
           </motion.div>

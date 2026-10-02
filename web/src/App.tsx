@@ -26,6 +26,7 @@ const ARRIVAL = takeArrival()
 
 // The dashboard is its own bundle, so the landing page loads light.
 const Dashboard = lazy(() => import('./dash/Dashboard'))
+const Guide = lazy(() => import('./guide/Guide'))
 
 /** Redirect exactly once. <Navigate> would fire again every time the page re-renders while the curtain plays its
  *  exit, and that loops. */
@@ -88,6 +89,7 @@ export default function App() {
       <AnimatePresence mode="wait" initial={false}>
         <Routes location={location} key={area === 'login' || area === 'signup' ? 'auth' : area}>
           <Route path="/" element={<Curtain><Landing ready={revealed} settled={!loading} /></Curtain>} />
+          <Route path="/guide" element={<Curtain><Suspense fallback={<div className="t-cream" style={{ minHeight: '100vh', display: 'grid', placeItems: 'center' }}><TrailSpinner label="Unfolding the guide" /></div>}><Guide /></Suspense></Curtain>} />
           <Route path="/login" element={<Curtain><AuthPage /></Curtain>} />
           <Route path="/signup" element={<Curtain><AuthPage /></Curtain>} />
           <Route path="/auth/callback" element={<AuthCallback />} />

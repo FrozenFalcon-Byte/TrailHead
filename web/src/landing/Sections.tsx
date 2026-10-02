@@ -301,6 +301,7 @@ export function Footer({ onJump }: { onJump: (id: string) => void }) {
           <a href="#receipts" onClick={jump('receipts')}>Receipts</a>
           <a href="#rules" onClick={jump('rules')}>Guardrails</a>
           <a href="#faq" onClick={jump('faq')}>FAQ</a>
+          <Link to="/guide">Field guide</Link>
         </div>
         <div className="l-bento__col">
           <div className="small" style={{ opacity: 0.6 }}>Account</div>
