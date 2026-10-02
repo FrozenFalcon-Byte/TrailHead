@@ -22,6 +22,7 @@ import { usePref } from './lib/prefs'
 import { ArrivingSheet, takeArrival } from './motion/UpdateSheet'
 import { UpdateSplash } from './motion/UpdateSplash'
 import { PairHost } from './motion/PairHost'
+import { PairSplash } from './motion/PairSplash'
 
 // Read once per page load: set when the previous page reloaded itself into a new build.
 const ARRIVAL = takeArrival()
@@ -104,6 +105,7 @@ export default function App() {
       </AnimatePresence>
       <QrSheet />
       <PairHost />
+      <PairSplash />
       <ContextMenu />
       <Toaster />
       <WakeSheet />

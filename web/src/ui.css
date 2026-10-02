@@ -1462,9 +1462,10 @@ html[data-motion='off'] *::after {
 
 
 /* ---------- Paired phone: laser dot, tether on the right edge, cards passed across ---------- */
-.ph-laser { position: fixed; left: -14px; top: -14px; z-index: 10002; width: 28px; height: 28px; pointer-events: none; }
-.ph-laser span { position: absolute; inset: 0; border-radius: 50%; background: var(--orange); box-shadow: 0 0 0 3px #17161b, 0 0 0 9px color-mix(in srgb, var(--orange) 35%, transparent); }
-.ph-tap { position: fixed; z-index: 10002; width: 28px; height: 28px; margin: -14px 0 0 -14px; border-radius: 50%; border: 10px solid var(--orange); pointer-events: none; }
+.ph-cursor { position: fixed; left: 0; top: 0; z-index: 10002; pointer-events: none; transform-origin: 0 0; }
+.ph-cursor__body { position: absolute; left: 0; top: 0; width: 22px; height: 22px; border-radius: 3px 11px 11px 11px; background: var(--orange); box-shadow: 0 0 0 2.5px #fff, 0 3px 10px rgba(23, 22, 27, 0.28); transform-origin: 0 0; }
+.ph-cursor__tag { position: absolute; left: 14px; top: 28px; display: inline-flex; align-items: center; gap: 5px; padding: 4px 9px 4px 7px; border-radius: 4px 10px 10px 10px; background: var(--orange); color: #fff; font: 750 12.5px/1.2 'Inter Variable', sans-serif; white-space: nowrap; box-shadow: 0 0 0 2px #fff; }
+.ph-tap { position: fixed; z-index: 10002; width: 30px; height: 30px; margin: -15px 0 0 -15px; border-radius: 50%; border: 8px solid var(--orange); pointer-events: none; }
 .ph-dock { position: fixed; right: 0; top: 50%; translate: 0 -50%; z-index: 90; display: grid; justify-items: end; gap: 10px; pointer-events: none; }
 .ph-dock > * { pointer-events: auto; }
 .ph-tether { display: flex; align-items: stretch; background: var(--solid); color: var(--on-solid); border-radius: 18px 0 0 18px; overflow: hidden; box-shadow: -6px 6px 0 -2px color-mix(in srgb, var(--solid) 25%, transparent); }
@@ -1487,3 +1488,24 @@ html[data-motion='off'] *::after {
 .ph-drop__acts { display: flex; gap: 6px; }
 .ph-drop__acts > * { border: 0; border-radius: 999px; padding: 6px 12px; background: var(--solid); color: var(--on-solid); font: inherit; font-size: 12.5px; font-weight: 650; text-decoration: none; cursor: pointer; }
 .ph-drop__acts .is-quiet { background: transparent; color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--line); }
+
+/* ---------- pairing beats (motion/PairSplash.tsx): link, unpair, buzz ---------- */
+.psp { position: fixed; inset: 0; z-index: 10004; display: grid; place-content: center; justify-items: center; gap: 14px; padding: 24px 16px; color: #fbf8f1; text-align: center; pointer-events: none; overflow: hidden; }
+.psp-in { display: grid; justify-items: center; gap: 14px; }
+.psp-duo { position: relative; width: min(92vw, 520px); height: 120px; display: grid; place-items: center; }
+.psp-cord { position: absolute; left: 50%; top: 50%; width: 52vmin; max-width: 420px; height: auto; translate: -50% -50%; overflow: visible; }
+.psp-tile { position: absolute; display: grid; place-items: center; width: 88px; height: 88px; border-radius: 26px; color: #17161b; box-shadow: 0 0 0 3px #fbf8f1, 6px 8px 0 0 rgba(0, 0, 0, 0.35); }
+.psp-tile--small { position: relative; width: 70px; height: 70px; border-radius: 22px; }
+.psp-spark { position: absolute; left: 50%; top: 50%; width: 12px; height: 12px; margin: -6px 0 0 -6px; }
+.psp-title { margin: 0; display: flex; justify-content: center; flex-wrap: wrap; font: 800 clamp(48px, 11vw, 120px)/1 'Bricolage Grotesque Variable', sans-serif; letter-spacing: -0.04em; }
+.psp-mask { display: inline-block; overflow: hidden; padding: 0 0.01em 0.08em; }
+.psp-mask > span { display: inline-block; transform-origin: 0 100%; }
+.psp-line { margin: 0; font: 600 clamp(15px, 2vw, 19px)/1.4 'Inter Variable', sans-serif; color: rgba(251, 248, 241, 0.72); max-width: 30em; }
+.psp-buzz { background: var(--yellow); color: #17161b; pointer-events: auto; cursor: pointer; }
+.psp-buzz .psp-line { color: rgba(23, 22, 27, 0.7); }
+.psp-ring { position: absolute; left: 50%; top: 50%; width: 180px; height: 180px; margin: -90px 0 0 -90px; border-radius: 50%; border: 18px solid #17161b; pointer-events: none; }
+.psp-bell { display: grid; place-items: center; width: 120px; height: 120px; border-radius: 34px; background: #17161b; color: var(--yellow); }
+.psp-sent { background: var(--violet); }
+.psp-sent .psp-title { font-size: clamp(36px, 7vw, 84px); }
+.psp-sent__stage { position: relative; display: grid; place-items: center; width: 240px; height: 110px; }
+.psp-wave { position: absolute; left: 50%; top: 50%; width: 80px; height: 80px; margin: -40px 0 0 -40px; border-radius: 50%; border: 6px solid #fbf8f1; }

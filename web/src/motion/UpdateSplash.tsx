@@ -11,7 +11,7 @@ import { SplitReveal } from './SplitReveal'
 import { LeavingSheet } from './UpdateSheet'
 
 /* When a newer build of the site is out, wherever you are (landing, guide, dashboard), a splash rolls up: the
-   mountains rise, the sun comes up, and the card says what changed. "Later" shrinks the splash into the corner, where a small flag
+   mountains rise, the sun comes up, and the card says what changed. "Later" folds the splash down into the corner, where a small flag
    springs up that opens it again; "Update now" hands over to the walk that carries on through the reload. */
 
 const BULLETS: { kind: ShapeKind; color: string; glyph: Glyph }[] = [
@@ -34,8 +34,14 @@ export function UpdateSplash() {
   const [view, setView] = useState<'off' | 'open' | 'chip'>('off')
   const [going, setGoing] = useState(false)
   const open = view === 'open'
-  const setOpen = (v: boolean) => setView(v ? 'open' : 'chip')
+  const setOpen = (v: boolean) => {
+    folded.current = !v
+    setView(v ? 'open' : 'chip')
+  }
   const shown = useRef('')
+  // The chip sits under the splash while it closes, and the splash clips down onto exactly where it is.
+  const chip = useRef<DOMRect | null>(null)
+  const folded = useRef(false)
 
   useEffect(() => {
     if (!release || shown.current === release.id) return
@@ -55,15 +61,21 @@ export function UpdateSplash() {
   // Commit subjects run long; the part before a colon is the headline, the rest is trimmed.
   const changes = release.changes.slice(0, 3).map((c) => { const head = c.split(':')[0]; const t = head.length >= 12 && head.length < 90 ? head : c; return t.length > 96 ? `${t.slice(0, 94).trimEnd()}…` : t })
   const spring = reduce ? { duration: 0 } : { type: 'spring' as const, stiffness: 220, damping: 26 }
+  const c = chip.current
+  const box = { left: c?.left ?? 18, top: c?.top ?? window.innerHeight - 58, w: c?.width ?? 150, h: c?.height ?? 40 }
+  const into = `inset(${box.top}px ${window.innerWidth - box.left - box.w}px ${window.innerHeight - box.top - box.h}px ${box.left}px round 18px)`
+  const fold = { duration: 0.5, ease: [0.76, 0, 0.24, 1] as const }
 
   return createPortal(
     <>
       <AnimatePresence>
         {open ? (
           <motion.div key="splash" className="usp" role="dialog" aria-modal="true" aria-label="A new version is ready"
-            initial={reduce ? false : { y: '100%' }} animate={{ y: 0, scale: 1, borderRadius: 0 }} exit={reduce ? { opacity: 0 } : { scale: 0.04, borderRadius: 400, transition: { duration: 0.45, ease: [0.76, 0, 0.24, 1] } }}
-            transition={spring} style={{ transformOrigin: '40px calc(100% - 40px)' }}>
-            <motion.div className="usp-in" initial={{ y: 30 }} animate={{ y: 0 }} exit={{ y: 20, scale: 0.9 }} transition={spring}>
+            initial={reduce ? false : { y: '100%' }} animate={{ y: 0, clipPath: 'inset(0px 0px 0px 0px round 0px)' }} exit={reduce ? { opacity: 0 } : { clipPath: into, transition: fold }}
+            transition={spring}>
+            {/* ink wipes up as it folds, so it lands in the chip's own colour */}
+            <motion.span className="usp-ink" aria-hidden style={{ clipPath: 'inset(100% 0 0 0)' }} exit={reduce ? undefined : { clipPath: 'inset(0% 0 0 0)', transition: { duration: 0.34, delay: 0.12, ease: [0.65, 0, 0.35, 1] } }} />
+            <motion.div className="usp-in" initial={{ y: 30 }} animate={{ y: 0 }} exit={{ y: 60, transition: { duration: 0.3, ease: [0.76, 0, 0.24, 1] } }} transition={spring}>
               <motion.span className="usp-mark" initial={{ rotate: -30, scale: 0.4 }} animate={{ rotate: 0, scale: 1 }} transition={{ type: 'spring', stiffness: 260, damping: 13, delay: 0.15 }}>
                 <Mark size={64} />
               </motion.span>
@@ -94,15 +106,15 @@ export function UpdateSplash() {
             <svg className="usp-land" viewBox="0 0 1000 260" preserveAspectRatio="xMidYMax slice" aria-hidden>
               <motion.circle cx={780} cy={120} r={44} fill="var(--yellow)" initial={{ y: 140 }} animate={{ y: 0 }} transition={{ type: 'spring', stiffness: 60, damping: 14, delay: 0.25 }} />
               {RIDGES.map((r, i) => (
-                <motion.path key={i} d={r.d} fill={r.fill} initial={{ y: 200 }} animate={{ y: 0 }} exit={{ y: 200 }} transition={{ type: 'spring', stiffness: 90, damping: 18, delay: r.delay }} />
+                <motion.path key={i} d={r.d} fill={r.fill} initial={{ y: 200 }} animate={{ y: 0 }} exit={{ y: 200, transition: { duration: 0.3, ease: [0.76, 0, 0.24, 1] } }} transition={{ type: 'spring', stiffness: 90, damping: 18, delay: r.delay }} />
               ))}
               <motion.path d="M90 240 C 260 210, 380 236, 520 214 S 780 190, 900 196" fill="none" stroke="var(--orange)" strokeWidth={4} strokeLinecap="round" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 1.4, delay: 0.5, ease: [0.22, 1, 0.36, 1] }} />
             </svg>
           </motion.div>
         ) : (
           !going && (
-            <motion.button key="chip" className="usp-chip" onClick={() => setOpen(true)}
-              initial={reduce ? false : { scale: 0, rotate: -20 }} animate={{ scale: 1, rotate: 0, transition: { type: 'spring', stiffness: 380, damping: 18, delay: 0.25 } }} exit={{ scale: 0, rotate: 20, transition: { duration: 0.15 } }}
+            <motion.button key="chip" className="usp-chip" onClick={() => setOpen(true)} ref={(el: HTMLButtonElement | null) => { if (el) chip.current = el.getBoundingClientRect() }}
+              initial={reduce || folded.current ? false : { scale: 0, rotate: -20 }} animate={{ scale: 1, rotate: 0, transition: { type: 'spring', stiffness: 380, damping: 18, delay: 0.25 } }} exit={{ scale: 0, rotate: 20, transition: { duration: 0.15 } }}
               style={{ borderRadius: 18, transformOrigin: 'left bottom' }} aria-label="A new version is ready" data-cursor="See what changed">
               <motion.span animate={{ rotate: [0, -10, 0] }} transition={{ duration: 1.6, repeat: Infinity, repeatDelay: 2.4 }} style={{ display: 'inline-flex' }}>
                 <Shape kind="tag" color="var(--orange)" glyph="flag" size={24} play={false} />

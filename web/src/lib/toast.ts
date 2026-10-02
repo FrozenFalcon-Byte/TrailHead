@@ -92,6 +92,33 @@ export function chime(tone: Tone) {
   else a.resume().then(() => { if (a.state === 'running') play() }, () => undefined)
 }
 
+/** A buzz from a paired device: a bright two-tone trill, three times, loud enough to hear across a room. */
+export function ring() {
+  const a = context()
+  if (!a) return
+  const play = () => {
+    const out = a.createGain()
+    out.gain.value = 1
+    out.connect(a.destination)
+    for (let burst = 0; burst < 3; burst++)
+      for (let i = 0; i < 6; i++) {
+        const t0 = a.currentTime + 0.02 + burst * 0.42 + i * 0.05
+        const o = a.createOscillator()
+        const g = a.createGain()
+        o.type = 'square'
+        o.frequency.value = i % 2 ? 988 : 1319
+        g.gain.setValueAtTime(0, t0)
+        g.gain.linearRampToValueAtTime(0.06, t0 + 0.006)
+        g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.05)
+        o.connect(g).connect(out)
+        o.start(t0)
+        o.stop(t0 + 0.06)
+      }
+  }
+  if (a.state === 'running') play()
+  else a.resume().then(() => { if (a.state === 'running') play() }, () => undefined)
+}
+
 export function dismiss(id: number) {
   items = items.filter((t) => t.id !== id)
   emit()

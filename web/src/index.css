@@ -581,6 +581,7 @@ html.tc-on * {
   cursor: pointer;
 }
 .usp-later:hover { color: var(--ink); }
+.usp-ink { position: fixed; inset: 0; z-index: 3; background: var(--solid); pointer-events: none; }
 .usp-land { position: fixed; left: 0; right: 0; bottom: 0; width: 100%; height: 30vh; display: block; z-index: 0; pointer-events: none; }
 .usp-chip {
   position: fixed;

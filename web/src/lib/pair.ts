@@ -86,6 +86,17 @@ export function onPairMessage(h: Handler) {
   }
 }
 
+/* Moments worth a full-screen beat on both devices: the link made, made again, or ended by either side. */
+export type PairEvent = { kind: 'linked' | 'relinked' | 'unpaired'; by: 'you' | 'peer'; peer: string; role: Role }
+const events = new Set<(e: PairEvent) => void>()
+export function onPairEvent(h: (e: PairEvent) => void) {
+  events.add(h)
+  return () => {
+    events.delete(h)
+  }
+}
+const announce = (e: PairEvent) => events.forEach((h) => h(e))
+
 const ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'
 function makeCode(): string {
   const bytes = crypto.getRandomValues(new Uint8Array(8))
@@ -129,12 +140,31 @@ function receive(m: Wire) {
   if (!state.role || m.from === state.role) return
   lastSeen = Date.now()
   if (m.t === 'bye') {
-    set({ status: 'lost', peer: state.peer })
+    const peer = state.peer
+    const role = state.role
+    if (role === 'host') {
+      // the phone left on purpose: show the code again on the same channel, so it can scan straight back in
+      set({ status: 'waiting', peer: '', page: location.pathname, since: 0, drops: [], traffic: [] })
+      save()
+    } else {
+      stop()
+      forget()
+      set({ role: null, code: '', status: 'off', peer: '', page: '', since: 0, drops: [], traffic: [] })
+    }
+    announce({ kind: 'unpaired', by: 'peer', peer, role: role as Role })
     return
   }
-  if (state.status !== 'linked') set({ status: 'linked', since: state.since && state.status === 'lost' ? state.since : Date.now() })
   if (m.t === 'hello' || m.t === 'welcome') {
     set({ peer: m.device, ...(m.page ? { page: m.page } : {}) })
+    if (state.status === 'linked') save()
+  }
+  if (state.status !== 'linked') {
+    const back = state.status === 'lost'
+    set({ status: 'linked', since: state.since && back ? state.since : Date.now() })
+    save()
+    announce({ kind: back ? 'relinked' : 'linked', by: 'peer', peer: state.peer, role: state.role as Role })
+  }
+  if (m.t === 'hello' || m.t === 'welcome') {
     if (m.t === 'hello') post({ t: 'welcome', device: deviceName(), page: state.role === 'host' ? location.pathname : undefined })
   }
   if (m.t === 'page') set({ page: m.page })
@@ -188,25 +218,46 @@ function connect(code: string) {
   }, 1000)
 }
 
+/* A reload on either side picks the same link back up: each tab keeps its role, code and who it was linked to,
+   comes back as "out of reach" (never via the QR or the join screen), and turns linked again, quietly, as soon as
+   the other side answers its hello. */
 const SAVED = 'th-pair'
+type Saved = { role: Role; code: string; peer: string; since: number }
+function readSaved(): Saved | null {
+  try {
+    const raw = sessionStorage.getItem(SAVED)
+    if (!raw) return null
+    if (validCode(raw)) return { role: 'host', code: raw, peer: '', since: 0 } // older tabs kept the bare code
+    const v = JSON.parse(raw) as Saved
+    return v && (v.role === 'host' || v.role === 'phone') && validCode(v.code) ? v : null
+  } catch {
+    return null
+  }
+}
+function save() {
+  try {
+    if (state.role && state.code) sessionStorage.setItem(SAVED, JSON.stringify({ role: state.role, code: state.code, peer: state.peer, since: state.since }))
+  } catch {
+    /* kept for this page only */
+  }
+}
+function forget() {
+  try {
+    sessionStorage.removeItem(SAVED)
+  } catch {
+    /* nothing saved */
+  }
+}
 
 /** Desktop: make a code (or pick up the one this tab was already showing) and wait for a phone. */
 export function startHosting(fresh = false) {
   if (state.role === 'host' && !fresh) return state.code
-  let code = ''
-  try {
-    const saved = sessionStorage.getItem(SAVED)
-    if (!fresh && saved && validCode(saved)) code = saved
-  } catch {
-    /* storage blocked */
-  }
-  code ||= makeCode()
-  try {
-    sessionStorage.setItem(SAVED, code)
-  } catch {
-    /* kept for this page only */
-  }
-  set({ role: 'host', code, status: 'waiting', peer: '', page: location.pathname, since: 0, drops: [], traffic: [] })
+  const saved = fresh ? null : readSaved()
+  const back = saved?.role === 'host' ? saved : null
+  const code = back?.code ?? makeCode()
+  const peer = back?.peer ?? ''
+  set({ role: 'host', code, status: peer ? 'lost' : 'waiting', peer, page: location.pathname, since: peer ? back?.since ?? 0 : 0, drops: [], traffic: [] })
+  save()
   connect(code)
   return code
 }
@@ -214,34 +265,34 @@ export function startHosting(fresh = false) {
 /** Phone: join the code from the scanned link. */
 export function joinAsPhone(code: string) {
   if (state.role === 'phone' && state.code === code) return
-  set({ role: 'phone', code, status: 'waiting', peer: '', page: '', since: 0, drops: [], traffic: [] })
+  const saved = readSaved()
+  const back = saved?.role === 'phone' && saved.code === code && saved.peer ? saved : null
+  set({ role: 'phone', code, status: back ? 'lost' : 'waiting', peer: back?.peer ?? '', page: '', since: back?.since ?? 0, drops: [], traffic: [] })
+  save()
   connect(code)
 }
 
-/** End the link on both sides. */
-export function unpair() {
-  if (state.role) post({ t: 'bye' })
+function stop() {
   window.clearInterval(beat)
   window.clearInterval(watch)
   const end = close
   close = () => undefined
-  window.setTimeout(end, 120) // let the goodbye leave first
-  try {
-    sessionStorage.removeItem(SAVED)
-  } catch {
-    /* nothing saved */
-  }
+  window.setTimeout(end, 120) // let a goodbye leave first
+}
+
+/** End the link on both sides. */
+export function unpair() {
+  const was = state
+  if (state.role) post({ t: 'bye' })
+  stop()
+  if (was.role && (was.status === 'linked' || was.status === 'lost')) announce({ kind: 'unpaired', by: 'you', peer: was.peer, role: was.role })
+  forget()
   set({ role: null, code: '', status: 'off', peer: '', page: '', since: 0, drops: [], traffic: [] })
 }
 
 /** A desktop tab that was pairing before a reload keeps its code, so the phone finds it again. */
 export function resumeHosting() {
-  try {
-    const saved = sessionStorage.getItem(SAVED)
-    if (saved && validCode(saved) && !state.role) startHosting()
-  } catch {
-    /* storage blocked */
-  }
+  if (!state.role && readSaved()?.role === 'host') startHosting()
 }
 
 export function dismissDrop(id: string) {

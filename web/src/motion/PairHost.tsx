@@ -1,8 +1,9 @@
-import { AnimatePresence, motion, useMotionValue, useSpring } from 'motion/react'
+import { AnimatePresence, motion, useMotionValue, useSpring, useTransform, useVelocity } from 'motion/react'
 import { useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { dismissDrop, isLink, onPairMessage, post, resumeHosting, unpair, usePair, type Drop } from '../lib/pair'
 import { chime, notify } from '../lib/toast'
+import { buzz } from './PairSplash'
 
 /* The desktop half of a pairing, mounted once for the whole app so the link survives moving between pages. It acts
    on what the phone sends (go to a page, ask, scroll, point, ring, pass text), tells the phone which page is open,
@@ -21,13 +22,35 @@ export function PhoneGlyph({ size = 18, live = false }: { size?: number; live?: 
   )
 }
 
-/** The phone's laser dot: springs after the deltas the phone sends, rings out on a tap, tucks away when idle. */
-function Pointer() {
+const PRESSABLE = 'a, button, [role="button"], [role="option"], [role="menuitem"], [role="radio"], [role="switch"], [role="tab"], summary, label, select, [data-cursor]'
+const TYPEABLE = 'input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), textarea, [contenteditable="true"]'
+
+/** Press whatever sits under the phone's cursor, the way a real click would reach it. */
+function pressAt(x: number, y: number) {
+  const hit = document.elementFromPoint(x, y) as HTMLElement | null
+  if (!hit) return
+  const field = hit.closest<HTMLElement>(TYPEABLE)
+  if (field) return field.focus()
+  const el = hit.closest<HTMLElement>(PRESSABLE) ?? hit
+  const init = { bubbles: true, cancelable: true, composed: true, clientX: x, clientY: y, button: 0 }
+  el.dispatchEvent(new PointerEvent('pointerdown', { ...init, pointerType: 'mouse', isPrimary: true }))
+  el.dispatchEvent(new MouseEvent('mousedown', init))
+  el.dispatchEvent(new PointerEvent('pointerup', { ...init, pointerType: 'mouse', isPrimary: true }))
+  el.dispatchEvent(new MouseEvent('mouseup', init))
+  el.click()
+}
+
+/** The phone's cursor: the Trailhead teardrop in orange with the phone's name tagged under it. It springs after the
+ *  deltas the phone sends, swings a little as it travels, squishes and rings out on a tap (which presses what is
+ *  under it), and tucks away when the phone goes quiet. */
+function Pointer({ name }: { name: string }) {
   const x = useMotionValue(window.innerWidth / 2)
   const y = useMotionValue(window.innerHeight / 2)
   const sx = useSpring(x, { stiffness: 520, damping: 34, mass: 0.6 })
   const sy = useSpring(y, { stiffness: 520, damping: 34, mass: 0.6 })
+  const lean = useSpring(useTransform(useVelocity(sx), (v) => Math.max(-22, Math.min(22, -v / 90))), { stiffness: 170, damping: 8, mass: 0.8 })
   const [on, setOn] = useState(false)
+  const [down, setDown] = useState(false)
   const [taps, setTaps] = useState<{ id: number; x: number; y: number }[]>([])
   const idle = useRef(0)
   useEffect(
@@ -35,30 +58,35 @@ function Pointer() {
       onPairMessage((m) => {
         if (m.t !== 'point' && m.t !== 'tap') return
         window.clearTimeout(idle.current)
-        idle.current = window.setTimeout(() => setOn(false), 2600)
-        if (!on && m.t === 'point') {
-          // wake where it was left, not where it was flung
-          setOn(true)
-        }
+        idle.current = window.setTimeout(() => setOn(false), 4000)
+        setOn(true)
         if (m.t === 'point') {
-          x.set(Math.max(8, Math.min(window.innerWidth - 8, x.get() + m.dx * 2.2)))
-          y.set(Math.max(8, Math.min(window.innerHeight - 8, y.get() + m.dy * 2.2)))
-        } else {
-          setOn(true)
-          const id = Date.now()
-          setTaps((t) => [...t, { id, x: x.get(), y: y.get() }])
-          window.setTimeout(() => setTaps((t) => t.filter((k) => k.id !== id)), 900)
+          x.set(Math.max(4, Math.min(window.innerWidth - 4, x.get() + m.dx * 2.2)))
+          y.set(Math.max(4, Math.min(window.innerHeight - 4, y.get() + m.dy * 2.2)))
+          return
         }
+        const at = { x: x.get(), y: y.get() }
+        const id = Date.now()
+        setDown(true)
+        window.setTimeout(() => setDown(false), 140)
+        setTaps((t) => [...t, { id, ...at }])
+        window.setTimeout(() => setTaps((t) => t.filter((k) => k.id !== id)), 800)
+        pressAt(at.x, at.y)
       }),
-    [on, x, y],
+    [x, y],
   )
   return (
     <>
-      <motion.div className="ph-laser" style={{ x: sx, y: sy }} initial={false} animate={{ scale: on ? 1 : 0 }} transition={{ type: 'spring', stiffness: 420, damping: 22 }} aria-hidden>
-        <span />
+      <motion.div className="ph-cursor" style={{ x: sx, y: sy }} initial={false} animate={{ scale: on ? 1 : 0 }} transition={{ type: 'spring', stiffness: 420, damping: 22 }} aria-hidden>
+        <motion.div style={{ rotate: lean, originX: 0, originY: 0 }}>
+          <motion.span className="ph-cursor__body" animate={{ scale: down ? 0.72 : 1, rotate: down ? -12 : 0 }} transition={{ type: 'spring', stiffness: 600, damping: 12 }} />
+          <motion.span className="ph-cursor__tag" animate={{ y: down ? 3 : 0 }} transition={{ type: 'spring', stiffness: 500, damping: 14 }}>
+            <PhoneGlyph size={12} /> {name}
+          </motion.span>
+        </motion.div>
       </motion.div>
       {taps.map((t) => (
-        <motion.span key={t.id} className="ph-tap" style={{ left: t.x, top: t.y }} initial={{ scale: 0.2, borderWidth: 10 }} animate={{ scale: 3.2, borderWidth: 0 }} transition={{ duration: 0.8, ease: EASE }} aria-hidden />
+        <motion.span key={t.id} className="ph-tap" style={{ left: t.x, top: t.y }} initial={{ scale: 0.2, borderWidth: 8 }} animate={{ scale: 2.6, borderWidth: 0 }} transition={{ duration: 0.7, ease: EASE }} aria-hidden />
       ))}
     </>
   )
@@ -148,7 +176,7 @@ function Dock() {
                 </form>
                 <div className="ph-drawer__row">
                   <button disabled={!live} onClick={() => post({ t: 'drop', text: window.location.href, title: document.title })}>Send this page</button>
-                  <button disabled={!live} onClick={() => post({ t: 'ring' })}>Buzz it</button>
+                  <button disabled={!live} onClick={buzz}>Buzz it</button>
                   <button className="is-quiet" onClick={() => { unpair(); setOpen(false) }}>Unpair</button>
                 </div>
               </div>
@@ -176,13 +204,10 @@ export function PairHost() {
   // Say so when the link comes up or drops, wherever the person is.
   const was = useRef(pair.status)
   useEffect(() => {
-    if (host && pair.status === 'linked' && was.current !== 'linked') {
-      chime('success')
-      if (location.pathname !== '/pair') notify.ok(`${pair.peer || 'Your phone'} is linked`, 'It can steer, point and pass things across.')
-    }
+    if (host && pair.status === 'linked' && was.current === 'lost') notify.ok(`${pair.peer || 'Your phone'} is back`, 'The link picked up where it left off.')
     if (host && pair.status === 'lost' && was.current === 'linked') notify.warn('Phone out of reach', 'It links again on its own when it comes back.')
     was.current = pair.status
-  }, [host, pair.status, pair.peer, location.pathname])
+  }, [host, pair.status, pair.peer])
 
   useEffect(() => {
     if (!host) return
@@ -192,10 +217,6 @@ export function PairHost() {
         const q = m.q.trim().slice(0, 500)
         if (q.length >= 3) navigate(`/app/ask?q=${encodeURIComponent(q)}&run=1&n=${Date.now() % 100000}`)
       }
-      if (m.t === 'ring') {
-        chime('info')
-        document.documentElement.animate([{ translate: '0 0' }, { translate: '-6px 0' }, { translate: '6px 0' }, { translate: '-3px 0' }, { translate: '0 0' }], { duration: 420, easing: 'cubic-bezier(.22,1,.36,1)' })
-      }
       if (m.t === 'drop') chime('job')
     })
   }, [host, navigate])
@@ -203,7 +224,7 @@ export function PairHost() {
   if (!host) return null
   return (
     <>
-      <Pointer />
+      <Pointer name={pair.peer || 'Phone'} />
       {location.pathname !== '/pair' && pair.status !== 'waiting' && <Dock />}
     </>
   )
