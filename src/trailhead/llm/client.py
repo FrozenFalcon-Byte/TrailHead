@@ -107,9 +107,19 @@ class OpenAICompatClient:
                     raise LLMError(f"malformed LLM response: {exc}") from exc
                 if json_mode:
                     # Reasoning models sometimes leave the answer in the reasoning channel and return no content.
-                    extracted = last_json_object(text) or last_json_object(str(message.get("reasoning") or ""))
+                    extracted = last_json_object(text) or last_json_object(str(message.get("reasoning") or message.get("reasoning_content") or ""))
                     if extracted is None:
-                        last_error = "no JSON object in the completion"
+                        finish = str((data.get("choices") or [{}])[0].get("finish_reason") or "")
+                        last_error = f"no JSON object in the completion (finish: {finish or 'unknown'})"
+                        # Asking again unchanged gets the same empty reply at temperature 0. A reply cut off while
+                        # thinking needs more room and less thinking; strict JSON mode is dropped so a reply that
+                        # wraps its object in prose still parses.
+                        if finish == "length" or not text.strip():
+                            body["max_tokens"] = min(16384, int(body["max_tokens"]) * 2)
+                            if message.get("reasoning") or message.get("reasoning_content"):
+                                body["reasoning_effort"] = "low"
+                        body.pop("response_format", None)
+                        logger.warning("LLM returned no JSON (%s); retrying with max_tokens=%s", finish or "no finish reason", body["max_tokens"])
                         continue
                     text = extracted
                 return LLMResponse(
