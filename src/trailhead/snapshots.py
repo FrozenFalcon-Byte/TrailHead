@@ -90,6 +90,17 @@ def save(settings: Settings, db: Path) -> tuple[str, list[str]]:
     return "", [r for r in (_repo_of(settings, n) for n in others) if r]
 
 
+def remove(settings: Settings, db: Path) -> None:
+    """Delete one database's kept copy, if storage has it."""
+    if not enabled(settings):
+        return
+    name = _object_for(settings, db)
+    with httpx.Client(headers=_headers(settings), timeout=30) as client:
+        if name in _list(client, settings):
+            client.request("DELETE", f"{settings.supabase_url}/storage/v1/object/{settings.snapshot_bucket}", json={"prefixes": [name]}).raise_for_status()
+    _seen.update(at=0.0)
+
+
 def _repo_of(settings: Settings, name: str) -> str:
     path = _path_for(settings, name)
     if not path.exists():

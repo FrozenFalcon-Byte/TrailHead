@@ -197,6 +197,16 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     async def add_repo(body: IngestBody, _: User = Depends(user)) -> dict[str, Any]:
         return repos.start_ingest(settings, body.repo, github_token=body.github_token)
 
+    @app.post("/api/repos/remove")
+    async def remove_repo(body: RepoBody, _: User = Depends(user)) -> dict[str, Any]:
+        ctx = contexts.pop(body.repo, None)
+        if ctx is not None:
+            await ctx.aclose()
+        try:
+            return await asyncio.to_thread(repos.remove_repo, settings, body.repo)
+        except ValueError as exc:
+            raise HTTPException(400, str(exc)) from exc
+
     @app.post("/api/repos/stop")
     async def stop_repo(body: RepoBody, _: User = Depends(user)) -> dict[str, Any]:
         return repos.stop_ingest(body.repo)

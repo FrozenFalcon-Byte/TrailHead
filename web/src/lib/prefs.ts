@@ -16,7 +16,6 @@ export type Prefs = {
   cursor: 'trail' | 'system'
   cursorLabels: boolean
   cursorBurst: boolean
-  cardHover: boolean
   contextMenu: boolean
   sidebarStory: boolean
   slotMeter: boolean
@@ -108,7 +107,6 @@ export const DEFAULTS: Prefs = {
   cursor: 'trail',
   cursorLabels: true,
   cursorBurst: true,
-  cardHover: true,
   contextMenu: true,
   sidebarStory: true,
   slotMeter: true,
@@ -215,7 +213,6 @@ export function applyPrefs(p: Prefs = state) {
   root.dataset.corners = p.corners
   root.dataset.side = p.sideTone
   root.dataset.heading = p.headingFont
-  root.dataset.cardHover = p.cardHover ? 'on' : 'off'
   root.style.setProperty('--accent', `var(--${p.accent})`)
   root.style.setProperty('--on-accent', ACCENT_INK[p.accent])
 }

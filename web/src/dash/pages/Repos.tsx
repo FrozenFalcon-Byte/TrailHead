@@ -30,6 +30,22 @@ function RepoTicket({ r, active, onPick, i }: { r: RepoInfo; active: boolean; on
   const ready = r.status === 'ready'
   const look = lookFor(r.repo)
   const [owner, name] = r.repo.split('/')
+  const { refreshRepos } = useDash()
+  const [confirm, setConfirm] = useState(false)
+  const [removing, setRemoving] = useState(false)
+  const canRemove = ready && !active && !!r.removable
+  const remove = async () => {
+    setRemoving(true)
+    try {
+      const res = await api<{ note?: string }>('/api/repos/remove', { method: 'POST', body: JSON.stringify({ repo: r.repo }) })
+      notify.ok(`Removed ${r.repo}`, res.note || 'Its database and checkout are gone. Onboard it again any time.')
+      await refreshRepos()
+    } catch (e) {
+      setRemoving(false)
+      setConfirm(false)
+      notify.error('Could not remove it', errorText(e))
+    }
+  }
   useCtx(ref, () => ({
     title: r.repo,
     items: [
@@ -38,8 +54,9 @@ function RepoTicket({ r, active, onPick, i }: { r: RepoInfo; active: boolean; on
       { label: 'Open its map', icon: '▸', disabled: !ready, run: () => { onPick(); navigate('/app/map') } },
       { label: 'Open on GitHub', icon: '↗', href: `https://github.com/${r.repo}` },
       { label: 'Copy name', icon: '⧉', run: () => navigator.clipboard?.writeText(r.repo).then(() => notify.ok('Copied', r.repo), () => undefined) },
+      { label: r.removable === false ? 'Remove (the bundled one stays)' : active ? 'Remove (switch to another first)' : 'Remove repository', icon: '✕', danger: true, disabled: !canRemove, run: () => setConfirm(true) },
     ],
-  }), [r, active])
+  }), [r, active, canRemove])
   return (
     <motion.div ref={ref} layout className={`rp-t ${active ? 'is-on' : ''} is-${r.status}`} style={{ ['--tint' as string]: look.bg }} initial={{ opacity: 0, x: -14 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05, ease: EASE, duration: 0.5 }}>
       <span className="rp-t__stub">
@@ -59,10 +76,19 @@ function RepoTicket({ r, active, onPick, i }: { r: RepoInfo; active: boolean; on
         {ready && !r.snapshot_note && r.kept === false && <span className="rp-t__note small">Not kept across restarts: a newer onboarding took its place in storage. It stays until the server restarts; onboard it again to keep it.</span>}
       </span>
       <span className="rp-t__end">
-        {active ? (
+        {confirm ? (
+          <span className="rp-t__confirm">
+            <span className="small">Remove it?</span>
+            <button className="rp-t__del is-yes" disabled={removing} onClick={remove} data-cursor="Delete its database and checkout">{removing ? 'Removing…' : 'Remove'}</button>
+            <button className="d-chip" disabled={removing} onClick={() => setConfirm(false)}>Keep</button>
+          </span>
+        ) : active ? (
           <span className="rp-t__here">Current</span>
         ) : ready ? (
-          <button className="d-chip" onClick={onPick} data-cursor="Switch to it">Use →</button>
+          <span className="rp-t__btns">
+            <button className="d-chip" onClick={onPick} data-cursor="Switch to it">Use →</button>
+            {canRemove && <button className="rp-t__del" onClick={() => setConfirm(true)} aria-label={`Remove ${r.repo}`} data-cursor="Remove from the shelf">✕</button>}
+          </span>
         ) : running ? (
           <StopButton repo={r.repo} stopping={r.step === 'Stopping'} />
         ) : (

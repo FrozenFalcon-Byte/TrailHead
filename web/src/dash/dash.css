@@ -6234,6 +6234,11 @@ a.d-code.is-path { transition: translate 0.2s var(--ease-out), background 0.2s; 
 a.d-code.is-path:hover { translate: 0 -1px; background: color-mix(in srgb, var(--solid) 85%, var(--blue)); }
 .as-claim__text .d-code { font-size: 0.86em; }
 
-/* Card hover motion can be switched off (Settings > Motion, or the right-click menu): cards then only outline. */
-[data-card-hover="off"] :is(.rp-t, .dx-row, .d-kv > div, .d-stop, .fd-other, .pd-flip, .as-src):hover { translate: none; transform: none; }
-[data-card-hover="off"] :is(.rp-t__stub, .rp-t__stub > *, .dx-stub, .d-stop__n, .rp-camp__mark, .as-claim__pin, .d-li__lead > *) { rotate: none !important; scale: none !important; }
+.rp-t__btns, .rp-t__confirm { display: flex; align-items: center; gap: 8px; }
+.rp-t__del {
+  border: 0; cursor: pointer; width: 34px; height: 34px; border-radius: 11px; display: grid; place-items: center;
+  background: var(--chip); color: var(--ink-soft); font: 800 13px var(--chunk); transition: background 0.2s, color 0.2s;
+}
+.rp-t__del:hover { background: color-mix(in srgb, var(--stop) 16%, var(--paper)); color: var(--stop); }
+.rp-t__del.is-yes { width: auto; padding: 0 14px; background: var(--stop); color: #fff; }
+.rp-t__del:disabled { opacity: 0.6; cursor: default; }

@@ -68,7 +68,8 @@ def list_repos(settings: Settings) -> list[dict[str, Any]]:
         name = store.get_meta("repo")
         # a database that is still being written belongs to its running job, not the shelf
         if name and jobs.get(name, {}).get("status") not in ("running", "failed"):
-            out.append({**summary(store), "status": "ready", "kept": snapshots.kept(settings, path), "replaced": jobs.get(name, {}).get("replaced", [])})
+            out.append({**summary(store), "status": "ready", "kept": snapshots.kept(settings, path), "replaced": jobs.get(name, {}).get("replaced", []),
+                        "removable": path != settings.data_dir / "trailhead.db"})
         store.close()
     known = {r["repo"] for r in out}
     out += [{"repo": repo, **{k: v for k, v in job.items() if k != "trace"}} for repo, job in jobs.items() if repo not in known and job["status"] in ("running", "failed")]
@@ -138,6 +139,32 @@ def start_ingest(settings: Settings, repo: str, *, github: bool = True, github_t
 
     threading.Thread(target=work, name=f"ingest-{repo}", daemon=True).start()
     return _public(repo)
+
+
+def remove_repo(settings: Settings, repo: str) -> dict[str, Any]:
+    """Take a repository off the shelf: its database, its checkout and its kept copy in storage. The bundled
+    repository in data/trailhead.db stays, since the others are filed relative to it and it comes back on restart."""
+    target = settings_for(settings, repo)
+    path = target.db_path
+    if path == settings.data_dir / "trailhead.db":
+        raise ValueError("The bundled repository cannot be removed.")
+    with _lock:
+        if _jobs.get(repo, {}).get("status") == "running":
+            raise ValueError("It is still being read. Stop it first.")
+        _jobs.pop(repo, None)
+        _stops.pop(repo, None)
+    from .ingest.pipeline import repo_dir_for
+
+    note = ""
+    if snapshots.enabled(settings):
+        try:
+            snapshots.remove(settings, path)
+        except Exception as exc:
+            note = f"The copy kept across restarts could not be removed ({type(exc).__name__}); it comes back on the next restart."
+    for p in (path, path.with_name(path.name + "-wal"), path.with_name(path.name + "-shm")):
+        p.unlink(missing_ok=True)
+    shutil.rmtree(repo_dir_for(settings, repo), ignore_errors=True)
+    return {"repo": repo, "status": "removed", "note": note}
 
 
 def stop_ingest(repo: str) -> dict[str, Any]:

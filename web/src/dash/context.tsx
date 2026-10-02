@@ -20,6 +20,7 @@ export type RepoInfo = {
   github_note?: string
   snapshot_note?: string
   kept?: boolean | null
+  removable?: boolean
   replaced?: string[]
   error?: string
 }

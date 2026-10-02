@@ -580,7 +580,6 @@ export default function Settings() {
         sw('Celebrations', 'celebrate', 'celebrate moment scene', 'Scenes for sign-in, sign-out and passkeys'),
         sw('Cursor labels', 'cursorLabels', 'cursor labels bubble', 'The bubble says what a click does'),
         sw('Click burst', 'cursorBurst', 'cursor burst click'),
-        sw('Card hover motion', 'cardHover', 'card hover lift tilt animation', 'Cards lift and tilt under the pointer; off leaves just an outline'),
         sw('Custom right-click menu', 'contextMenu', 'context menu right click', 'Shift + right-click opens the browser’s'),
       ],
     },
