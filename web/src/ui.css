@@ -1365,3 +1365,28 @@ html[data-motion='off'] *::after {
 .toast.is-compact.is-paper { padding-left: 0; }
 .toast.is-compact.is-paper .toast__icon { margin: -8px 0 -10px; padding: 0 9px; }
 .toaster { perspective: 900px; }
+
+/* ---------- Update sheet (leaving and arriving halves) ---------- */
+.us { position: fixed; inset: 0; z-index: 10001; display: grid; place-items: center; background: #17161b; color: #fbf8f1; }
+.us-in { display: grid; justify-items: center; gap: 16px; width: min(92vw, 820px); }
+.us-mark { line-height: 0; }
+.us-title { font-size: 20px; font-weight: 800; letter-spacing: -0.01em; perspective: 400px; }
+.us-dots i { font-style: normal; display: inline-block; animation: us-dot 1s ease-in-out infinite; }
+.us-dots i:nth-child(2) { animation-delay: 0.15s; }
+.us-dots i:nth-child(3) { animation-delay: 0.3s; }
+@keyframes us-dot { 50% { transform: translateY(-4px); } }
+.us-scene { width: 100%; height: auto; overflow: visible; }
+.us-peak path:first-child { fill: none; stroke: rgba(251, 248, 241, 0.28); stroke-width: 2.5; stroke-linejoin: round; }
+.us-snow { fill: rgba(251, 248, 241, 0.5); }
+.us-ground { stroke: rgba(251, 248, 241, 0.2); stroke-width: 2; }
+.us-trail__ghost { fill: none; stroke: rgba(251, 248, 241, 0.16); stroke-width: 3.5; stroke-linecap: round; stroke-dasharray: 2 10; }
+.us-trail { fill: none; stroke: #ff5b2e; stroke-width: 4; stroke-linecap: round; }
+.us-flag path:first-child { stroke: #fbf8f1; stroke-width: 3; stroke-linecap: round; }
+.us-flag__cloth { fill: #c6f35e; }
+.us-walker { fill: #ff5b2e; stroke: #fbf8f1; stroke-width: 3; }
+.us-walker__ring { fill: none; stroke: #ff5b2e; stroke-width: 2.5; transform-box: fill-box; transform-origin: center; animation: tm-ping 1.4s ease-out infinite; }
+.us-changes { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; justify-items: center; min-height: 20px; }
+.us-changes li { font-size: 14px; color: rgba(251, 248, 241, 0.75); }
+.us-changes li::before { content: '✓ '; color: #c6f35e; font-weight: 900; }
+@keyframes tm-ping { from { transform: scale(0.6); opacity: 1; } to { transform: scale(2.2); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .us-dots i, .us-walker__ring { animation: none; } }

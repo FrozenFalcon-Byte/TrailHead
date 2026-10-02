@@ -1,14 +1,13 @@
 import { AnimatePresence, motion } from 'motion/react'
 import { useEffect, useRef, useState } from 'react'
-import { createPortal } from 'react-dom'
 import { usePref } from '../lib/prefs'
 import { toast } from '../lib/toast'
 import { useRelease } from '../lib/version'
-import { Mark } from '../motion/Mark'
+import { LeavingSheet } from '../motion/UpdateSheet'
 import { EASE } from './ui'
 
 /* When a newer build of the dashboard is out, a chip appears in the top bar. It opens onto what changed and an
-   Update button; updating rolls a fresh sheet over the screen and reloads into the new build. */
+   Update button; updating walks a trail across a sheet that carries on through the reload into the new build. */
 
 export function UpdateChip() {
   const release = useRelease()
@@ -21,7 +20,6 @@ export function UpdateChip() {
   const update = () => {
     setOpen(false)
     setGoing(true)
-    window.setTimeout(() => window.location.reload(), 900)
   }
 
   useEffect(() => {
@@ -78,15 +76,7 @@ export function UpdateChip() {
           </motion.div>
         )}
       </AnimatePresence>
-      {going && createPortal(
-        <motion.div className="up-cover" initial={{ clipPath: 'inset(100% 0 0 0)' }} animate={{ clipPath: 'inset(0% 0 0 0)' }} transition={{ duration: 0.55, ease: [0.76, 0, 0.24, 1] }}>
-          <motion.div initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.3 }} className="up-cover__in">
-            <motion.span animate={{ rotate: [0, -8, 8, 0] }} transition={{ duration: 0.8, repeat: Infinity }}><Mark size={56} /></motion.span>
-            <b>Fetching the new trail</b>
-          </motion.div>
-        </motion.div>,
-        document.body,
-      )}
+      {going && <LeavingSheet changes={release?.changes ?? []} />}
     </>
   )
 }

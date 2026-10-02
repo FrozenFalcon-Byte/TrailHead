@@ -1,0 +1,43 @@
+{
+ "key": "7caf1e31c3895e299e654c193bff884f0394b0321838681a9b1d5202b005b02a",
+ "model_id": "jev-1.13.0",
+ "created_at": 1790921659.3357902,
+ "state": {
+  "goal": "Where is the robots.txt check?"
+ },
+ "questions": {
+  "symbol_in_scrapy_robotstxt_py": {
+   "type": "choice",
+   "instructions": "Which definition in this file is the goal most directly about?",
+   "criteria": {
+    "c0": "def decode_robotstxt( robotstxt_body: bytes, spider: Spider | None, to_native_str_type: bool = False ) -> str",
+    "c1": "class RobotParser(metaclass=ABCMeta)",
+    "c2": "class PythonRobotParser(RobotParser)",
+    "c3": "class RerpRobotParser(RobotParser)",
+    "c4": "class ProtegoRobotParser(RobotParser)",
+    "none": "None of the listed definitions is related to the goal."
+   }
+  }
+ },
+ "answers": {
+  "symbol_in_scrapy_robotstxt_py": {
+   "type": "choice",
+   "choice": "c1",
+   "probabilities": {
+    "c0": 0.1,
+    "c1": 0.47,
+    "c2": 0.08,
+    "c3": 0.02,
+    "c4": 0.02,
+    "none": 0.31
+   },
+   "confidence": 0.38
+  }
+ },
+ "model_returned": "jev-1.13-free",
+ "provider": "beatapi",
+ "input_tokens": 465,
+ "output_tokens": 73,
+ "latency_ms": 379.0673340045032,
+ "request_id": "task_lgbB1BCRmJNNoYHs61Nz4z941d6cT4x0"
+}

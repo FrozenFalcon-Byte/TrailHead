@@ -1,12 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
 import { TypedField } from '../../motion/TypedField'
 import { FIND_EXAMPLES } from '../examples'
-import { useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { motion } from 'motion/react'
+import { Shape } from '../../motion/Shapes'
+import { JourneyBar, Signposts, type Station } from '../Trailside'
 import { toast } from '../../lib/toast'
 import { BeamColumns } from '../../motion/BeamColumns'
 import { useDash } from '../context'
-import { Columns, Flow, Gauge, TrailLoop } from '../viz'
-import { Card, Empty, Gate, JobStatus, Kpis, Note, PageHead, Prob, Row, Split, toBeamSteps, useJob } from '../ui'
+import { Gate, JobStatus, Note, PageHead, Prob, toBeamSteps, useJob } from '../ui'
 
 type NavData = { query: string; paths: { nodes: string[]; score: number; file: string; edge_probabilities: number[] }[]; steps: any[]; symbols: Record<string, { name: string; line: number }>; separation_ratio: number | null; requests: number; cached_requests: number; input_tokens: number; latency_ms: number }
 
@@ -17,6 +19,7 @@ export default function Find() {
   const job = useJob<NavData>('/api/where')
   const [query, setQuery] = useState('')
   const [params, setParams] = useSearchParams()
+  const navigate = useNavigate()
   const auto = useRef(false)
   const run = async (text = query) => {
     if (text.trim().length < 3 || !repo) return
@@ -44,24 +47,17 @@ export default function Find() {
   const beam: { nodes: string[]; score: number }[] = live?.beam ?? []
   const r = job.result
 
-  const aside = (
-    <>
-      <Card title="Try one" delay={0.1}>
-        <div className="d-list">
-          {EXAMPLES.map((ex, i) => <Row key={ex} i={i} onClick={() => run(ex)} lead={<span className="d-li__dir">⌕</span>} title={ex} />)}
-        </div>
-      </Card>
-      <Card title="How Find works" theme="peach" delay={0.15}>
-        <ol className="d-steps">
-          <li><b>Read</b> the summaries at the top of the tree.</li>
-          <li><b>Keep</b> the three most likely branches.</li>
-          <li><b>Descend</b> one level at a time until files.</li>
-          <li><b>Score</b> each path by its edge probabilities.</li>
-        </ol>
-        <p className="d-muted small">No embeddings, no grep — just Jev reading the map.</p>
-      </Card>
-    </>
-  )
+  const top = r?.paths[0]
+  const others = r?.paths.slice(1) ?? []
+  const level = depths.length
+  const stations: Station[] = ['Read', 'Keep', 'Descend', 'Score'].map((label, i) => {
+    const at = r ? 4 : job.running ? Math.min(2, level) : -1
+    return {
+      key: label, label,
+      value: [ 'the top of the tree', beam.length ? `${beam.length} branches kept` : 'the likeliest branches', level ? `depth ${level}${r ? '' : '…'}` : 'one level at a time', r ? (top ? `${Math.round(top.score * 100)}% on the top path` : 'nothing cleared the bar') : 'every path'][i],
+      state: at > i ? 'done' : at === i ? 'now' : 'todo',
+    }
+  })
 
   return (
     <div className="d-body">
@@ -72,50 +68,73 @@ export default function Find() {
         </form>
       </PageHead>
       <Gate />
-      <Split aside={aside}>
+      <div className="fd">
         <JobStatus running={job.running} stage={depths.length ? `Depth ${depths.length + 1}: asking about the kept branches` : 'Reading the top of the tree'} elapsed={job.elapsed} onCancel={job.cancel} />
         {job.error && <Note tone="error">{job.error}</Note>}
-        {r && (
-          <>
-            <Kpis
-              items={[
-                { label: 'Requests', value: r.requests, hint: `${r.cached_requests} from cache`, color: 'var(--orange)' },
-                { label: 'Time', value: `${(r.latency_ms / 1000).toFixed(1)}s`, color: 'var(--blue)' },
-                { label: 'Tokens', value: r.input_tokens, color: 'var(--violet)' },
-                { label: 'Separation', value: r.separation_ratio ? r.separation_ratio.toFixed(2) : '—', hint: 'top path vs the next', color: 'var(--green)' },
-              ]}
-            />
-            {r.paths.length > 0 && (
-              <Card title="The way down" delay={0.05} aside={<Gauge p={r.paths[0].score} size={56} thick={6} color="var(--orange)" label="top path" />}>
-                <Flow steps={r.paths[0].nodes.map((n, j) => ({ label: n.split('/').pop() || '/', sub: r.paths[0].edge_probabilities[j] != null ? `p ${r.paths[0].edge_probabilities[j].toFixed(2)}` : undefined }))} at={r.paths[0].nodes.length} color="var(--orange)" />
-                {r.paths.length > 1 && <div style={{ marginTop: 14 }}><Columns h={110} ticks={r.paths.length} color="var(--orange)" format={(v) => v.toFixed(2)} data={r.paths.map((p, i) => ({ label: `#${i + 1}`, value: p.score, hint: p.file, color: i === 0 ? 'var(--orange)' : 'var(--dim)' }))} /></div>}
-              </Card>
-            )}
-            <Card title="Most likely here" theme="peach">
-              {r.paths.length === 0 ? (
-                <p>No path cleared the bar, so nothing is claimed.</p>
-              ) : (
-                <div className="d-list">
-                  {r.paths.map((p, i) => (
-                    <Row
-                      key={p.file}
-                      i={i}
-                      to={`/app/map?file=${encodeURIComponent(p.file)}`}
-                      path={p.file}
-                      active={i === 0}
-                      lead={<span className="d-score">{i + 1}</span>}
-                      title={<span className="mono">{p.file}{r.symbols[p.file] && <span className="d-muted"> → {r.symbols[p.file].name}:{r.symbols[p.file].line}</span>}</span>}
-                      sub={<span className="mono">{p.nodes.map((n, j) => `${j > 0 ? ' → ' : ''}${n.split('/').pop() || '/'} (${p.edge_probabilities[j]?.toFixed(2)})`).join('')}</span>}
-                      end={<Prob p={p.score} color="var(--orange)" width={56} />}
-                    />
-                  ))}
+        {(job.running || r) && <JourneyBar id="find" stations={stations} color="var(--orange)" />}
+
+        {r && top && (
+          <div className="fd-result">
+            <section className="fd-descent" aria-label="The way down">
+              <span className="fd-label">The way down</span>
+              <ol>
+                {top.nodes.map((n, j) => {
+                  const last = j === top.nodes.length - 1
+                  const pr = top.edge_probabilities[j]
+                  return (
+                    <motion.li key={n + j} className={`fd-step ${last ? 'is-end' : ''}`} initial={{ y: -14, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ type: 'spring', stiffness: 300, damping: 20, delay: j * 0.12 }}>
+                      <span className="fd-step__mark" aria-hidden>{last ? <Shape kind="tag" color="var(--orange)" glyph="flag" size={34} /> : <i />}</span>
+                      <span className="fd-step__name mono">{j === 0 ? repo : `${n.split('/').pop()}${last ? '' : '/'}`}</span>
+                      {pr != null && <span className="fd-step__p"><Prob p={pr} size={28} color={last ? 'var(--orange)' : 'var(--green)'} /></span>}
+                    </motion.li>
+                  )
+                })}
+              </ol>
+              <p className="fd-note">Each dial is how sure Jev was at that fork.</p>
+            </section>
+
+            <div className="fd-right">
+              <motion.section className="fd-dest" initial={{ y: 16, rotate: -1 }} animate={{ y: 0, rotate: 0 }} transition={{ type: 'spring', stiffness: 220, damping: 16 }}>
+                <div className="fd-dest__stub">
+                  <Prob p={top.score} size={64} color="var(--orange)" />
+                  <small>sure</small>
                 </div>
+                <div className="fd-dest__body">
+                  <span className="fd-label">Most likely here</span>
+                  <h2 className="mono" data-path={top.file}>{top.file}</h2>
+                  {r.symbols[top.file] && <span className="fd-sym">→ <b className="mono">{r.symbols[top.file].name}</b> · line {r.symbols[top.file].line}</span>}
+                  <div className="fd-dest__actions">
+                    <button className="btn small" onClick={() => navigate(`/app/map?file=${encodeURIComponent(top.file)}`)}><span>See it on the map</span><span className="arrow">→</span></button>
+                    <button className="d-chip" onClick={() => navigate(`/app/ask?q=${encodeURIComponent(`How does ${top.file} work?`)}`)}>Ask how it works</button>
+                    <button className="d-chip" onClick={() => navigate(`/app/tour?q=${encodeURIComponent(`I want to understand ${top.file} and what it depends on.`)}`)}>Tour from here</button>
+                  </div>
+                </div>
+              </motion.section>
+
+              {others.length > 0 && (
+                <section className="fd-others">
+                  <span className="fd-label">Other trails</span>
+                  {others.map((p, i) => (
+                    <Link key={p.file} to={`/app/map?file=${encodeURIComponent(p.file)}`} className="fd-other" data-path={p.file}>
+                      <span className="fd-other__n">{i + 2}</span>
+                      <span className="fd-other__copy">
+                        <b className="mono">{p.file}</b>
+                        <small className="mono">{p.nodes.slice(1).map((n) => n.split('/').pop()).join(' › ')}{r.symbols[p.file] ? ` · ${r.symbols[p.file].name}:${r.symbols[p.file].line}` : ''}</small>
+                      </span>
+                      <Prob p={p.score} size={34} color="var(--dim)" />
+                    </Link>
+                  ))}
+                </section>
               )}
-            </Card>
-          </>
+              <p className="fd-foot">{r.requests} Jev requests{r.cached_requests ? ` (${r.cached_requests} cached)` : ''} · {(r.latency_ms / 1000).toFixed(1)}s{r.separation_ratio ? ` · the top path leads the next by ${r.separation_ratio.toFixed(2)}×` : ''}</p>
+            </div>
+          </div>
         )}
+        {r && !top && <Note>No path cleared the bar, so nothing is claimed. Try describing what the code does rather than what it is called.</Note>}
+
         {steps.length > 0 && (
-          <Card title="Every question Jev answered on the way down">
+          <details className="fd-notes" open={!r}>
+            <summary><b>Field notes</b><span>Every question Jev answered on the way down</span></summary>
             <BeamColumns steps={toBeamSteps(steps)} />
             {!r && beam.length > 0 && (
               <div className="d-row small" style={{ marginTop: 12 }}>
@@ -123,10 +142,10 @@ export default function Find() {
                 {beam.map((b) => <span key={b.nodes.join('/')} className="mono">{b.nodes[b.nodes.length - 1] || '/'} ({b.score.toFixed(2)})</span>)}
               </div>
             )}
-          </Card>
+          </details>
         )}
-        {!steps.length && !job.running && <Card><div className="d-empty-art"><TrailLoop color="var(--orange)" /></div><Empty title="Describe what you are looking for">In plain words. Trailhead answers with the file, the function, and how sure it is.</Empty></Card>}
-      </Split>
+        {!steps.length && !job.running && !r && repo && <Signposts title="Looking for something? Pick a sign." items={EXAMPLES} onPick={(q) => run(q)} color="var(--orange)" />}
+      </div>
     </div>
   )
 }

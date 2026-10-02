@@ -18,6 +18,10 @@ import { QrSheet } from './motion/QrSheet'
 import { MomentLayer } from './motion/Moment'
 import { DashIntro } from './motion/DashIntro'
 import { usePref } from './lib/prefs'
+import { ArrivingSheet, takeArrival } from './motion/UpdateSheet'
+
+// Read once per page load: set when the previous page reloaded itself into a new build.
+const ARRIVAL = takeArrival()
 
 // The dashboard is its own bundle, so the landing page loads light.
 const Dashboard = lazy(() => import('./dash/Dashboard'))
@@ -55,7 +59,9 @@ function Protected({ children, welcome = false }: { children: React.ReactNode; w
 export default function App() {
   const location = useLocation()
   // Every full load of the landing page plays the loader; other entry points (dashboard, auth callback) skip it.
-  const [loading, setLoading] = useState(location.pathname === '/')
+  const [loading, setLoading] = useState(location.pathname === '/' && !ARRIVAL)
+  const [arriving, setArriving] = useState(!!ARRIVAL)
+  const arrived = useCallback(() => setArriving(false), [])
   const [revealed, setRevealed] = useState(location.pathname !== '/')
   const reveal = useCallback(() => setRevealed(true), [])
   const done = useCallback(() => setLoading(false), [])
@@ -68,7 +74,7 @@ export default function App() {
   const motionPref = usePref('motion')
   const introPref = usePref('dashIntro')
   // A full load straight into the dashboard gets its own intro instead of a spinner.
-  const [intro, setIntro] = useState(() => location.pathname.startsWith('/app') && motionPref !== 'off' && introPref && !window.matchMedia('(prefers-reduced-motion: reduce)').matches)
+  const [intro, setIntro] = useState(() => !ARRIVAL && location.pathname.startsWith('/app') && motionPref !== 'off' && introPref && !window.matchMedia('(prefers-reduced-motion: reduce)').matches)
   const introDone = useCallback(() => setIntro(false), [])
 
   return (
@@ -77,6 +83,7 @@ export default function App() {
       <ThemeSwitch />
       {loading && <Loader onReveal={reveal} onDone={done} />}
       {intro && <DashIntro onDone={introDone} />}
+      {arriving && ARRIVAL && <ArrivingSheet arrival={ARRIVAL} onDone={arrived} />}
       <AnimatePresence mode="wait" initial={false}>
         <Routes location={location} key={area === 'login' || area === 'signup' ? 'auth' : area}>
           <Route path="/" element={<Curtain><Landing ready={revealed} settled={!loading} /></Curtain>} />

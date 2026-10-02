@@ -1,0 +1,92 @@
+{
+ "key": "0d9cd4fe473c8a7e62d8b5dc1ff40928115d8f58b8424b41e5b8fd1a1cd8e8e2",
+ "model_id": "jev-1.13.0",
+ "created_at": 1790921529.211705,
+ "state": {
+  "goal": "Where is the robots.txt check?"
+ },
+ "questions": {
+  "in_scrapy_downloadermiddlewares": {
+   "type": "choice",
+   "instructions": "Which entry is most likely to contain the code that the goal is about?",
+   "criteria": {
+    "c0": "__init__.py",
+    "c1": "cookies.py: Defines CookiesMiddleware, _is_public_domain.",
+    "c2": "defaultheaders.py: DefaultHeaders downloader middleware. Defines DefaultHeadersMiddleware.",
+    "c3": "downloadtimeout.py: Download timeout middleware. Defines DownloadTimeoutMiddleware.",
+    "c4": "httpauth.py: HTTP basic auth downloader middleware. Defines HttpAuthMiddleware.",
+    "c5": "httpcache.py: Defines HttpCacheMiddleware.",
+    "c6": "httpcompression.py: Defines HttpCompressionMiddleware.",
+    "c7": "httpproxy.py: Defines HttpProxyMiddleware.",
+    "c8": "jsonvalidation.py: Defines JsonValidationMiddleware.",
+    "c9": "offsite.py: Defines OffsiteMiddleware.",
+    "c10": "redirect.py: Defines BaseRedirectMiddleware, RedirectMiddleware, MetaRefreshMiddleware.",
+    "c11": "retry.py: An extension to retry failed requests that are potentially caused by temporary problems such as a connection timeout or HTTP 500 error. Defines get_retry_request, RetryMiddleware.",
+    "c12": "robotstxt.py: This is a middleware to respect robots.txt policies. To activate it you must enable this middleware and enable the ROBOTSTXT_OBEY setting. Defines RobotsTxtMiddleware.",
+    "c13": "stats.py: Defines get_header_size, get_status_size, DownloaderStats.",
+    "c14": "useragent.py: Set User-Agent header per spider or use a default value from settings. Defines UserAgentMiddleware.",
+    "none": "None of the listed entries is related to the goal."
+   }
+  },
+  "in_scrapy_core": {
+   "type": "choice",
+   "instructions": "Which entry is most likely to contain the code that the goal is about?",
+   "criteria": {
+    "c0": "__init__.py: Scrapy core library classes and functions.",
+    "c1": "_http2/: Contains agent.py, protocol.py, stream.py, __init__.py.",
+    "c2": "downloader/: Contains handlers/, contextfactory.py, middleware.py, tls.py, __init__.py, _idna_patch.py.",
+    "c3": "engine.py: This is the Scrapy engine which controls the Scheduler, Downloader and Spider. Defines EngineState, ExecutionEngine, _Slot.",
+    "c4": "scheduler.py: Defines BaseSchedulerMeta, BaseScheduler, Scheduler.",
+    "c5": "scraper.py: This module implements the Scraper component which parses responses and extracts information from them. Defines Slot, Scraper.",
+    "c6": "spidermw.py: Spider Middleware manager. Defines SpiderMiddlewareManager.",
+    "none": "None of the listed entries is related to the goal."
+   }
+  }
+ },
+ "answers": {
+  "in_scrapy_downloadermiddlewares": {
+   "type": "choice",
+   "choice": "c12",
+   "probabilities": {
+    "c0": 0.0,
+    "c1": 0.0,
+    "c10": 0.0,
+    "c11": 0.0,
+    "c12": 1.0,
+    "c13": 0.0,
+    "c14": 0.0,
+    "c2": 0.0,
+    "c3": 0.0,
+    "c4": 0.0,
+    "c5": 0.0,
+    "c6": 0.0,
+    "c7": 0.0,
+    "c8": 0.0,
+    "c9": 0.0,
+    "none": 0.0
+   },
+   "confidence": 1.0
+  },
+  "in_scrapy_core": {
+   "type": "choice",
+   "choice": "c2",
+   "probabilities": {
+    "c0": 0.08,
+    "c1": 0.01,
+    "c2": 0.61,
+    "c3": 0.05,
+    "c4": 0.14,
+    "c5": 0.01,
+    "c6": 0.06,
+    "none": 0.04
+   },
+   "confidence": 0.56
+  }
+ },
+ "model_returned": "jev-1.13-free",
+ "provider": "beatapi",
+ "input_tokens": 1131,
+ "output_tokens": 242,
+ "latency_ms": 688.2829589958419,
+ "request_id": "task_9YyHdsAD9ESpgZOerzCr7Twl2ROJmECV"
+}

@@ -1,0 +1,37 @@
+{
+ "key": "a2386c436746736a2cd06b872079652b8c071f5830e924e8de2f2153a1d1e549",
+ "model_id": "llm:openai/gpt-oss-120b:1f2e0674",
+ "created_at": 1790921923.532795,
+ "state": {
+  "goal": "Where are cookies merged into outgoing requests?"
+ },
+ "questions": {
+  "symbol_in_scrapy_downloadermiddlewares_cookies_py": {
+   "type": "choice",
+   "instructions": "Which definition in this file is the goal most directly about?",
+   "criteria": {
+    "c0": "def _is_public_domain(domain: str) -> bool",
+    "c1": "class CookiesMiddleware - This middleware enables working with sites that need cookies",
+    "none": "None of the listed definitions is related to the goal."
+   }
+  }
+ },
+ "answers": {
+  "symbol_in_scrapy_downloadermiddlewares_cookies_py": {
+   "type": "choice",
+   "choice": "c1",
+   "probabilities": {
+    "c0": 0.05,
+    "c1": 0.9,
+    "none": 0.05
+   },
+   "confidence": 0.9
+  }
+ },
+ "model_returned": "openai/gpt-oss-120b",
+ "provider": "hosted",
+ "input_tokens": 484,
+ "output_tokens": 164,
+ "latency_ms": 703.4627079992788,
+ "request_id": ""
+}

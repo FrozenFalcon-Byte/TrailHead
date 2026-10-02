@@ -2,7 +2,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import { TypedField } from '../../motion/TypedField'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { Donut, Flow, PALETTE, Scatter, TrailLoop } from '../viz'
+import { Donut, PALETTE, Scatter } from '../viz'
 import { deleteItem, listSaved, saveItem, type Saved } from '../../lib/history'
 import { usePrefs } from '../../lib/prefs'
 import { openQr, shareUrl } from '../../lib/qr'
@@ -11,7 +11,8 @@ import { BeamColumns } from '../../motion/BeamColumns'
 import { EvidenceCard } from '../../motion/EvidenceCard'
 import { useDash } from '../context'
 import { AnswerSheet } from '../AnswerSheet'
-import { ago, Card, EASE, Empty, Gate, JobStatus, Note, PageHead, Prob, Row, Split, toBeamSteps, useJob } from '../ui'
+import { JourneyBar, Logbook, Signposts, type LogEntry, type Station } from '../Trailside'
+import { ago, Card, Gate, JobStatus, Note, PageHead, Prob, Row, toBeamSteps, useJob } from '../ui'
 
 type Evidence = { ref: string; kind: string; title: string; url: string; label: string; relevance: number | null; directness: number | null; injection: number | null; kept: boolean; reason: string; source: string }
 type Claim = { id: string; text: string; evidence: string[]; p_support: number; directness: number; addresses: number; status: string; badge: string; reason: string }
@@ -138,35 +139,21 @@ export default function Ask() {
 
   const at = answer ? ASK_STEPS.length : v.evidence.length ? 3 : v.nav || v.steps.length ? 2 : v.route ? 1 : job.running ? 0 : -1
   const kinds = [...new Set(v.evidence.map((e: Evidence) => e.kind))]
-  const aside = (
-    <>
-      {prefs.askExamples && (
-        <Card title="Try one" delay={0.1}>
-          <div className="d-list">
-            {EXAMPLES.map((ex, i) => <Row key={ex} i={i} onClick={() => run(ex)} lead={<span className="d-li__dir">?</span>} title={ex} />)}
-          </div>
-        </Card>
-      )}
-      <Card title="Earlier questions" delay={0.15} aside={<span className="d-muted">{history.length}</span>}>
-        {history.length === 0 ? (
-          <p className="d-muted">Your questions for this repository are kept here{prefs.autoSave ? '' : ' when you save them'}.</p>
-        ) : (
-          <div className="d-list d-list--scroll">
-            {history.map((h, i) => (
-              <div key={h.id} className="d-li-wrap">
-                <Row i={i} active={params.get('saved') === h.id} onClick={() => { setQuestion(h.payload.question); job.reset(h.payload); setParams({ saved: h.id }) }} lead={<span className={`d-dot ${h.payload.answer?.status === 'answered' ? 'is-ok' : 'is-warn'}`} />} title={h.title} sub={`${h.payload.answer?.status ?? '—'} · ${ago(h.created_at)}`} />
-                <button className="d-li__x" onClick={() => remove(h.id)} aria-label="Remove from history" data-cursor="Remove">×</button>
-              </div>
-            ))}
-          </div>
-        )}
-      </Card>
-      <Card title="How it answers" theme="sky" delay={0.2}>
-        <Flow steps={ASK_STEPS} at={at} running={job.running} color="var(--blue)" />
-      </Card>
-    </>
-  )
-
+  const started = job.running || !!answer || v.steps.length > 0 || v.evidence.length > 0
+  const state = (i: number): 'todo' | 'now' | 'done' => (at > i ? 'done' : at === i && job.running ? 'now' : 'todo')
+  const routeName = v.route ? ROUTE_NAMES[v.route.route] ?? v.route.route : ''
+  const stations: Station[] = [
+    { key: 'route', label: 'Route', value: routeName || 'what kind of answer', state: state(0) },
+    { key: 'walk', label: 'Walk', value: v.nav?.requests ? `${v.nav.requests} Jev requests` : v.steps.length ? `${v.steps.length} decisions` : at > 1 ? 'not needed' : 'the tree to the files', state: state(1), onClick: v.steps.length || v.nav ? () => setTab('beam') : undefined, active: tab === 'beam' },
+    { key: 'screen', label: 'Screen', value: v.evidence.length ? `${kept.length} of ${v.evidence.length} kept` : at > 2 ? 'not needed' : 'commits, PRs, code', state: state(2), onClick: v.evidence.length ? () => setTab('evidence') : undefined, active: tab === 'evidence' },
+    { key: 'check', label: 'Check', value: answer ? (answer.status === 'answered' ? `${Math.round((answer.confidence ?? 0) * 100)}% sure` : 'not sure') : 'every claim', state: state(3), onClick: answer ? () => setTab('answer') : undefined, active: tab === 'answer' },
+  ]
+  const log: LogEntry[] = history.map((h) => ({
+    id: h.id, title: h.title, ok: h.payload.answer?.status === 'answered', active: params.get('saved') === h.id,
+    sub: `${h.payload.answer?.status === 'answered' ? 'answered' : 'not sure'} · ${ago(h.created_at)}`,
+    onOpen: () => { setQuestion(h.payload.question); job.reset(h.payload); setTab('answer'); setParams({ saved: h.id }) },
+    onRemove: () => remove(h.id),
+  }))
 
   return (
     <div className="d-body">
@@ -179,88 +166,78 @@ export default function Ask() {
         </form>
       </PageHead>
       <Gate />
-      <Split aside={aside}>
-        <JobStatus running={job.running} stage={stage} elapsed={job.elapsed} onCancel={job.cancel} />
-        {job.running && <Card className="d-live"><Flow steps={ASK_STEPS} at={at} running color="var(--blue)" /></Card>}
-        {job.error && <Note tone="error">{job.error}</Note>}
+      <div className="desk">
+        <div className="desk-main">
+          <JobStatus running={job.running} stage={stage} elapsed={job.elapsed} onCancel={job.cancel} />
+          {job.error && <Note tone="error">{job.error}</Note>}
 
-        <AnimatePresence>
-          {v.route && (
-            <motion.div initial={{ y: 10 }} animate={{ y: 0 }} transition={{ ease: EASE }} className="d-route">
-              <span className="d-route__stub"><small>route</small><b>{ROUTE_NAMES[v.route.route] ?? v.route.route}</b></span>
-              <span className="d-route__why">{v.route.reason}</span>
-              <span className="d-route__probs">
-                {Object.entries<number>(v.route.probabilities ?? {}).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([k, p]) => (
-                  <span key={k}><Prob p={p as number} size={30} color={k === v.route.route ? 'var(--blue)' : 'var(--dim)'} /><i>{ROUTE_NAMES[k] ?? k}</i></span>
-                ))}
-              </span>
-            </motion.div>
+          {started && (
+            <section className="desk-journey">
+              <JourneyBar id="ask" stations={stations} color="var(--blue)" />
+              <div className="desk-journey__foot">
+                <span className="desk-why">{v.route ? <>Routed as <b>{routeName}</b>{v.route.reason ? ` · ${v.route.reason}` : ''}</> : 'Working out what kind of question this is…'}</span>
+                {v.route?.probabilities && (
+                  <span className="desk-odds">
+                    {Object.entries<number>(v.route.probabilities).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([k, p]) => (
+                      <span key={k} title={ROUTE_NAMES[k] ?? k}><Prob p={p as number} size={28} color={k === v.route.route ? 'var(--blue)' : 'var(--dim)'} /><i>{ROUTE_NAMES[k] ?? k}</i></span>
+                    ))}
+                  </span>
+                )}
+                {result && (
+                  <span className="desk-actions">
+                    {!prefs.autoSave && <button className="d-chip" onClick={save} data-cursor="Save to history">Save</button>}
+                    <button className="d-chip" onClick={share} data-cursor="Share as link and QR">Share ▣</button>
+                  </span>
+                )}
+              </div>
+            </section>
           )}
-        </AnimatePresence>
 
-        {(answer || v.steps.length > 0 || v.evidence.length > 0) && (
-          <div className="d-tabs" role="tablist">
-            {([['answer', 'Answer'], ['beam', `Beam${v.nav?.requests ? ` · ${v.nav.requests}` : ''}`], ['evidence', `Evidence · ${kept.length}/${v.evidence.length}`]] as const).map(([k, label]) => (
-              <button key={k} role="tab" aria-selected={tab === k} className={tab === k ? 'is-on' : ''} onClick={() => setTab(k)}>
-                {tab === k && <motion.span layoutId="ask-tab" className="d-tabs__pill" transition={{ type: 'spring', stiffness: 480, damping: 36 }} />}
-                <span>{label}</span>
-              </button>
-            ))}
-            {result && (
-              <span className="d-tabs__end">
-                {!prefs.autoSave && <button className="d-chip" onClick={save} data-cursor="Save to history">Save</button>}
-                <button className="d-chip" onClick={share} data-cursor="Share as link and QR">Share ▣</button>
-              </span>
+          <AnimatePresence mode="wait">
+            {tab === 'answer' && answer && (
+              <motion.div key="answer" initial={{ x: 24 }} animate={{ x: 0 }} exit={{ x: -24, opacity: 0 }} transition={{ type: 'spring', stiffness: 260, damping: 26 }}>
+                <AnswerSheet answer={answer} kicker={routeName ? `Route · ${routeName}` : undefined} title={result?.question ?? question} />
+              </motion.div>
             )}
-          </div>
-        )}
-
-        <AnimatePresence mode="wait">
-          {tab === 'answer' && answer && (
-            <motion.div key="answer" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.3, ease: EASE }}>
-              <AnswerSheet answer={answer} kicker={ROUTE_NAMES[v.route?.route] ? `Route · ${ROUTE_NAMES[v.route.route]}` : undefined} title={result?.question ?? question} />
-            </motion.div>
-          )}
-          {tab === 'beam' && (
-            <motion.div key="beam" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.3, ease: EASE }}>
-              <Card title="The beam, depth by depth" aside={v.nav && <span className="d-muted">{v.nav.requests} Jev request{v.nav.requests === 1 ? '' : 's'}{v.nav.separation_ratio ? ` · separation ${v.nav.separation_ratio.toFixed(2)}` : ''}</span>}>
-                {v.steps.length ? <BeamColumns steps={toBeamSteps(v.steps)} compact /> : <p className="d-muted">This route did not need to walk the tree.</p>}
-                {v.nav?.paths?.length > 0 && (
-                  <div className="d-list" style={{ marginTop: 14 }}>
-                    {v.nav.paths.map((p: { file: string; score: number }, i: number) => (
-                      <Row key={p.file} i={i} to={`/app/map?file=${encodeURIComponent(p.file)}`} path={p.file} lead={<span className="d-score">{i + 1}</span>} title={<span className="mono">{p.file}</span>} sub={v.nav.symbols?.[p.file] ? `${v.nav.symbols[p.file].name} · line ${v.nav.symbols[p.file].line}` : undefined} end={<Prob p={p.score} color="var(--blue)" width={50} />} />
+            {tab === 'beam' && (
+              <motion.div key="beam" initial={{ x: 24 }} animate={{ x: 0 }} exit={{ x: -24, opacity: 0 }} transition={{ type: 'spring', stiffness: 260, damping: 26 }}>
+                <Card title="The beam, depth by depth" aside={v.nav && <span className="d-muted">{v.nav.requests} Jev request{v.nav.requests === 1 ? '' : 's'}{v.nav.separation_ratio ? ` · separation ${v.nav.separation_ratio.toFixed(2)}` : ''}</span>}>
+                  {v.steps.length ? <BeamColumns steps={toBeamSteps(v.steps)} compact /> : <p className="d-muted">This route did not need to walk the tree.</p>}
+                  {v.nav?.paths?.length > 0 && (
+                    <div className="d-list" style={{ marginTop: 14 }}>
+                      {v.nav.paths.map((p: { file: string; score: number }, i: number) => (
+                        <Row key={p.file} i={i} to={`/app/map?file=${encodeURIComponent(p.file)}`} path={p.file} lead={<span className="d-score">{i + 1}</span>} title={<span className="mono">{p.file}</span>} sub={v.nav.symbols?.[p.file] ? `${v.nav.symbols[p.file].name} · line ${v.nav.symbols[p.file].line}` : undefined} end={<Prob p={p.score} color="var(--blue)" />} />
+                      ))}
+                    </div>
+                  )}
+                </Card>
+              </motion.div>
+            )}
+            {tab === 'evidence' && (
+              <motion.div key="evidence" initial={{ x: 24 }} animate={{ x: 0 }} exit={{ x: -24, opacity: 0 }} transition={{ type: 'spring', stiffness: 260, damping: 26 }}>
+                <Card title={`${kept.length} kept of ${v.evidence.length}`} aside={<span className="d-muted">one Jev request screened them all</span>}>
+                  {v.evidence.length > 1 && (
+                    <div className="d-viz2">
+                      <Donut size={140} thick={16} label="sources" data={kinds.map((k, i) => ({ label: k, value: v.evidence.filter((e: Evidence) => e.kind === k).length, color: PALETTE[i % PALETTE.length] }))} />
+                      <Scatter h={170} x="relevance" y="directness" points={v.evidence.map((e: Evidence) => ({ label: `${e.label} · ${e.title || e.ref}`, x: e.relevance ?? 0, y: e.directness ?? 0, color: e.kept ? 'var(--green)' : 'var(--dim)', r: e.kept ? 6 : 4 }))} />
+                    </div>
+                  )}
+                  <div className="d-evidence">
+                    {v.evidence.slice(0, 16).map((e: Evidence, i: number) => (
+                      <EvidenceCard key={e.ref + i} i={i} e={{ ref: `${e.label} · ${e.ref}`, title: e.title || e.ref, kind: e.kind, relevance: e.relevance ?? 0, kept: e.kept, injection: (e.injection ?? 0) >= 0.5, url: e.url }} />
                     ))}
                   </div>
-                )}
-              </Card>
-            </motion.div>
-          )}
-          {tab === 'evidence' && (
-            <motion.div key="evidence" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.3, ease: EASE }}>
-              <Card title={`${kept.length} kept of ${v.evidence.length}`} aside={<span className="d-muted">one Jev request screened them all</span>}>
-                {v.evidence.length > 1 && (
-                  <div className="d-viz2">
-                    <Donut size={140} thick={16} label="sources" data={kinds.map((k, i) => ({ label: k, value: v.evidence.filter((e: Evidence) => e.kind === k).length, color: PALETTE[i % PALETTE.length] }))} />
-                    <Scatter h={170} x="relevance" y="directness" points={v.evidence.map((e: Evidence) => ({ label: `${e.label} · ${e.title || e.ref}`, x: e.relevance ?? 0, y: e.directness ?? 0, color: e.kept ? 'var(--green)' : 'var(--dim)', r: e.kept ? 6 : 4 }))} />
-                  </div>
-                )}
-                <div className="d-evidence">
-                  {v.evidence.slice(0, 16).map((e: Evidence, i: number) => (
-                    <EvidenceCard key={e.ref + i} i={i} e={{ ref: `${e.label} · ${e.ref}`, title: e.title || e.ref, kind: e.kind, relevance: e.relevance ?? 0, kept: e.kept, injection: (e.injection ?? 0) >= 0.5, url: e.url }} />
-                  ))}
-                </div>
-              </Card>
-            </motion.div>
-          )}
-        </AnimatePresence>
+                </Card>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-        {!job.running && !answer && !job.error && repo && (
-          <Card>
-            <div className="d-empty-art"><TrailLoop color="var(--blue)" /></div>
-            <Empty title="Ask anything about the code">Answers cite pull requests, commits, issues and code. When the evidence is thin, Trailhead says so instead of guessing.</Empty>
-          </Card>
-        )}
-      </Split>
+          {!started && !job.error && repo && prefs.askExamples && <Signposts title="Not sure where to start? Take a trail." items={EXAMPLES} onPick={(q) => run(q)} color="var(--blue)" />}
+        </div>
+        <aside className="desk-rail">
+          <Logbook title="Earlier questions" entries={log} empty={`Your questions about this repository are logged here${prefs.autoSave ? '' : ' when you save them'}.`} />
+        </aside>
+      </div>
     </div>
   )
 }

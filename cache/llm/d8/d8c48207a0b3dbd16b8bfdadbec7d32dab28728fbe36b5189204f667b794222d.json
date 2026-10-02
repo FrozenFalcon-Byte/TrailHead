@@ -1,0 +1,63 @@
+{
+ "key": "d8c48207a0b3dbd16b8bfdadbec7d32dab28728fbe36b5189204f667b794222d",
+ "model_id": "llm:openai/gpt-oss-120b:1f2e0674",
+ "created_at": 1790921920.385677,
+ "state": {
+  "goal": "Where are cookies merged into outgoing requests?"
+ },
+ "questions": {
+  "in_scrapy_downloadermiddlewares": {
+   "type": "choice",
+   "instructions": "Which entry is most likely to contain the code that the goal is about?",
+   "criteria": {
+    "c0": "__init__.py",
+    "c1": "cookies.py: Defines CookiesMiddleware, _is_public_domain.",
+    "c2": "defaultheaders.py: DefaultHeaders downloader middleware. Defines DefaultHeadersMiddleware.",
+    "c3": "downloadtimeout.py: Download timeout middleware. Defines DownloadTimeoutMiddleware.",
+    "c4": "httpauth.py: HTTP basic auth downloader middleware. Defines HttpAuthMiddleware.",
+    "c5": "httpcache.py: Defines HttpCacheMiddleware.",
+    "c6": "httpcompression.py: Defines HttpCompressionMiddleware.",
+    "c7": "httpproxy.py: Defines HttpProxyMiddleware.",
+    "c8": "jsonvalidation.py: Defines JsonValidationMiddleware.",
+    "c9": "offsite.py: Defines OffsiteMiddleware.",
+    "c10": "redirect.py: Defines BaseRedirectMiddleware, RedirectMiddleware, MetaRefreshMiddleware.",
+    "c11": "retry.py: An extension to retry failed requests that are potentially caused by temporary problems such as a connection timeout or HTTP 500 error. Defines get_retry_request, RetryMiddleware.",
+    "c12": "robotstxt.py: This is a middleware to respect robots.txt policies. To activate it you must enable this middleware and enable the ROBOTSTXT_OBEY setting. Defines RobotsTxtMiddleware.",
+    "c13": "stats.py: Defines get_header_size, get_status_size, DownloaderStats.",
+    "c14": "useragent.py: Set User-Agent header per spider or use a default value from settings. Defines UserAgentMiddleware.",
+    "none": "None of the listed entries is related to the goal."
+   }
+  }
+ },
+ "answers": {
+  "in_scrapy_downloadermiddlewares": {
+   "type": "choice",
+   "choice": "c1",
+   "probabilities": {
+    "c0": 0.01694915254237288,
+    "c1": 0.7627118644067797,
+    "c2": 0.01694915254237288,
+    "c3": 0.01694915254237288,
+    "c4": 0.01694915254237288,
+    "c5": 0.01694915254237288,
+    "c6": 0.01694915254237288,
+    "c7": 0.01694915254237288,
+    "c8": 0.01694915254237288,
+    "c9": 0.01694915254237288,
+    "c10": 0.01694915254237288,
+    "c11": 0.01694915254237288,
+    "c12": 0.01694915254237288,
+    "c13": 0.01694915254237288,
+    "c14": 0.01694915254237288,
+    "none": 0.0
+   },
+   "confidence": 0.9
+  }
+ },
+ "model_returned": "openai/gpt-oss-120b",
+ "provider": "hosted",
+ "input_tokens": 767,
+ "output_tokens": 202,
+ "latency_ms": 553.887082998699,
+ "request_id": ""
+}

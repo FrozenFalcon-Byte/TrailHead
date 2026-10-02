@@ -9,6 +9,10 @@
     <title>Trailhead — find your way into any codebase</title>
   </head>
   <body>
+    <script>
+      // Coming back from "Update now": paint the update sheet's colour until the app takes over, so the reload has no flash.
+      try { if (sessionStorage.getItem('th-arrive')) document.write('<div id="th-pre" style="position:fixed;inset:0;z-index:10000;background:#17161b"></div>') } catch (e) {}
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
