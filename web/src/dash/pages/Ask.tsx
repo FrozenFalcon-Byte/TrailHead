@@ -12,6 +12,7 @@ import { EvidenceCard } from '../../motion/EvidenceCard'
 import { useDash } from '../context'
 import { useStarters } from '../examples'
 import { AnswerSheet } from '../AnswerSheet'
+import { CodeRefs, type Snippet } from '../CodeRefs'
 import { JourneyBar, Logbook, Signposts, type LogEntry, type Station } from '../Trailside'
 import { ago, Card, Gate, JobStatus, Note, PageHead, Prob, Row, toBeamSteps, useJob, useDecider } from '../ui'
 
@@ -23,6 +24,7 @@ export type AskResult = {
   navigation?: { steps: any[]; paths: { nodes: string[]; score: number; file: string }[]; symbols: Record<string, { name: string; line: number }>; requests: number; separation_ratio: number | null }
   retrieval?: { evidence: Evidence[]; requests: number }
   answer: AnswerData
+  code?: Snippet[]
 }
 
 const ROUTE_NAMES: Record<string, string> = {
@@ -37,11 +39,11 @@ const ASK_STEPS = [
   { label: 'Check', sub: 'every claim' },
 ]
 
-function view(result: AskResult | null, events: { kind: string; data: any }[]): { route: any; steps: any[]; nav: any; evidence: Evidence[]; answer: AnswerData | undefined } {
+function view(result: AskResult | null, events: { kind: string; data: any }[]): { route: any; steps: any[]; nav: any; evidence: Evidence[]; answer: AnswerData | undefined; code: Snippet[] } {
   if (result)
-    return { route: { route: result.route, reason: result.route_reason, probabilities: result.route_probabilities }, steps: result.navigation?.steps ?? [], nav: result.navigation, evidence: result.retrieval?.evidence ?? [], answer: result.answer }
+    return { route: { route: result.route, reason: result.route_reason, probabilities: result.route_probabilities }, steps: result.navigation?.steps ?? [], nav: result.navigation, evidence: result.retrieval?.evidence ?? [], answer: result.answer, code: result.code ?? [] }
   const last = (k: string) => [...events].reverse().find((e) => e.kind === k)?.data
-  return { route: last('route'), steps: last('navigation')?.steps ?? events.filter((e) => e.kind === 'nav_depth').flatMap((e) => e.data.steps), nav: last('navigation'), evidence: last('evidence')?.evidence ?? [], answer: last('answer') as AnswerData | undefined }
+  return { route: last('route'), steps: last('navigation')?.steps ?? events.filter((e) => e.kind === 'nav_depth').flatMap((e) => e.data.steps), nav: last('navigation'), evidence: last('evidence')?.evidence ?? [], answer: last('answer') as AnswerData | undefined, code: (last('code') as Snippet[] | undefined) ?? [] }
 }
 
 export default function Ask() {
@@ -193,6 +195,7 @@ export default function Ask() {
             {tab === 'answer' && answer && (
               <motion.div key="answer" initial={{ x: 24 }} animate={{ x: 0 }} exit={{ x: -24, opacity: 0 }} transition={{ type: 'spring', stiffness: 260, damping: 26 }}>
                 <AnswerSheet answer={answer} kicker={routeName ? `Route · ${routeName}` : undefined} title={result?.question ?? question} />
+                {v.code.length > 0 && <CodeRefs key={result?.question ?? question} snippets={v.code} />}
               </motion.div>
             )}
             {tab === 'beam' && (

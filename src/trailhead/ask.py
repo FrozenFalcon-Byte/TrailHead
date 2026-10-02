@@ -8,7 +8,7 @@ from .answer import Answer, answer_from_evidence, answer_to_dict
 from .context import Context
 from .decisions import load_question_set
 from .navigate import NavPath, NavResult, NavStep, Navigator, nav_to_dict
-from .retrieve import Evidence, code_evidence, dependents_evidence, guide_evidence, retrieve, retrieval_to_dict
+from .retrieve import Evidence, code_evidence, code_snippets, dependents_evidence, guide_evidence, retrieve, retrieval_to_dict
 
 Emit = Callable[[str, dict[str, Any]], None]
 ROUTE_MIN = 0.5  # below this the router's pick is not trusted and the broadest route is used
@@ -110,5 +110,8 @@ async def ask(ctx: Context, question: str, *, engine_kind: str | None = None, em
         emit("evidence", out["retrieval"])
         answer = await answer_from_evidence(engine, ctx.llm, question, found.candidates, wants_reason=bool(plan.get("reason")), final_check=final_check)
     out["answer"] = answer_to_dict(answer)
+    if plan.get("navigate") and nav.files and plan.get("answer") != "out_of_scope":
+        out["code"] = code_snippets(ctx.store, ctx.repo_dir, nav.files, nav.symbols, question)
+        emit("code", out["code"])
     emit("answer", out["answer"])
     return out

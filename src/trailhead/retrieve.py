@@ -7,6 +7,7 @@ import time
 from pathlib import Path
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
+import textwrap
 from typing import Any, Iterable, Sequence
 
 from .decisions import DecisionEngine, Question, load_question_set
@@ -224,6 +225,67 @@ def code_evidence(store: Store, repo_dir: Path, path: str, symbol: str | None = 
     url = base + (f"#L{first['start_line']}-L{first['end_line']}" if first is not None else "")
     title = path + (f" ({', '.join(p['name'] for p in picked)})" if picked else "")
     return Evidence(f"file:{path}", "code", title, "\n".join(parts), url, 0.0, source="navigation")
+
+
+MAX_SNIPPET_LINES = 48
+
+
+def _docstring_span(lines: list[str], start: int, end: int) -> tuple[int, int] | None:
+    """1-based first and last line of the docstring right under a definition's signature, if it has one."""
+    for i in range(start - 1, min(end, start + 12, len(lines))):
+        text = lines[i].strip()
+        if text.startswith(('"""', "'''", 'r"""', "r'''")):
+            quote = '"""' if '"""' in text else "'''"
+            if text.count(quote) >= 2:
+                return (i + 1, i + 1)
+            for j in range(i + 1, min(end, len(lines))):
+                if quote in lines[j]:
+                    return (i + 1, j + 1)
+            return None
+        if text.endswith((":", "{")) and i > start - 1:
+            continue
+    return None
+
+
+def code_snippets(store: Store, repo_dir: Path, files: list[str], symbols: dict[str, dict[str, Any]], question: str, *, limit: int = 3) -> list[dict[str, Any]]:
+    """The code that answers the question, to show beside the answer: per file, the definition navigation picked or
+    the one whose name best matches the question, read from the checkout at the ingested commit. Shown, never run."""
+    terms = _terms(question)
+    repo, head = store.get_meta("repo"), store.get_meta("head") or "HEAD"
+    out: list[dict[str, Any]] = []
+    for path in files:
+        if len(out) >= limit:
+            break
+        row = store.one("SELECT path, lang FROM files WHERE path = ?", (path,))
+        if row is None or not (repo_dir / path).is_file():
+            continue
+        defs = store.query("SELECT name, kind, signature, doc, start_line, end_line FROM symbols WHERE path = ? ORDER BY start_line", (path,))
+        name = (symbols.get(path) or {}).get("name")
+        chosen = next((s for s in defs if s["name"] == name), None)
+        if chosen is None and terms:
+            best = max(defs, key=lambda s: _symbol_match(s, terms), default=None)
+            chosen = best if best is not None and _symbol_match(best, terms) >= 1 else None
+        try:
+            lines = (repo_dir / path).read_text(encoding="utf-8", errors="replace").splitlines()
+        except OSError:
+            continue
+        if chosen is not None:
+            start, end = int(chosen["start_line"]), int(chosen["end_line"])
+        else:  # nothing named after the question: the top of the file, past any license block
+            start = next((i + 1 for i, line in enumerate(lines[:60]) if line.strip() and not line.lstrip().startswith(("#", "//", "/*", "*", '"""'))), 1)
+            end = start + 24
+        # a long docstring is folded on the page, so it does not eat the room meant for the code itself
+        doc = _docstring_span(lines, start, end)
+        shown_end = min(end, start + MAX_SNIPPET_LINES - 1 + (doc[1] - doc[0] + 1 if doc else 0), len(lines))
+        code = textwrap.dedent("\n".join(lines[start - 1 : shown_end]))  # a method reads cleaner without its class indent
+        if not code.strip():
+            continue
+        out.append({
+            "path": path, "lang": row["lang"], "symbol": chosen["name"] if chosen is not None else "", "kind": chosen["kind"] if chosen is not None else "",
+            "start": start, "end": shown_end, "full_end": end, "code": code,
+            "url": f"https://github.com/{repo}/blob/{head}/{path}#L{start}-L{shown_end}" if repo else "",
+        })
+    return out
 
 
 def dependents_evidence(store: Store, path: str) -> Evidence | None:
