@@ -2,7 +2,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { registeredGroups, type CtxGroup, type CtxItem } from '../lib/ctx'
-import { usePref } from '../lib/prefs'
+import { getPrefs, setPrefs, usePref } from '../lib/prefs'
 import { openQr } from '../lib/qr'
 import { useTheme } from '../lib/theme'
 import { notify } from '../lib/toast'
@@ -116,6 +116,7 @@ function useBuild() {
         items: [
           { label: 'Back', icon: '←', run: () => navigate(-1) },
           { label: theme === 'dark' ? 'Switch to light' : 'Switch to dark', icon: theme === 'dark' ? '☀' : '☾', run: () => setTheme(theme === 'dark' ? 'light' : 'dark') },
+          { label: getPrefs().cardHover ? 'Turn off card hover motion' : 'Turn on card hover motion', icon: '◇', run: () => { const on = !getPrefs().cardHover; setPrefs({ cardHover: on }); notify.ok(on ? 'Card hover motion on' : 'Card hover motion off', on ? 'Cards lift and tilt under the pointer again.' : 'Cards stay still and just outline. Turn it back on here or in Settings.') } },
           { label: 'Copy page link', icon: '⛓', run: () => copy(window.location.href, 'Page link') },
           { label: 'QR code for this page', icon: '▦', run: () => openQr({ title: document.title.split('—')[0].trim() || 'This page', url: window.location.href }) },
           { label: 'Reload', icon: '⟳', hint: '⌘R', run: () => window.location.reload() },

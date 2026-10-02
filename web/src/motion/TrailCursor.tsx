@@ -226,7 +226,7 @@ export function TrailCursor() {
       }
       setLabel(link && getPrefs().cursorLabels ? describe(link) : '')
 
-      const t = target?.closest<HTMLElement>('[data-tilt]') ?? null
+      const t = getPrefs().cardHover ? target?.closest<HTMLElement>('[data-tilt]') ?? null : null
       if (t !== tilt) {
         untilt()
         tilt = t
