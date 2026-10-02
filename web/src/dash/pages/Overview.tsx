@@ -2,11 +2,11 @@ import { AnimatePresence, motion } from 'motion/react'
 import { TreeTrail } from '../TreeTrail'
 import { TypedField } from '../../motion/TypedField'
 import { useStarters } from '../examples'
-import { useEffect, useState } from 'react'
+import { cloneElement, Fragment, isValidElement, useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../lib/auth'
 import { listSaved, type Saved } from '../../lib/history'
-import { clock, usePrefs } from '../../lib/prefs'
+import { clock, overviewCards, usePrefs, type OverviewCard } from '../../lib/prefs'
 import { Segmented } from '../../motion/Select'
 import { useDash } from '../context'
 import { NAV } from '../nav'
@@ -107,6 +107,102 @@ export default function Overview() {
   const model = engine === 'jev' ? config?.jev.model_id : engine === 'llm' ? config?.llm.model : config?.local.model
   const refreshing = reloading || checking
 
+  // Each overview card by id, so Settings can hide and reorder them.
+  const CARDS: Record<OverviewCard, () => React.ReactNode> = data ? {
+    activity: () => (
+    <Card key="activity" span={8} title="Activity" aside={<span className="d-muted">Jev decisions · last 14 days</span>}>
+      {decisions.data?.length ? (
+        <Columns data={days.map((d) => ({ ...d, hint: `decisions on ${d.label}` }))} color="var(--violet)" h={170} ticks={7} onPick={() => navigate('/app/decisions')} />
+      ) : (
+        <Empty title="Quiet so far">Ask a question or plan a tour and the days fill in.</Empty>
+      )}
+    </Card>
+    ),
+    system: () => (
+    <Card key="system" span={4} title="System" className="d-sys" aside={<Link to="/app/settings#engine" className="d-more">Settings →</Link>}>
+      <ul className="d-sys__list">
+        <li><span>Engine</span><b>{engine === 'jev' ? 'Jev' : engine === 'llm' ? 'LLM fallback' : 'Local'}</b></li>
+        <li><span>Model</span><b className="mono" title={model}>{model || '—'}</b></li>
+        <li><span>Jev slot</span><b>{offline ? '—' : nextSlot < 0.5 ? 'ready now' : `in ${Math.ceil(nextSlot)}s`}</b></li>
+        <li><span>Sign-in</span><b>{health?.auth === 'supabase' ? 'Supabase' : health?.auth ?? '—'}</b></li>
+        <li><span>Last check</span><b>{lastCheck ? ago(new Date(lastCheck).toISOString()) : '—'}</b></li>
+      </ul>
+    </Card>
+    ),
+    layers: () => (
+    <Card key="layers" span={6} title="What the files are" aside={<span className="d-muted">{data.annotated_files} annotated</span>}>
+      {layerTotal === 0 ? (
+        <p className="d-muted">No layer annotations yet. Run <span className="mono">trailhead annotate file</span>.</p>
+      ) : (
+        <Donut data={layers.map(([k, n], i) => ({ label: k.replace(/_/g, ' '), value: n, color: LAYER_COLORS[i % LAYER_COLORS.length] }))} label="annotated files" />
+      )}
+    </Card>
+    ),
+    history: () => (
+    <Card key="history" span={6} title="What history holds">
+      <Treemap
+        h={220}
+        items={[
+          { label: 'Commits', value: data.commits, color: 'var(--blue)' },
+          { label: 'Pull requests', value: data.pull_requests, color: 'var(--violet)' },
+          { label: 'Issues', value: data.issues, color: 'var(--yellow)', onClick: () => navigate('/app/issues') },
+          { label: 'Comments', value: data.comments, color: 'var(--orange)' },
+          { label: 'Cross-links', value: data.links, color: 'var(--green)' },
+        ]}
+      />
+    </Card>
+    ),
+    tree: () => (
+    <Card key="tree" span={6} title="Top of the tree" aside={<Link to="/app/map" className="d-more">Map →</Link>}>
+      <TreeTrail dirs={data.top_dirs} repo={data.repo} />
+    </Card>
+    ),
+    recent: () => (
+    <Card key="recent" span={6} title="Recent trails">
+      {recent.length === 0 ? (
+        <p className="d-muted">Nothing saved here yet. Asks and tours you run land in this list.</p>
+      ) : (
+        <div className="d-list">
+          {recent.map((r, i) => (
+            <Row key={r.id} i={i} to={`/app/${r.type}?saved=${r.id}`} lead={<span className={`d-tag is-${r.type}`}>{r.type}</span>} title={r.title} sub={ago(r.created_at)} />
+          ))}
+        </div>
+      )}
+    </Card>
+    ),
+    issues: () => (
+    <Card key="issues" span={6} title="Gentle first issues" aside={<Link to="/app/issues" className="d-more">All issues →</Link>}>
+      {issues.loading && !issues.data ? (
+        <Loading label="Sorting issues" />
+      ) : issues.data?.picks.length ? (
+        <div className="d-list">
+          {issues.data.picks.slice(0, 4).map((p, i) => (
+            <Row key={p.number} i={i} href={p.url} lead={<span className="d-score">{Math.round(p.score * 100)}</span>} title={`#${p.number} ${p.title}`} sub={p.kind} end={<span className="d-ext">↗</span>} />
+          ))}
+        </div>
+      ) : (
+        <Empty title="None ranked yet">Run <span className="mono">bin/trailhead pick --limit 30</span> to rank open issues.</Empty>
+      )}
+    </Card>
+    ),
+    decisions: () => (
+    <Card key="decisions" span={6} title="Latest decisions" aside={<Link to="/app/decisions" className="d-more">Audit log →</Link>}>
+      {decisions.loading && !decisions.data ? (
+        <Loading label="Opening the log" />
+      ) : decisions.data?.length ? (
+        <div className="d-list">
+          {decisions.data.slice(0, 6).map((d, i) => (
+            <Row key={d.id} i={i} to="/app/decisions" lead={<span className="d-tag">{d.purpose}</span>} title={d.answer} sub={`${d.engine}${d.cached ? ' · cached' : ''} · ${ago(new Date(d.ts * 1000).toISOString())}`} end={d.confidence != null ? <Prob p={d.confidence} width={44} /> : undefined} />
+          ))}
+        </div>
+      ) : (
+        <Empty title="No decisions yet">Every judgement Jev makes is logged here.</Empty>
+      )}
+    </Card>
+    ),
+  } : ({} as Record<OverviewCard, () => React.ReactNode>)
+  const shown = overviewCards(prefs).filter((c) => !c.hidden)
+
   return (
     <div className="d-body">
       <PageHead kicker="Today" title={`${greeting}${first ? `, ${first}` : ''}.`} oblique="Where to?" note={<>{clock(new Date())} · {repo ? <>reading <span className="mono">{repo}</span></> : 'no repository yet'} </>} actions={<RefreshButton busy={refreshing} onClick={() => { recheck(); reload() }} label="Refresh" />}>
@@ -121,88 +217,8 @@ export default function Overview() {
         <>
           <NextSteps open={issues.data?.open_unlinked} />
 
-          <div className="d-bento">
-            <Card span={8} title="Activity" delay={0.15} aside={<span className="d-muted">Jev decisions · last 14 days</span>}>
-              {decisions.data?.length ? (
-                <Columns data={days.map((d) => ({ ...d, hint: `decisions on ${d.label}` }))} color="var(--violet)" h={170} ticks={7} onPick={() => navigate('/app/decisions')} />
-              ) : (
-                <Empty title="Quiet so far">Ask a question or plan a tour and the days fill in.</Empty>
-              )}
-            </Card>
-
-            <Card span={4} title="System" className="d-sys" delay={0.2} aside={<Link to="/app/settings#engine" className="d-more">Settings →</Link>}>
-              <ul className="d-sys__list">
-                <li><span>Engine</span><b>{engine === 'jev' ? 'Jev' : engine === 'llm' ? 'LLM fallback' : 'Local'}</b></li>
-                <li><span>Model</span><b className="mono" title={model}>{model || '—'}</b></li>
-                <li><span>Jev slot</span><b>{offline ? '—' : nextSlot < 0.5 ? 'ready now' : `in ${Math.ceil(nextSlot)}s`}</b></li>
-                <li><span>Sign-in</span><b>{health?.auth === 'supabase' ? 'Supabase' : health?.auth ?? '—'}</b></li>
-                <li><span>Last check</span><b>{lastCheck ? ago(new Date(lastCheck).toISOString()) : '—'}</b></li>
-              </ul>
-            </Card>
-            <Card span={6} title="What the files are" delay={0.15} aside={<span className="d-muted">{data.annotated_files} annotated</span>}>
-              {layerTotal === 0 ? (
-                <p className="d-muted">No layer annotations yet. Run <span className="mono">trailhead annotate file</span>.</p>
-              ) : (
-                <Donut data={layers.map(([k, n], i) => ({ label: k.replace(/_/g, ' '), value: n, color: LAYER_COLORS[i % LAYER_COLORS.length] }))} label="annotated files" />
-              )}
-            </Card>
-
-            <Card span={6} title="What history holds" delay={0.22}>
-              <Treemap
-                h={220}
-                items={[
-                  { label: 'Commits', value: data.commits, color: 'var(--blue)' },
-                  { label: 'Pull requests', value: data.pull_requests, color: 'var(--violet)' },
-                  { label: 'Issues', value: data.issues, color: 'var(--yellow)', onClick: () => navigate('/app/issues') },
-                  { label: 'Comments', value: data.comments, color: 'var(--orange)' },
-                  { label: 'Cross-links', value: data.links, color: 'var(--green)' },
-                ]}
-              />
-            </Card>
-
-            <Card span={6} title="Top of the tree" delay={0.2} aside={<Link to="/app/map" className="d-more">Map →</Link>}>
-              <TreeTrail dirs={data.top_dirs} repo={data.repo} />
-            </Card>
-
-            <Card span={6} title="Recent trails" delay={0.25}>
-              {recent.length === 0 ? (
-                <p className="d-muted">Nothing saved here yet. Asks and tours you run land in this list.</p>
-              ) : (
-                <div className="d-list">
-                  {recent.map((r, i) => (
-                    <Row key={r.id} i={i} to={`/app/${r.type}?saved=${r.id}`} lead={<span className={`d-tag is-${r.type}`}>{r.type}</span>} title={r.title} sub={ago(r.created_at)} />
-                  ))}
-                </div>
-              )}
-            </Card>
-
-            <Card span={6} title="Gentle first issues" delay={0.3} aside={<Link to="/app/issues" className="d-more">All issues →</Link>}>
-              {issues.loading && !issues.data ? (
-                <Loading label="Sorting issues" />
-              ) : issues.data?.picks.length ? (
-                <div className="d-list">
-                  {issues.data.picks.slice(0, 4).map((p, i) => (
-                    <Row key={p.number} i={i} href={p.url} lead={<span className="d-score">{Math.round(p.score * 100)}</span>} title={`#${p.number} ${p.title}`} sub={p.kind} end={<span className="d-ext">↗</span>} />
-                  ))}
-                </div>
-              ) : (
-                <Empty title="None ranked yet">Run <span className="mono">bin/trailhead pick --limit 30</span> to rank open issues.</Empty>
-              )}
-            </Card>
-
-            <Card span={6} title="Latest decisions" delay={0.35} aside={<Link to="/app/decisions" className="d-more">Audit log →</Link>}>
-              {decisions.loading && !decisions.data ? (
-                <Loading label="Opening the log" />
-              ) : decisions.data?.length ? (
-                <div className="d-list">
-                  {decisions.data.slice(0, 6).map((d, i) => (
-                    <Row key={d.id} i={i} to="/app/decisions" lead={<span className="d-tag">{d.purpose}</span>} title={d.answer} sub={`${d.engine}${d.cached ? ' · cached' : ''} · ${ago(new Date(d.ts * 1000).toISOString())}`} end={d.confidence != null ? <Prob p={d.confidence} width={44} /> : undefined} />
-                  ))}
-                </div>
-              ) : (
-                <Empty title="No decisions yet">Every judgement Jev makes is logged here.</Empty>
-              )}
-            </Card>
+          <div className={`d-bento is-${prefs.overviewLayout}`}>
+            {shown.map((c, i) => <Fragment key={c.id}>{withDelay(CARDS[c.id](), 0.15 + i * 0.04)}</Fragment>)}
           </div>
 
           <p className="d-foot">
@@ -213,4 +229,9 @@ export default function Overview() {
       )}
     </div>
   )
+}
+
+/** Stagger cards by their place in the person's order rather than their place in the code. */
+function withDelay(node: React.ReactNode, delay: number) {
+  return isValidElement<{ delay?: number }>(node) ? cloneElement(node, { delay }) : node
 }

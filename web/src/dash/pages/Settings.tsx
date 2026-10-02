@@ -1,10 +1,10 @@
-import { AnimatePresence, motion } from 'motion/react'
+import { AnimatePresence, motion, Reorder } from 'motion/react'
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../lib/auth'
 import { resetOnboarded } from '../../lib/onboard'
 import { clearSaved } from '../../lib/history'
-import { DEFAULTS, resetPrefs, sanitize, setPrefs, usePrefs, type Prefs } from '../../lib/prefs'
+import { DEFAULTS, hiddenNav, overviewCards, resetPrefs, sanitize, setPrefs, usePrefs, type Prefs } from '../../lib/prefs'
 import { isLocalOrigin, shareOrigin } from '../../lib/qr'
 import { useTheme } from '../../lib/theme'
 import { errorText, notify, toast } from '../../lib/toast'
@@ -107,6 +107,91 @@ function Plugboard({ plugs }: { plugs: Plug[] }) {
         )
       })}
     </ol>
+  )
+}
+
+
+/* ---------- Dashboard customisation ---------- */
+
+/** A tiny dashboard drawn from the layout settings: sidebar colour, corners, heading font and the overview cards. */
+function DashStage({ p }: { p: Prefs }) {
+  const cards = overviewCards(p).filter((c) => !c.hidden)
+  const r = p.corners === 'square' ? 0.4 : p.corners === 'round' ? 1.35 : 1
+  const span = (n: number) => (p.overviewLayout === 'stack' ? 12 : p.overviewLayout === 'pairs' ? 6 : n)
+  const font = p.headingFont === 'inter' ? "'Inter Variable', sans-serif" : p.headingFont === 'mono' ? 'ui-monospace, Menlo, monospace' : "'Bricolage Grotesque Variable', sans-serif"
+  const hidden = hiddenNav(p)
+  return (
+    <div className={`s-dstage is-${p.sideTone}`} style={{ ['--r' as string]: r }}>
+      <motion.div className="s-dstage__side" layout transition={{ type: 'spring', stiffness: 300, damping: 26 }}>
+        <span className="s-dstage__brand" />
+        <AnimatePresence initial={false}>
+          {NAV.filter((n) => !hidden.has(n.to)).map((n, i) => (
+            <motion.span key={n.to} layout className={`s-dstage__nav ${i === 0 ? 'is-on' : ''}`} initial={{ scaleX: 0, x: -20 }} animate={{ scaleX: 1, x: 0 }} exit={{ scaleX: 0, x: -20 }} transition={{ type: 'spring', stiffness: 380, damping: 26 }} style={{ originX: 0 }}>
+              <i style={{ background: n.color }} /><b />
+            </motion.span>
+          ))}
+        </AnimatePresence>
+      </motion.div>
+      <div className="s-dstage__main">
+        <motion.span key={p.headingFont} className="s-dstage__title" style={{ fontFamily: font }} initial={{ rotate: -4, y: 6, scale: 0.92 }} animate={{ rotate: 0, y: 0, scale: 1 }} transition={{ type: 'spring', stiffness: 300, damping: 14 }}>Afternoon.</motion.span>
+        <div className="s-dstage__grid">
+          <AnimatePresence initial={false}>
+            {cards.map((c) => (
+              <motion.span key={c.id} layout className="s-dstage__card" style={{ gridColumn: `span ${span(c.span)}` }}
+                initial={{ scale: 0.4, rotate: -10 }} animate={{ scale: 1, rotate: 0 }} exit={{ scale: 0.3, rotate: 12, y: 30 }} transition={{ type: 'spring', stiffness: 320, damping: 24 }}>
+                <i style={{ background: c.color }} />
+                <em>{c.label}</em>
+              </motion.span>
+            ))}
+          </AnimatePresence>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/** Drag the overview cards into order and switch each one on or off. */
+function CardArranger({ p, set }: { p: Prefs; set: (patch: Partial<Prefs>) => void }) {
+  const cards = overviewCards(p)
+  const shown = cards.filter((c) => !c.hidden).length
+  const toggle = (id: string, hide: boolean) => {
+    const hidden = new Set(cards.filter((c) => c.hidden).map((c) => c.id as string))
+    if (hide) hidden.add(id)
+    else hidden.delete(id)
+    set({ overviewHidden: [...hidden].join(',') })
+  }
+  return (
+    <Reorder.Group axis="y" values={cards.map((c) => c.id as string)} onReorder={(ids) => set({ overviewOrder: ids.join(',') })} className="s-arrange">
+      {cards.map((c) => (
+        <Reorder.Item key={c.id} value={c.id} className={`s-arrange__row ${c.hidden ? 'is-off' : ''}`} whileDrag={{ scale: 1.03, rotate: -1.5, boxShadow: '0 14px 30px rgba(0,0,0,.14)' }} data-cursor="Drag to reorder">
+          <span className="s-arrange__grip" aria-hidden>⋮⋮</span>
+          <i style={{ background: c.color }} />
+          <span className="s-arrange__label">{c.label}</span>
+          <Toggle on={!c.hidden} onChange={(v) => (v || shown > 1) && toggle(c.id, !v)} label={`Show ${c.label}`} />
+        </Reorder.Item>
+      ))}
+    </Reorder.Group>
+  )
+}
+
+/** Pick which pages stay in the sidebar. Overview always stays. */
+function NavPicker({ p, set }: { p: Prefs; set: (patch: Partial<Prefs>) => void }) {
+  const hidden = hiddenNav(p)
+  return (
+    <div className="s-navpick">
+      {NAV.slice(1).map((n) => {
+        const on = !hidden.has(n.to)
+        return (
+          <motion.button key={n.to} className={`s-navpick__chip ${on ? 'is-on' : ''}`} aria-pressed={on} whileTap={{ scale: 0.9, rotate: -3 }}
+            onClick={() => { const h = new Set(hidden); if (on) h.add(n.to); else h.delete(n.to); set({ hiddenNav: [...h].join(',') }) }} data-cursor={on ? 'Hide from sidebar' : 'Show in sidebar'}>
+            <motion.span animate={{ rotate: on ? 0 : -90, scale: on ? 1 : 0.8 }} transition={{ type: 'spring', stiffness: 300, damping: 15 }} style={{ display: 'inline-flex' }}>
+              <Shape kind={n.kind} color={on ? n.color : 'var(--dim)'} glyph={n.glyph} size={20} play={false} />
+            </motion.span>
+            {n.label}
+          </motion.button>
+        )
+      })}
+    </div>
   )
 }
 
@@ -411,6 +496,51 @@ export default function Settings() {
         sw('Story shapes', 'sidebarStory', 'sidebar shapes story', 'The row of shapes in the sidebar'),
         sw('Jev slot meter', 'slotMeter', 'slot meter jev', 'Countdown to the next free request'),
         sw('Greet me by name', 'greetByName', 'greeting name', 'On the overview'),
+      ],
+    },
+    {
+      id: 'dashboard', title: 'Your dashboard', blurb: 'Cards, sidebar and shape', kind: 'square', color: 'var(--green)', glyph: 'folder',
+      stage: <DashStage p={p} />,
+      items: [
+        { label: 'Overview cards', hint: 'Drag to reorder. Switch off what you don’t use.', keys: 'overview cards order hide reorder widgets', wide: true, control: <CardArranger p={p} set={set} /> },
+        {
+          label: 'Overview layout', keys: 'overview layout grid columns bento', wide: true, control: (
+            <Choice name="ovlayout" value={p.overviewLayout} onChange={(v) => set({ overviewLayout: v })} cols={3} options={[
+              { value: 'bento', label: 'Bento', hint: 'Mixed sizes', art: <span className="s-art-grid"><i style={{ gridColumn: 'span 2' }} /><i /><i /><i /><i /></span> },
+              { value: 'pairs', label: 'Pairs', hint: 'Two across', art: <span className="s-art-grid"><i /><i /><i /><i /></span> },
+              { value: 'stack', label: 'One column', hint: 'Full width', art: <span className="s-art-grid is-stack"><i /><i /><i /></span> },
+            ]} />
+          ),
+        },
+        {
+          label: 'Corners', keys: 'corners radius round square', control: (
+            <Choice name="corners" value={p.corners} onChange={(v) => set({ corners: v })} options={[
+              { value: 'square', label: 'Crisp', art: <span className="s-art-corner" style={{ borderRadius: 5 }} /> },
+              { value: 'soft', label: 'Soft', art: <span className="s-art-corner" style={{ borderRadius: 12 }} /> },
+              { value: 'round', label: 'Round', art: <span className="s-art-corner" style={{ borderRadius: 18 }} /> },
+            ]} />
+          ),
+        },
+        {
+          label: 'Sidebar colour', keys: 'sidebar colour color tone dark light', control: (
+            <Choice name="sidetone" value={p.sideTone} onChange={(v) => set({ sideTone: v })} options={[
+              { value: 'ink', label: 'Ink', art: <span className="s-art-side" style={{ background: 'var(--solid)' }}><i /></span> },
+              { value: 'paper', label: 'Paper', art: <span className="s-art-side" style={{ background: 'var(--surface)', boxShadow: 'inset 0 0 0 1.5px var(--line)' }}><i /></span> },
+              { value: 'accent', label: 'Accent', art: <span className="s-art-side" style={{ background: 'var(--accent)' }}><i style={{ background: 'var(--solid)' }} /></span> },
+            ]} />
+          ),
+        },
+        {
+          label: 'Heading font', keys: 'heading font typeface title', control: (
+            <Choice name="heading" value={p.headingFont} onChange={(v) => set({ headingFont: v })} options={[
+              { value: 'bricolage', label: 'Bricolage', art: <span className="s-art-aa" style={{ fontFamily: "'Bricolage Grotesque Variable'", fontSize: 26 }}>Aa</span> },
+              { value: 'inter', label: 'Inter', art: <span className="s-art-aa" style={{ fontFamily: "'Inter Variable'", fontSize: 26 }}>Aa</span> },
+              { value: 'mono', label: 'Mono', art: <span className="s-art-aa mono" style={{ fontSize: 24 }}>Aa</span> },
+            ]} />
+          ),
+        },
+        { label: 'Sidebar pages', hint: 'Hidden pages still open with their shortcut.', keys: 'sidebar pages hide nav menu', wide: true, control: <NavPicker p={p} set={set} /> },
+        sw('Map scenery', 'mapScenery', 'map clouds birds balloon scenery', 'Clouds, birds and the balloon over the folder map'),
       ],
     },
     {

@@ -50,7 +50,41 @@ export type Prefs = {
   smoothScroll: boolean
   dashIntro: boolean
   typedHints: boolean
+  corners: 'square' | 'soft' | 'round'
+  sideTone: 'ink' | 'paper' | 'accent'
+  headingFont: 'bricolage' | 'inter' | 'mono'
+  overviewLayout: 'bento' | 'pairs' | 'stack'
+  overviewOrder: string
+  overviewHidden: string
+  hiddenNav: string
+  mapScenery: boolean
 }
+
+/** The overview's cards, in their default order. */
+export const OVERVIEW_CARDS = [
+  { id: 'activity', label: 'Activity', span: 8, color: 'var(--violet)' },
+  { id: 'system', label: 'System', span: 4, color: 'var(--blue)' },
+  { id: 'layers', label: 'What the files are', span: 6, color: 'var(--green)' },
+  { id: 'history', label: 'What history holds', span: 6, color: 'var(--yellow)' },
+  { id: 'tree', label: 'Top of the tree', span: 6, color: 'var(--green)' },
+  { id: 'recent', label: 'Recent trails', span: 6, color: 'var(--orange)' },
+  { id: 'issues', label: 'Gentle first issues', span: 6, color: 'var(--yellow)' },
+  { id: 'decisions', label: 'Latest decisions', span: 6, color: 'var(--violet)' },
+] as const
+export type OverviewCard = (typeof OVERVIEW_CARDS)[number]['id']
+
+const list = (s: string) => s.split(',').map((x) => x.trim()).filter(Boolean)
+
+/** The overview cards in the person's order (cards added in later builds go on the end), with hidden ones flagged. */
+export function overviewCards(p: Prefs) {
+  const known = OVERVIEW_CARDS.map((c) => c.id as string)
+  const order = [...list(p.overviewOrder).filter((id) => known.includes(id)), ...known.filter((id) => !list(p.overviewOrder).includes(id))]
+  const hidden = new Set(list(p.overviewHidden))
+  return order.map((id) => ({ ...OVERVIEW_CARDS.find((c) => c.id === id)!, hidden: hidden.has(id) }))
+}
+
+/** Sidebar pages the person has hidden (by route). */
+export const hiddenNav = (p: Prefs) => new Set(list(p.hiddenNav))
 
 export const DEFAULTS: Prefs = {
   accent: 'lime',
@@ -95,6 +129,14 @@ export const DEFAULTS: Prefs = {
   toastSound: false,
   toastHoldOnHover: true,
   updateNotice: 'toast',
+  corners: 'soft',
+  sideTone: 'ink',
+  headingFont: 'bricolage',
+  overviewLayout: 'bento',
+  overviewOrder: '',
+  overviewHidden: '',
+  hiddenNav: '',
+  mapScenery: true,
 }
 
 const KEY = 'th-prefs'
@@ -117,6 +159,10 @@ const CHOICES: Partial<Record<keyof Prefs, readonly string[]>> = {
   toastEntrance: ['drop', 'flip', 'slide', 'stamp'],
   updateNotice: ['toast', 'quiet', 'auto'],
   timeFormat: ['12h', '24h'],
+  corners: ['square', 'soft', 'round'],
+  sideTone: ['ink', 'paper', 'accent'],
+  headingFont: ['bricolage', 'inter', 'mono'],
+  overviewLayout: ['bento', 'pairs', 'stack'],
 }
 
 function load(): Prefs {
@@ -135,6 +181,9 @@ export function applyPrefs(p: Prefs = state) {
   root.dataset.text = p.textSize
   root.dataset.motion = p.motion
   root.dataset.width = p.layoutWidth
+  root.dataset.corners = p.corners
+  root.dataset.side = p.sideTone
+  root.dataset.heading = p.headingFont
   root.style.setProperty('--accent', `var(--${p.accent})`)
   root.style.setProperty('--on-accent', ACCENT_INK[p.accent])
 }

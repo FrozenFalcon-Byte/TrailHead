@@ -10,7 +10,7 @@ import { useAuth } from '../lib/auth'
 import { momentTo } from '../lib/moment'
 import { Palette } from './Palette'
 import { RepoSplash } from './RepoSplash'
-import { setPrefs, usePrefs } from '../lib/prefs'
+import { hiddenNav, setPrefs, usePrefs } from '../lib/prefs'
 import { startSettingsSync, useAvatar, useProfile } from '../lib/profile'
 import { notify } from '../lib/toast'
 import { Shape, STORY } from '../motion/Shapes'
@@ -354,9 +354,9 @@ function Shell() {
         </div>
         <nav className="d-nav" aria-label="Dashboard">
           <span className="d-nav__group">Explore</span>
-          {NAV.slice(0, 6).map(link)}
+          {NAV.slice(0, 6).filter((n) => !hiddenNav(prefs).has(n.to)).map(link)}
           <span className="d-nav__group">Inspect</span>
-          {NAV.slice(6).map((n, i) => link(n, i + 6))}
+          {NAV.slice(6).filter((n) => !hiddenNav(prefs).has(n.to)).map((n, i) => link(n, i + 6))}
           <span className="d-nav__group">You</span>
           {link(PROFILE, 9)}
           {link(SETTINGS, 10)}

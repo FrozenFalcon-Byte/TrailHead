@@ -1,3 +1,4 @@
+import { usePref } from '../lib/prefs'
 import { motion, useMotionValue, useMotionValueEvent, useReducedMotion, useScroll, useSpring, useTransform } from 'motion/react'
 import { useId, useMemo, useRef, useState } from 'react'
 
@@ -172,6 +173,8 @@ export function TrailMap({ items, seed, label, picked, hover, onHover, onOpen, o
   onPick: (id: string) => void
 }) {
   const reduce = useReducedMotion()
+  const scenery = usePref('mapScenery')
+  const life = !reduce && scenery
   const map = useMemo(() => layoutPlaces(items, seed), [items, seed])
   const frame = useRef<HTMLDivElement>(null)
   const trailRef = useRef<SVGPathElement>(null)
@@ -241,7 +244,7 @@ export function TrailMap({ items, seed, label, picked, hover, onHover, onOpen, o
               <path d={sky.far} className="tm-far" />
               {sky.snow.map((d, i) => <path key={i} d={d} className="tm-far__snow" />)}
             </motion.g>
-            {!reduce && map.clouds.slice(0, 2).map((c, i) => (
+            {life && map.clouds.slice(0, 2).map((c, i) => (
               <g key={i} className="tm-drift" style={{ animationDuration: `${c.d * 1.6}s`, animationDelay: `${-c.d * 1.6 * (c.x / W)}s` }}>
                 <g transform={`translate(0 ${SKY - 132 + i * 38}) scale(${(c.s * 0.6).toFixed(2)})`}>
                   <path d="M-34 8 A12 12 0 0 1 -22 -6 A16 16 0 0 1 6 -12 A14 14 0 0 1 30 -2 A10 10 0 0 1 34 8 Z" className="tm-cloud" />
@@ -251,7 +254,7 @@ export function TrailMap({ items, seed, label, picked, hover, onHover, onOpen, o
             <motion.g style={{ x: reduce ? 0 : nearX, y: reduce ? 0 : nearY }}>
               <path d={sky.near} className="tm-near" />
             </motion.g>
-            {!reduce && (
+            {life && (
               <g className="tm-flock">
                 {[[0, 0], [16, 7], [-14, 9], [30, 15]].map(([x, y], i) => (
                   <g key={i} transform={`translate(${x} ${SKY - 128 + y})`}>
@@ -420,7 +423,7 @@ export function TrailMap({ items, seed, label, picked, hover, onHover, onOpen, o
                 </g>
               </motion.g>
             ))}
-            {!reduce && (
+            {life && (
               <g className="tm-drift is-slow" style={{ animationDelay: `${-140 * rnd(seed, 'balloon')}s` }}>
                 <g transform={`translate(0 ${(H * (0.22 + rnd(seed, 'by') * 0.3)).toFixed(0)})`}>
                   <ellipse cy={78} rx={11} ry={3.4} className="tm-cloud__shadow" />
