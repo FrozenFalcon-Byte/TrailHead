@@ -2,7 +2,7 @@ import { motion, useMotionValueEvent, useScroll, useTransform, type MotionValue 
 import { useRef, useState } from 'react'
 import { useTheme } from '../lib/theme'
 import { Shape } from '../motion/Shapes'
-import { Odometer, TrailCaption } from './TrailText'
+import { TrailCaption, type Mark } from './TrailText'
 
 /* The opening of the field guide, told as one scroll-driven scene in a 1600×900 world. Scrolling builds the
    landscape a piece at a time: the ridges and the mountain rise, a river runs down from a spring, a forest grows
@@ -80,6 +80,14 @@ const STONES = [[0.3, 1], [0.45, -1], [0.62, 1], [0.78, -1], [0.9, 1]].map(([t, 
 
 // The caption card takes the colour of what each beat is about: mountain, river, forest, trail, summit.
 const TONES = ['transparent', 'var(--lilac)', 'var(--sky)', 'var(--mint)', 'var(--peach)', 'var(--butter)']
+const MARKS: (Mark | undefined)[] = [
+  undefined,
+  { kind: 'circle', color: 'var(--violet)', glyph: 'folder' },
+  { kind: 'circle', color: 'var(--blue)', glyph: 'pr' },
+  { kind: 'square', color: 'var(--green)', glyph: 'pine' },
+  { kind: 'tag', color: 'var(--orange)', glyph: 'signal' },
+  { kind: 'tag', color: 'var(--orange)', glyph: 'flag' },
+]
 
 const PALETTE = {
   light: { sky: ['#ffe4d8', '#dfe9ff', '#e9e6ff'], far: '#d9d2fb', mid: '#c7dbfb', mountain: '#cdd5fb', shade: '#b4bdf3', meadow: '#cdeccf', snow: '#ffffff', river: '#8fb3ff', bank: '#b5e3c0', stone: '#c3bdd6', tree: ['#1fa456', '#5cc07f'] },
@@ -229,8 +237,7 @@ export function Story() {
         </svg>
 
         <div className={`fg-story__caption ${beat === 0 ? 'is-title' : ''}`}>
-          <TrailCaption k={beat} big={beat === 0} tone={TONES[beat]} title={BEATS[beat].title} body={BEATS[beat].body}
-            kicker={beat === 0 ? BEATS[0].n : <><Odometer value={BEATS[beat].n.slice(0, 2)} />{BEATS[beat].n.slice(2)}</>} />
+          <TrailCaption k={beat} big={beat === 0} tone={TONES[beat]} mark={MARKS[beat]} title={BEATS[beat].title} body={BEATS[beat].body} kicker={BEATS[beat].n} />
         </div>
         <div className="fg-story__alt" aria-hidden>
           <span>altitude</span>

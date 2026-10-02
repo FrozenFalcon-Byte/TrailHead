@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTheme } from '../lib/theme'
 import { Shape } from '../motion/Shapes'
 import { CHAPTERS, type Place } from './chapters'
-import { Odometer, TrailCaption } from './TrailText'
+import { TrailCaption } from './TrailText'
 
 /* The journey strip: a long side-on landscape pinned above the chapters. Reading the guide walks the flag along it,
    from the trailhead, over the river and through the forest, up to the summit. Each chapter has its own landmark,
@@ -137,7 +137,7 @@ export function Journey({ pos, active }: { pos: MotionValue<number>; active: num
 
         <motion.g style={{ x: useTransform(vw, (w) => w * HIKER) }}>
           <g transform={`translate(0 ${EYE + 8})`}>
-            <motion.g animate={moving ? { y: [0, -7, 0], rotate: back ? [3, -3, 3] : [-3, 3, -3] } : { y: 0, rotate: 0 }} transition={moving ? { duration: 0.38, repeat: Infinity } : { type: 'spring', stiffness: 300, damping: 14 }}>
+            <motion.g animate={moving ? { y: [0, -7, 0], } : { y: 0, rotate: 0 }} transition={moving ? { duration: 0.38, repeat: Infinity } : { type: 'spring', stiffness: 300, damping: 14 }}>
               <ellipse cy={0} rx={13} ry={3} fill="var(--solid)" opacity={0.18} />
               <g transform={`translate(${back ? 17 : -17} -34) scale(${back ? -1 : 1} 1)`}>
                 <Shape kind="tag" color="var(--orange)" glyph="flag" size={30} play={moving} />
@@ -162,8 +162,8 @@ export function Journey({ pos, active }: { pos: MotionValue<number>; active: num
       </motion.svg>
 
       <div className="fg-journey__tag">
-        <TrailCaption k={active} className="tt--tag" tone="var(--surface)" title={CHAPTERS[active].where}
-          kicker={<>Stop <Odometer value={String(active).padStart(2, '0')} /></>} />
+        <TrailCaption k={active} className="tt--tag" tone="var(--surface)" title={CHAPTERS[active].where} kicker={`Stop ${String(active).padStart(2, '0')}`}
+          mark={CHAPTERS[active]} from=".fg-nav a.active .fg-nav__icon" />
       </div>
     </div>
   )
@@ -211,7 +211,7 @@ function Landmark({ place, x, on, done, pal }: { place: Place; x: number; on: bo
       break
     case 'signposts':
       art = (<g>{[[-34, 34, 'var(--green)'], [0, 46, 'var(--blue)'], [34, 30, 'var(--orange)']].map(([dx, h, c], k) => (
-        <motion.g key={k} transform={`translate(${dx} 0)`} animate={on ? { rotate: [0, -6, 4, 0] } : { rotate: 0 }} transition={{ duration: 1.2, repeat: on ? Infinity : 0, delay: k * 0.15 }}>
+        <motion.g key={k} transform={`translate(${dx} 0)`} >
           {post(h as number)}<rect x={-14} y={-(h as number) - 6} width={28} height={14} rx={4} fill={c as string} />
         </motion.g>))}</g>)
       break
@@ -231,7 +231,7 @@ function Landmark({ place, x, on, done, pal }: { place: Place; x: number; on: bo
       break
     case 'forest':
       art = (<g>{[[-60, 0.8], [-34, 1.15], [-6, 0.9], [20, 1.3], [46, 0.85], [70, 1.05]].map(([dx, s], k) => (
-        <motion.g key={k} animate={{ scale: on ? 1.08 : 1 }} transition={{ ...spring, delay: k * 0.05 }} style={{ originX: `${dx}px`, originY: '0px' }}>
+        <motion.g key={k}  style={{ originX: `${dx}px`, originY: '0px' }}>
           <Tree x={dx} y={0} s={s} pal={pal} />
         </motion.g>))}</g>)
       break
@@ -249,8 +249,7 @@ function Landmark({ place, x, on, done, pal }: { place: Place; x: number; on: bo
     case 'cache':
       art = (<g><rect x={-26} y={-26} width={52} height={28} rx={4} fill={pal.wood} stroke="var(--solid)" strokeWidth={2.5} />
         <rect x={-14} y={-46} width={30} height={20} rx={3} fill="var(--yellow)" stroke="var(--solid)" strokeWidth={2.5} />
-        <motion.rect x={-16} y={-52} width={34} height={7} rx={3} fill="var(--solid)" animate={{ rotate: on ? -28 : 0, y: on ? -4 : 0 }} transition={spring} style={{ originX: '-16px', originY: '-48px' }} />
-        {on && [0, 1, 2].map((k) => <motion.rect key={k} x={-4 + k * 6} y={-50} width={5} height={5} rx={1} fill="var(--orange)" animate={{ y: [-50, -78], opacity: [1, 0] }} transition={{ duration: 1.1, repeat: Infinity, delay: k * 0.3 }} />)}</g>)
+        <motion.rect x={-16} y={-52} width={34} height={7} rx={3} fill="var(--solid)" animate={{ rotate: on ? -28 : 0, y: on ? -4 : 0 }} transition={spring} style={{ originX: '-16px', originY: '-48px' }} /></g>)
       break
     case 'camp':
       art = (<g><path d="M-48 2 L-18 -40 L12 2 Z" fill="var(--blue)" stroke="var(--solid)" strokeWidth={2.5} strokeLinejoin="round" /><path d="M-18 -40 L-24 2 H-12 Z" fill="var(--solid)" />
@@ -261,14 +260,13 @@ function Landmark({ place, x, on, done, pal }: { place: Place; x: number; on: bo
     case 'lake':
       art = (<g><ellipse cy={6} rx={78} ry={14} fill={pal.river} />
         {[0, 1].map((k) => <motion.ellipse key={k} cy={6} rx={20} ry={4} fill="none" stroke="#fff" strokeOpacity={0.7} strokeWidth={2} animate={{ scale: [0.4, 2.2], opacity: [0.9, 0] }} transition={{ duration: 2.6, repeat: Infinity, delay: k * 1.3 }} />)}
-        <motion.g animate={{ x: on ? [-30, 30, -30] : 0, y: [0, -1.5, 0] }} transition={{ duration: on ? 6 : 2, repeat: Infinity, ease: 'easeInOut' }}>
+        <motion.g animate={{ x: on ? 18 : 0 }} transition={{ type: 'spring', stiffness: 60, damping: 14 }}>
           <path d="M-14 0 H14 L8 6 H-8 Z" fill={pal.wood} stroke="var(--solid)" strokeWidth={2} /><path d="M0 0 V-20 L12 -4 Z" fill="var(--surface)" stroke="var(--solid)" strokeWidth={2} strokeLinejoin="round" />
         </motion.g></g>)
       break
     case 'ridge':
       art = (<g><path d="M-70 4 L-40 -40 L-22 -20 L0 -64 L24 -26 L42 -44 L70 4 Z" fill={pal.rock} />
-        <path d="M0 -64 L-10 -44 L-2 -48 L6 -42 L10 -46 Z M-40 -40 L-46 -30 L-38 -32 L-34 -30 Z" fill={pal.snow} />
-        {on && <motion.g animate={{ x: [-10, 40], y: [-70, -84], opacity: [0, 1, 0] }} transition={{ duration: 2.4, repeat: Infinity }}><path d="M0 0 q5 -5 9 0 q4 -5 9 0" fill="none" stroke="var(--ink)" strokeWidth={2} /></motion.g>}</g>)
+        <path d="M0 -64 L-10 -44 L-2 -48 L6 -42 L10 -46 Z M-40 -40 L-46 -30 L-38 -32 L-34 -30 Z" fill={pal.snow} /></g>)
       break
     case 'hut':
       art = (<g><rect x={-26} y={-34} width={52} height={36} rx={3} fill={pal.wood} stroke="var(--solid)" strokeWidth={2.5} />
@@ -281,12 +279,12 @@ function Landmark({ place, x, on, done, pal }: { place: Place; x: number; on: bo
       art = (<g><path d="M-120 6 L-40 -70 L-18 -54 L10 -112 L60 -50 L120 6 Z" fill={pal.mid} /><path d="M10 -112 L60 -50 L120 6 L30 6 Z" fill={pal.far} />
         <path d="M10 -112 L-6 -82 L4 -86 L12 -78 L22 -86 L30 -82 Z" fill={pal.snow} />
         <rect x={8} y={-150} width={4} height={40} fill="var(--solid)" />
-        <motion.path d="M12 -150 L40 -142 L12 -132 Z" fill="var(--orange)" animate={{ scaleX: on ? [1, 0.8, 1] : 1 }} transition={{ duration: 1, repeat: Infinity }} style={{ originX: '12px' }} /></g>)
+        <motion.path d="M12 -150 L40 -142 L12 -132 Z" fill="var(--orange)"  style={{ originX: '12px' }} /></g>)
       break
   }
   return (
     <g transform={`translate(${x} ${y.toFixed(1)})`}>
-      <motion.g initial={false} animate={{ scale: on ? 1.12 : 1, y: on ? -3 : 0 }} transition={spring} style={{ originX: '0px', originY: '0px' }}>
+      <motion.g initial={false} animate={{ y: on ? -2 : 0 }} transition={spring} style={{ originX: '0px', originY: '0px' }}>
         {art}
       </motion.g>
     </g>
