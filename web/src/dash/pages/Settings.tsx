@@ -7,7 +7,7 @@ import { clearSaved } from '../../lib/history'
 import { DEFAULTS, hiddenNav, overviewCards, resetPrefs, sanitize, setPrefs, usePrefs, type Prefs } from '../../lib/prefs'
 import { isLocalOrigin, shareOrigin } from '../../lib/qr'
 import { useTheme } from '../../lib/theme'
-import { errorText, notify, toast } from '../../lib/toast'
+import { errorText, notify, toast, chime } from '../../lib/toast'
 import { Shape, type Glyph, type ShapeKind } from '../../motion/Shapes'
 import { Select, Slider, Toggle } from '../../motion/Select'
 import { useDash } from '../context'
@@ -620,7 +620,7 @@ export default function Settings() {
         sw('Icons', 'toastIcons', 'toast icon shape'),
         sw('Burning fuse', 'toastFuse', 'toast fuse timer bar', 'A line along the bottom that burns down'),
         sw('Hold while pointing', 'toastHoldOnHover', 'toast hover pause hold', 'A toast stays put while the pointer is on it'),
-        sw('Soft chime', 'toastSound', 'toast sound chime audio', 'Two quiet notes when a toast arrives'),
+        { ...sw('Soft chime', 'toastSound', 'toast sound chime audio', 'Two quiet notes when a toast arrives'), set: (v) => { set({ toastSound: v }); if (v) chime('success') } },
         {
           label: 'New versions', hint: 'When the dashboard itself has been updated.', keys: 'update version new release reload', wide: true, control: (
             <Choice name="updatenotice" value={p.updateNotice} onChange={(v) => set({ updateNotice: v })} options={[

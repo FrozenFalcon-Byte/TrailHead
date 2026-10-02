@@ -42,28 +42,54 @@ export function toast(t: Omit<Toast, 'id' | 'ttl'> & { ttl?: number }): number {
   return id
 }
 
-/** A soft two-note chime made on the spot; no sound files. Higher for good news, lower for errors. */
+/** A soft two-note chime made on the spot; no sound files. Higher for good news, lower for errors.
+ *  Browsers start audio muted until the page has been clicked or typed into, so the first gesture anywhere wakes
+ *  the audio context (and wakes it again if the browser suspends it later, as Safari does in background tabs). */
 let audio: AudioContext | null = null
-export function chime(tone: Tone) {
+function context(): AudioContext | null {
   try {
-    audio ??= new AudioContext()
-    const notes = tone === 'error' ? [392, 330] : tone === 'warn' ? [440, 392] : tone === 'success' || tone === 'job' ? [660, 880] : [587, 698]
-    notes.forEach((f, i) => {
-      const o = audio!.createOscillator()
-      const g = audio!.createGain()
-      const t0 = audio!.currentTime + i * 0.09
-      o.type = 'sine'
-      o.frequency.value = f
-      g.gain.setValueAtTime(0, t0)
-      g.gain.linearRampToValueAtTime(0.06, t0 + 0.02)
-      g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.28)
-      o.connect(g).connect(audio!.destination)
-      o.start(t0)
-      o.stop(t0 + 0.3)
-    })
+    audio ??= new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)()
+    return audio
   } catch {
-    /* audio blocked until the page has been clicked */
+    return null
   }
+}
+if (typeof window !== 'undefined') {
+  const wake = () => {
+    if (!getPrefs().toastSound && !audio) return
+    const a = context()
+    if (a && a.state !== 'running') a.resume().catch(() => undefined)
+  }
+  for (const e of ['pointerdown', 'keydown', 'touchend']) window.addEventListener(e, wake, { passive: true, capture: true })
+}
+
+export function chime(tone: Tone) {
+  const a = context()
+  if (!a) return
+  const play = () => {
+    const notes = tone === 'error' ? [392, 330] : tone === 'warn' ? [440, 392] : tone === 'success' || tone === 'job' ? [660, 880] : [587, 698]
+    const out = a.createGain()
+    out.gain.value = 0.9
+    out.connect(a.destination)
+    notes.forEach((f, i) => {
+      const t0 = a.currentTime + 0.02 + i * 0.11
+      // a sine for the note and a quiet triangle an octave up, so it carries on laptop speakers
+      for (const [type, mult, peak] of [['sine', 1, 0.16], ['triangle', 2, 0.035]] as const) {
+        const o = a.createOscillator()
+        const g = a.createGain()
+        o.type = type
+        o.frequency.value = f * mult
+        g.gain.setValueAtTime(0, t0)
+        g.gain.linearRampToValueAtTime(peak, t0 + 0.015)
+        g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.42)
+        o.connect(g).connect(out)
+        o.start(t0)
+        o.stop(t0 + 0.45)
+      }
+    })
+  }
+  if (a.state === 'running') play()
+  else a.resume().then(() => { if (a.state === 'running') play() }, () => undefined)
 }
 
 export function dismiss(id: number) {
