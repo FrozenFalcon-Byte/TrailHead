@@ -57,7 +57,8 @@ def _download(url: str, data_dir: Path) -> None:
                 tmp.write(chunk)
         tmp.flush()
         with tarfile.open(tmp.name, "r:gz") as tar:
-            members = [m for m in tar.getmembers() if m.isfile() and m.name.endswith(".db") and not m.name.startswith(("/", "..")) and ".." not in Path(m.name).parts]
+            members = [m for m in tar.getmembers() if m.isfile() and m.name.endswith(".db") and not m.name.startswith(("/", "..")) and ".." not in Path(m.name).parts
+                       and not (data_dir / m.name).exists()]  # never write over a newer copy restored from storage
             tar.extractall(data_dir, members=members, filter="data")
 
 
@@ -72,8 +73,12 @@ def _checkout(repo: str, head: str, target: Path) -> None:
 
 
 def restore(settings: Settings) -> None:
+    from . import snapshots
+
+    # repositories onboarded on the host come back first; the bundled snapshot only fills in the default database
+    snapshots.restore(settings)
     url = os.environ.get("TRAILHEAD_DATA_URL", "")
-    if not _databases(settings.data_dir) and url:
+    if not (settings.data_dir / "trailhead.db").exists() and url:
         print("trailhead: downloading the data snapshot", flush=True)
         _download(url, settings.data_dir)
     for db in _databases(settings.data_dir):

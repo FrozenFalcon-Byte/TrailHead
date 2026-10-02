@@ -41,6 +41,7 @@ Re-run `pack` and upload a new release whenever you want the hosted copy to pick
    | `TRAILHEAD_WEB_ORIGINS` | your Vercel URL, for example `https://trailhead.vercel.app` (comma-separate several) |
    | `TRAILHEAD_WEB_ORIGIN_REGEX` | optional, for preview deploys: `https://trailhead-.*\.vercel\.app` |
    | `SUPABASE_URL` | same as local |
+   | `SUPABASE_SERVICE_ROLE_KEY` | Supabase → Project Settings → API keys → `service_role` (secret). Keeps onboarded repositories across redeploys |
    | `BEATAPI_API_KEY` | Jev through BeatAPI |
    | `LLM_API_KEY`, `LLM_BASE_URL`, `LLM_MODEL` | the prose model (Groq) |
    | `OPENROUTER_API_KEY`, `GITHUB_TOKEN` | optional |
@@ -49,8 +50,10 @@ Re-run `pack` and upload a new release whenever you want the hosted copy to pick
    uvicorn starts. Open `https://<service>.onrender.com/api/health`; it should return `{"ok": true, …}`.
 
 Free instances sleep after 15 minutes idle. The first request after that takes about a minute while the instance
-wakes and restores the snapshot. Work done on the host (issues graded on the First issues page, newly ingested
-repositories) is lost when it sleeps. Browsers keep their own copy of graded issues, and the page grades a few
+wakes and restores the snapshot. With `SUPABASE_SERVICE_ROLE_KEY` set, every repository onboarded on the host is
+saved to a private Supabase Storage bucket (`trailhead-repos`, created on first use) when its ingest finishes, and
+restored on each boot, so it survives sleeps and redeploys. Databases over 48 MB compressed cannot be kept on the
+free plan; the Repositories page says so. Issues graded on the First issues page are still lost when it sleeps. Browsers keep their own copy of graded issues, and the page grades a few
 more on each visit.
 
 ## 3. Web on Vercel

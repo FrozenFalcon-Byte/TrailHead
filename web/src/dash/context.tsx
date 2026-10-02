@@ -18,6 +18,7 @@ export type RepoInfo = {
   annotated_files?: number
   step?: string
   github_note?: string
+  snapshot_note?: string
   error?: string
 }
 export type Health = { ok: boolean; auth: string; engines: string[]; default_engine: string; next_slot_s: number }

@@ -55,6 +55,7 @@ function RepoTicket({ r, active, onPick, i }: { r: RepoInfo; active: boolean; on
           </span>
         )}
         {ready && r.github_note && <span className="rp-t__note small">Pull requests and issues were skipped: {r.github_note} Onboard it again later to fetch them.</span>}
+        {ready && r.snapshot_note && <span className="rp-t__note small">{r.snapshot_note} It stays until the server restarts.</span>}
       </span>
       <span className="rp-t__end">
         {active ? (

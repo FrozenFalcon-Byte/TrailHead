@@ -46,6 +46,7 @@ def summary(store: Store) -> dict[str, Any]:
     q = store.scalar
     return {
         "repo": store.get_meta("repo"), "head": store.get_meta("head"), "github_note": store.get_meta("github_note") or "",
+        "snapshot_note": store.get_meta("snapshot_note") or "",
         "files": q("SELECT COUNT(*) FROM files WHERE is_test = 0"), "tests": q("SELECT COUNT(*) FROM files WHERE is_test = 1"),
         "symbols": q("SELECT COUNT(*) FROM symbols"), "commits": q("SELECT COUNT(*) FROM commits"),
         "pull_requests": q("SELECT COUNT(*) FROM issues WHERE is_pr = 1"), "issues": q("SELECT COUNT(*) FROM issues WHERE is_pr = 0"),
@@ -107,6 +108,18 @@ def start_ingest(settings: Settings, repo: str, *, github: bool = True, github_t
         try:
             target.db_path.parent.mkdir(parents=True, exist_ok=True)
             report = ingest(target, repo, github=github, progress=progress, github_token=github_token)
+            # keep a copy off this machine so the repository survives a redeploy on a host without a lasting disk
+            from . import snapshots
+
+            if snapshots.enabled(settings):
+                progress("Saving a copy that survives restarts")
+                try:
+                    note = snapshots.save(settings, target.db_path)
+                except Exception as exc:
+                    note = f"Could not save a copy across restarts ({type(exc).__name__})."
+                store = Store(target.db_path)
+                store.set_meta("snapshot_note", note)
+                store.close()
             with _lock:
                 _jobs[repo].update(status="done", finished=time.time(), step="", report=json.loads(json.dumps(report, default=str)))
         except Cancelled:

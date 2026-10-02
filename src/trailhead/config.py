@@ -58,6 +58,8 @@ class Settings:
     auth_mode: str = "supabase"  # supabase | off (local development only)
     web_origins: tuple[str, ...] = ("http://localhost:5173",)
     web_origin_regex: str = ""  # e.g. https://trailhead-.*\.vercel\.app for preview deployments
+    supabase_service_key: str = ""  # server only: lets the API keep repository snapshots in Supabase Storage
+    snapshot_bucket: str = "trailhead-repos"
 
     @property
     def cache_dir(self) -> Path:
@@ -150,4 +152,6 @@ def load_settings(env: Mapping[str, str] | None = None, env_file: Path | str | N
         auth_mode=get("TRAILHEAD_AUTH", "supabase").lower(),
         web_origins=tuple(o.strip().rstrip("/") for o in get("TRAILHEAD_WEB_ORIGINS", "http://localhost:5173").split(",") if o.strip()),
         web_origin_regex=get("TRAILHEAD_WEB_ORIGIN_REGEX"),
+        supabase_service_key=get("SUPABASE_SERVICE_ROLE_KEY"),
+        snapshot_bucket=get("TRAILHEAD_SNAPSHOT_BUCKET", "trailhead-repos"),
     )
