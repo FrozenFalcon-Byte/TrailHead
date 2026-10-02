@@ -7,6 +7,20 @@
     <meta name="theme-color" content="#fbf8f1" />
     <meta name="description" content="Trailhead turns any GitHub repository and a goal into a guided reading tour and cited, calibrated answers." />
     <title>Trailhead — find your way into any codebase</title>
+    <script>
+      // A browser that cached a wrong copy of a script (a page served in its place mid-deploy) would stay blank: refetch
+      // the app's scripts past the cache and reload once.
+      addEventListener('error', function (e) {
+        var s = e.target, src = s && s.tagName === 'SCRIPT' && s.src
+        if (!src || src.indexOf('/assets/') < 0) return
+        try { if (sessionStorage.getItem('th-heal')) return; sessionStorage.setItem('th-heal', '1') } catch (x) { return }
+        fetch(src, { cache: 'reload' }).then(function (r) { return r.text() }).then(function (t) {
+          var deps = t.match(/"\.\/[\w.-]+\.js"/g) || []
+          return Promise.all(deps.map(function (d) { return fetch(new URL(d.slice(1, -1), src), { cache: 'reload' }) }))
+        }).finally(function () { location.reload() })
+      }, true)
+      addEventListener('load', function () { setTimeout(function () { var r = document.getElementById('root'); if (r && r.firstChild) try { sessionStorage.removeItem('th-heal') } catch (x) {} }, 8000) })
+    </script>
   </head>
   <body>
     <script>
