@@ -8,11 +8,12 @@ import { useDash } from '../context'
 import { Gate, Note, PageHead, Prob, q, RefreshButton, useJob, useDecider } from '../ui'
 
 /* First issues. Opening the page shows what is already judged straight away (from this browser's copy, then the
-   server's), and quietly asks Jev to judge the next few unranked issues. Each one drops into place as it is
-   judged; the judgements are stored on the server, so nothing is ever judged twice. */
+   server's). Jev judges a batch on its own only when the set of open issues has changed since it last did; each
+   one drops into place as it is judged. Judgements are stored on the server and kept in storage across restarts,
+   so nothing is judged twice. */
 
 type Pick = { number: number; title: string; url: string; labels: string[]; score: number; parts: Record<string, number>; kind: string; engine: string }
-type IssuesData = { weights: Record<string, number>; picks: Pick[]; open_unlinked: number; annotated: number; unranked: number }
+type IssuesData = { weights: Record<string, number>; picks: Pick[]; open_unlinked: number; annotated: number; unranked: number; signature?: string; open_numbers?: number[] }
 type Queued = { number: number; title: string; state: 'wait' | 'reading' | 'done' | 'failed' }
 
 const PART_LABEL: Record<string, string> = { scope_clarity: 'Clear scope', prior_knowledge_needed: 'Little prior knowledge', has_acceptance_criteria: 'Says when it is done', touches_single_area: 'One area of code' }
@@ -41,6 +42,34 @@ function writeCache(repo: string, data: IssuesData) {
   } catch {
     /* storage full or blocked: the server copy still holds everything */
   }
+}
+
+/* The set of open issues the page last judged for. Judging starts on its own only when that set changes (new issues
+   came in), never just because the page was opened again. */
+const sigKey = (repo: string) => `th-issues-sig:${repo}`
+function judgedFor(repo: string): string {
+  try {
+    return localStorage.getItem(sigKey(repo)) ?? ''
+  } catch {
+    return ''
+  }
+}
+function markJudged(repo: string, sig: string) {
+  try {
+    localStorage.setItem(sigKey(repo), sig)
+  } catch {
+    /* blocked storage: judged again next visit */
+  }
+}
+
+/** Grades this browser already holds for issues that are still open survive a server that lost them. */
+function merge(fresh: IssuesData, cached: IssuesData | null): IssuesData {
+  if (!cached || !fresh.open_numbers) return fresh
+  const open = new Set(fresh.open_numbers)
+  const have = new Set(fresh.picks.map((p) => p.number))
+  const kept = cached.picks.filter((p) => open.has(p.number) && !have.has(p.number))
+  if (!kept.length) return fresh
+  return { ...fresh, picks: [...fresh.picks, ...kept].sort((a, b) => b.score - a.score), annotated: fresh.annotated + kept.length, unranked: Math.max(0, fresh.unranked - kept.length) }
 }
 
 /** A trail difficulty sign: circle for easy, square for moderate, diamond for steep. */
@@ -135,7 +164,7 @@ export default function Issues() {
         setQueue((qs) => qs.map((x) => (x.number === d.number ? { ...x, state: d.pick ? 'done' : 'failed' } : x)))
         if (d.pick) setData((cur) => (cur ? { ...cur, picks: [...cur.picks.filter((p) => p.number !== d.number), d.pick].sort((a, b) => b.score - a.score), annotated: cur.annotated + 1, unranked: Math.max(0, cur.unranked - 1) } : cur))
       }
-      if (k === 'done') save(d)
+      if (k === 'done') save(merge(d, readCache(repo)))
     })
   }
 
@@ -144,7 +173,7 @@ export default function Issues() {
     setFetching(true)
     setError('')
     try {
-      const fresh = await api<IssuesData>(`/api/issues?${q(repo)}`)
+      const fresh = merge(await api<IssuesData>(`/api/issues?${q(repo)}`), readCache(repo))
       save(fresh)
       return fresh
     } catch (e) {
@@ -159,10 +188,12 @@ export default function Issues() {
     if (!repo || offline) return
     setData(readCache(repo))
     load().then((fresh) => {
-      if (fresh && asked.current !== repo && fresh.unranked > 0 && fresh.picks.length < ENOUGH) {
-        asked.current = repo
-        rank()
-      }
+      if (!fresh || asked.current === repo) return
+      asked.current = repo
+      const sig = fresh.signature ?? ''
+      if (sig && judgedFor(repo) === sig) return
+      if (fresh.unranked > 0 && fresh.picks.length < ENOUGH) rank()
+      if (sig) markJudged(repo, sig)
     })
   }, [repo, offline])
 
@@ -295,7 +326,7 @@ export default function Issues() {
             <section className="fi-status">
               <p>
                 {data.annotated} of {data.open_unlinked} open issues graded.{' '}
-                {data.unranked > 0 ? (job.running ? 'More are being graded now.' : 'More get graded a few at a time as you visit.') : 'Every open issue is graded.'}
+                {data.unranked > 0 ? (job.running ? 'More are being graded now.' : 'New issues are graded once when they arrive.') : 'Every open issue is graded.'}
               </p>
               {data.unranked > 0 && !job.running && <button className="d-chip" onClick={rank}>Grade {Math.min(BATCH, data.unranked)} more →</button>}
             </section>

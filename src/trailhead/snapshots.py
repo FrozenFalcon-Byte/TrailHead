@@ -102,7 +102,39 @@ def remove(settings: Settings, db: Path) -> None:
     with httpx.Client(headers=_headers(settings), timeout=30) as client:
         if name in _list(client, settings):
             client.request("DELETE", f"{settings.supabase_url}/storage/v1/object/{settings.snapshot_bucket}", json={"prefixes": [name]}).raise_for_status()
+        client.request("DELETE", f"{settings.supabase_url}/storage/v1/object/{settings.snapshot_bucket}", json={"prefixes": [_grades_for(settings, db)]})
     _seen.update(at=0.0)
+
+
+def _grades_for(settings: Settings, db: Path) -> str:
+    return f"grades/{_object_for(settings, db).removesuffix('.db.gz')}.json"
+
+
+def save_grades(settings: Settings, db: Path, rows: list[list[Any]]) -> None:
+    """Keep a repository's issue judgements as a small file of their own. Unlike database snapshots these are kept
+    for every repository (the bundled one too), so a restart never makes the issues page judge them again."""
+    if not enabled(settings) or not rows:
+        return
+    import json
+
+    with httpx.Client(headers=_headers(settings), timeout=30) as client:
+        _ensure_bucket(client, settings)
+        client.post(f"{settings.supabase_url}/storage/v1/object/{settings.snapshot_bucket}/{_grades_for(settings, db)}",
+                    content=json.dumps(rows).encode(), headers={"Content-Type": "application/json", "x-upsert": "true"}).raise_for_status()
+
+
+def load_grades(settings: Settings, db: Path) -> list[list[Any]]:
+    if not enabled(settings):
+        return []
+    import json
+
+    with httpx.Client(headers=_headers(settings), timeout=15) as client:
+        res = client.get(f"{settings.supabase_url}/storage/v1/object/{settings.snapshot_bucket}/{_grades_for(settings, db)}")
+        if res.status_code in (400, 404):
+            return []
+        res.raise_for_status()
+        rows = res.json()
+    return [r for r in rows if isinstance(r, list) and len(r) == 7] if isinstance(rows, list) else []
 
 
 def _repo_of(settings: Settings, name: str) -> str:

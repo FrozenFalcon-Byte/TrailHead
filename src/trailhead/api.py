@@ -4,6 +4,7 @@ pushed as it lands, and a heartbeat reports when the next Jev request slot opens
 from __future__ import annotations
 
 import asyncio
+import hashlib
 import json
 import logging
 import os
@@ -109,7 +110,25 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             if not scoped.db_path.exists():
                 raise HTTPException(404, f"{name} has not been ingested")
             contexts[name] = Context(scoped)
+            restore_grades(contexts[name])
         return contexts[name]
+
+    def restore_grades(ctx: Context) -> None:
+        """Bring back issue judgements kept in storage, so a restart (which reloads the database) never judges them again."""
+        try:
+            rows = snapshots.load_grades(settings, ctx.settings.db_path)
+        except Exception as exc:  # storage being down only means judging again
+            logger.warning("could not restore issue grades for %s: %s", ctx.repo, exc)
+            return
+        if rows:
+            ctx.store.executemany("INSERT OR IGNORE INTO annotations VALUES (?,?,?,?,?,?,?)", [tuple(r) for r in rows])
+
+    async def keep_grades(ctx: Context) -> None:
+        rows = [list(r) for r in ctx.store.query("SELECT * FROM annotations WHERE ref LIKE 'issue:%'")]
+        try:
+            await asyncio.to_thread(snapshots.save_grades, settings, ctx.settings.db_path, rows)
+        except Exception as exc:
+            logger.warning("could not keep issue grades for %s: %s", ctx.repo, exc)
 
     def engine_kind(kind: str | None) -> str:
         if kind and kind not in ENGINE_KINDS:
@@ -327,8 +346,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         for engine in engines:  # Jev's judgement wins when an issue was judged by more than one engine
             for p in await pick_issues(ctx.store, _NoCalls(), engine, numbers=numbers, top=200):
                 best.setdefault(p.number, p.__dict__ | {"engine": engine})
-        open_total = len(candidate_issues(ctx.store, limit=1000))
-        return {"weights": WEIGHTS, "picks": sorted(best.values(), key=lambda p: -p["score"])[:60], "open_unlinked": open_total, "annotated": len(best), "unranked": max(0, open_total - len(numbers))}
+        open_numbers = candidate_issues(ctx.store, limit=1000)
+        open_total = len(open_numbers)
+        # Changes only when the open issues do, so the page judges once per set of issues instead of on every visit.
+        signature = hashlib.sha1(",".join(map(str, sorted(open_numbers))).encode()).hexdigest()[:12]
+        return {"weights": WEIGHTS, "picks": sorted(best.values(), key=lambda p: -p["score"])[:60], "open_unlinked": open_total, "annotated": len(best),
+                "unranked": max(0, open_total - len(numbers)), "signature": signature, "open_numbers": open_numbers}
 
     @app.get("/api/issues")
     async def issues(repo: str | None = None, _: User = Depends(user)) -> dict[str, Any]:
@@ -355,6 +378,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                     await annotate(ctx.store, engine, kind, "issue", refs=[f"issue:{n}"], concurrency=1)
                     picked = await pick_issues(ctx.store, _NoCalls(), kind, numbers=[n], top=1)
                     emit("ranked", {"number": n, "pick": (picked[0].__dict__ | {"engine": kind}) if picked else None})
+                if todo:
+                    await keep_grades(ctx)
             return await issues_payload(ctx)
 
         return stream(job)
