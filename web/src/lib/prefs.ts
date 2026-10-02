@@ -165,7 +165,6 @@ export const DEFAULTS: Prefs = {
 
 const KEY = 'th-prefs'
 const listeners = new Set<() => void>()
-let state: Prefs = load()
 
 // Settings with a fixed set of choices. A value saved by an older build that is no longer offered falls back to the
 // default instead of quietly switching the feature off.
@@ -193,6 +192,9 @@ const CHOICES: Partial<Record<keyof Prefs, readonly string[]>> = {
   passFrame: ['compass', 'circle', 'square'],
   passStub: ['left', 'right'],
 }
+
+// Read after CHOICES exists: sanitize() uses it, and reading it earlier throws, which used to drop every saved setting.
+let state: Prefs = load()
 
 function load(): Prefs {
   try {

@@ -203,8 +203,17 @@ export function startSettingsSync() {
     const was = (state.profile.settings as Record<string, unknown> | null)?.syncToAccount === true
     if (!p.syncToAccount && !was) return
     window.clearTimeout(timer)
-    timer = window.setTimeout(() => {
-      saveProfile({ settings: p.syncToAccount ? { ...p } : { syncToAccount: false } }).catch(() => undefined)
-    }, 900)
+    pending = () => saveProfile({ settings: p.syncToAccount ? { ...p } : { syncToAccount: false } }).catch(() => undefined)
+    timer = window.setTimeout(flush, 900)
   })
+  // A reload inside the debounce would otherwise leave the older account copy to overwrite the change.
+  window.addEventListener('pagehide', flush)
+  document.addEventListener('visibilitychange', () => document.visibilityState === 'hidden' && flush())
+}
+let pending: (() => unknown) | null = null
+function flush() {
+  window.clearTimeout(timer)
+  const run = pending
+  pending = null
+  run?.()
 }
