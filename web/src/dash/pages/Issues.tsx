@@ -74,6 +74,37 @@ function Parts({ p }: { p: Pick }) {
   )
 }
 
+/** The issues being graded, in plan order. One list that glides from the centre of the empty page into the crew
+ *  bar once the first grade lands; each row's dot spins while it is read and draws a check when it is done. */
+function QueueList({ queue, center }: { queue: Queued[]; center?: boolean }) {
+  return (
+    <motion.ol layoutId="fi-queue" layout="position" className={`fi-queue ${center ? 'is-center' : ''}`} transition={{ type: 'spring', stiffness: 260, damping: 30 }}>
+      {queue.map((x) => (
+        <li key={x.number} className={`is-${x.state}`}>
+          <QueueDot state={x.state} />
+          <span className="mono fi-queue__n">#{x.number}</span>
+          <span className="fi-queue__t">{x.title}</span>
+        </li>
+      ))}
+    </motion.ol>
+  )
+}
+
+const DOT = { transformBox: 'fill-box', transformOrigin: 'center' } as const
+function QueueDot({ state }: { state: Queued['state'] }) {
+  const done = state === 'done'
+  return (
+    <svg className="fi-dot" viewBox="0 0 20 20" width={18} height={18} aria-hidden>
+      <circle cx={10} cy={10} r={8} className="fi-dot__ring" />
+      <motion.circle cx={10} cy={10} r={8} className={`fi-dot__fill ${state === 'failed' ? 'is-failed' : ''}`} style={DOT} initial={false} animate={{ scale: done || state === 'failed' ? 1 : 0 }} transition={{ type: 'spring', stiffness: 520, damping: 26 }} />
+      {state === 'reading' && (
+        <motion.circle cx={10} cy={10} r={8} className="fi-dot__arc" style={{ ...DOT, pathLength: 0.28 }} animate={{ rotate: 360 }} transition={{ duration: 0.9, repeat: Infinity, ease: 'linear' }} />
+      )}
+      <motion.path d="M6 10.4l2.7 2.7L14.2 7.4" className="fi-dot__check" initial={false} animate={{ pathLength: done ? 1 : 0, opacity: done ? 1 : 0 }} transition={{ pathLength: { duration: 0.28, delay: 0.1 }, opacity: { duration: 0.05, delay: done ? 0.1 : 0 } }} />
+    </svg>
+  )
+}
+
 export default function Issues() {
   const { repo, engine, offline } = useDash()
   const { Name } = useDecider()
@@ -154,20 +185,13 @@ export default function Issues() {
 
       <AnimatePresence initial={false}>
         {job.running && !nothingYet && (
-          <motion.section key="crew" className="fi-crew" initial={{ height: 0 }} animate={{ height: 'auto' }} exit={{ height: 0 }} transition={{ type: 'spring', stiffness: 220, damping: 28 }}>
+          <motion.section key="crew" className="fi-crew" layout initial={{ y: -10 }} animate={{ y: 0 }} exit={{ y: -10, transition: { duration: 0.15 } }} transition={{ type: 'spring', stiffness: 300, damping: 30 }}>
             <div className="fi-crew__in">
               <TrailLoader compact label={reading ? `Reading #${reading.number}` : 'Picking the next issues'} />
               <div className="fi-crew__copy">
                 <b>Grading new trails</b>
                 <span>{Name} reads each unranked issue once; it lands in the list as soon as it is graded.</span>
-                <ol className="fi-queue">
-                  {queue.map((x) => (
-                    <li key={x.number} className={`is-${x.state}`}>
-                      <i aria-hidden>{x.state === 'done' ? '✓' : x.state === 'failed' ? '×' : ''}</i>
-                      <span className="mono">#{x.number}</span> {x.title}
-                    </li>
-                  ))}
-                </ol>
+                <QueueList queue={queue} />
               </div>
             </div>
           </motion.section>
@@ -177,11 +201,7 @@ export default function Issues() {
       {nothingYet && (job.running || fetching || !data) ? (
         <div className="fi-wait">
           <TrailLoader label={reading ? `Reading #${reading.number}: ${reading.title}` : 'Scouting the open issues'} hints={['Grading each trail by how gentle it is', 'The first ones appear in a minute or so', 'Graded issues are kept, so this only happens once']} />
-          {queue.length > 0 && (
-            <ol className="fi-queue is-center">
-              {queue.map((x) => <li key={x.number} className={`is-${x.state}`}><i aria-hidden>{x.state === 'done' ? '✓' : ''}</i><span className="mono">#{x.number}</span> {x.title}</li>)}
-            </ol>
-          )}
+          {queue.length > 0 && <QueueList queue={queue} center />}
         </div>
       ) : data && (
         <div className="fi">

@@ -67,7 +67,7 @@ export default function Ask() {
           job.reset(hit.payload)
         }
       })
-      .catch(() => setHistory([]))
+      .catch(() => undefined) // a failed read keeps what was listed; saved items are never cleared by a refresh or an update
     const pre = params.get('q')
     if (pre && !auto.current) {
       auto.current = true

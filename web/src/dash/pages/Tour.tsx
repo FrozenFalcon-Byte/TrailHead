@@ -63,7 +63,7 @@ export default function TourPage() {
           setGoal(hit.payload.goal)
         }
       })
-      .catch(() => setHistory([]))
+      .catch(() => undefined) // a failed read keeps what was listed; saved items are never cleared by a refresh or an update
     const pre = params.get('q')
     if (pre && !auto.current) {
       auto.current = true

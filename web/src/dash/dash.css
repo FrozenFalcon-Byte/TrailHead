@@ -5864,13 +5864,17 @@ html[data-motion='calm'] .d-page :is(.d-card, .p-card, .h-card, .pd-sec, .e-pane
 .fi-crew__copy > b { font-size: 16px; font-weight: 850; }
 .fi-crew__copy > span { font-size: 13px; color: var(--ink-soft); font-weight: 600; }
 .fi-queue { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 4px; font-size: 13px; }
-.fi-queue li { display: flex; gap: 8px; align-items: center; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--ink-soft); }
-.fi-queue i { display: inline-grid; place-items: center; flex-shrink: 0; width: 18px; height: 18px; border-radius: 50%; font-style: normal; font-size: 11px; font-weight: 900; box-shadow: inset 0 0 0 2px var(--line); }
-.fi-queue li.is-reading { color: var(--ink); font-weight: 750; }
-.fi-queue li.is-reading i { box-shadow: inset 0 0 0 2px var(--solid); background: var(--orange); animation: jb-beat 1s ease-in-out infinite; }
-.fi-queue li.is-done { color: var(--ink); }
-.fi-queue li.is-done i { background: var(--green); color: var(--solid); box-shadow: inset 0 0 0 2px var(--solid); }
-.fi-queue li.is-failed i { background: var(--dim); }
+.fi-queue li { display: flex; gap: 9px; align-items: center; min-width: 0; color: var(--ink-soft); transition: color 0.3s; }
+.fi-queue__n { flex: none; font-weight: 700; }
+.fi-queue__t { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fi-queue li.is-wait { color: color-mix(in srgb, var(--ink-soft) 70%, transparent); }
+.fi-queue li.is-reading, .fi-queue li.is-done { color: var(--ink); }
+.fi-dot { flex: none; overflow: visible; }
+.fi-dot__ring { fill: none; stroke: var(--line); stroke-width: 2; }
+.fi-dot__fill { fill: var(--green); stroke: var(--solid); stroke-width: 2; }
+.fi-dot__fill.is-failed { fill: var(--dim); }
+.fi-dot__arc { fill: none; stroke: var(--orange); stroke-width: 2.6; stroke-linecap: round; }
+.fi-dot__check { fill: none; stroke: var(--solid); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
 .fi-queue.is-center { max-width: 520px; margin: 0 auto; }
 .fi-wait { display: grid; gap: 10px; padding: 30px 16px 40px; border-radius: calc(26px * var(--round, 1)); background: var(--paper); border: 2px dashed var(--line); }
 
@@ -5886,7 +5890,6 @@ html[data-motion='calm'] .d-page :is(.d-card, .p-card, .h-card, .pd-sec, .e-pane
   .fi-parts li { grid-template-columns: 120px minmax(0, 1fr) 28px; }
   .fi-crew__in { grid-template-columns: minmax(0, 1fr); }
 }
-@media (prefers-reduced-motion: reduce) { .fi-queue li.is-reading i { animation: none; } }
 .fi-top__stub:has(.is-steep) { background: var(--peach); }
 
 /* Find opening: the tree and the lost-property tags */
