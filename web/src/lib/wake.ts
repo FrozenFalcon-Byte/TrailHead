@@ -119,4 +119,4 @@ if (import.meta.env.DEV && typeof window !== 'undefined') {
 }
 
 export const useWake = () => useSyncExternalStore(subscribe, () => state)
-export const isHosted = hosted
+export const isHosted = () => hosted

@@ -114,7 +114,7 @@ export function DashProvider({ children }: { children: ReactNode }) {
     // gone to sleep, which the wake sheet tells better than a toast.
     if (was.current !== null && was.current !== up && !up) {
       suspectSleep()
-      if (!isHosted) toast({ key: 'api-lost', tone: 'error', title: 'Lost the API', body: 'Start it again with bin/trailhead serve. Checking every few seconds.' })
+      if (!isHosted()) toast({ key: 'api-lost', tone: 'error', title: 'Lost the API', body: 'Start it again with bin/trailhead serve. Checking every few seconds.' })
     }
     if (up && was.current !== true) api<ServerConfig>('/api/config').then(setConfig, () => undefined)
     was.current = up

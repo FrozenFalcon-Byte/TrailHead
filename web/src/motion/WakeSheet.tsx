@@ -1,7 +1,7 @@
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { COLD_START_S, dismissWake, useWake, watchWake } from '../lib/wake'
+import { COLD_START_S, dismissWake, isHosted, useWake, watchWake } from '../lib/wake'
 
 /* The wait for a sleeping server, told as dawn at a ranger station. While the host boots, the sun climbs behind
    the peak in step with the real seconds, the stove smokes and a marker walks the trail toward the station. The
@@ -103,8 +103,13 @@ export function WakeSheet() {
     const id = window.setInterval(() => setHint((n) => (n + 1) % HINTS.length), 3200)
     return () => window.clearInterval(id)
   }, [live])
-  // every new wait opens as the full splash; a toast stays a toast through the good news
-  useEffect(() => setFolded(false), [w.since])
+  // A new outage opens as the full splash. Retries during the same outage (every failed request starts one) keep
+  // whatever the person chose, so "Keep browsing" is not undone a few seconds later.
+  const prev = useRef(w.phase)
+  useEffect(() => {
+    if (prev.current === 'up' && w.phase !== 'up' && w.phase !== 'checking') setFolded(false)
+    if (w.phase !== 'checking') prev.current = w.phase
+  }, [w.phase])
   useEffect(() => {
     if (!shown) return
     const esc = (e: KeyboardEvent) => e.key === 'Escape' && setFolded(true)
@@ -114,7 +119,7 @@ export function WakeSheet() {
 
   const over = secs > COLD_START_S + 5
   const title = awake ? `Awake. That took ${took}s.` : w.phase === 'down' ? 'The server did not wake' : over ? 'Nearly there' : 'Waking the server'
-  const line = awake ? 'Everything is loading now.' : w.phase === 'down' ? 'It stopped answering for over two minutes. It may be redeploying.' : over ? 'Taking a little longer than usual. Still trying every few seconds.' : HINTS[hint]
+  const line = awake ? 'Everything is loading now.' : w.phase === 'down' ? (isHosted() ? 'It stopped answering for over two minutes. It may be redeploying.' : 'Nothing answers at /api. Start the local API (bin/trailhead serve) and try again.') : over ? 'Taking a little longer than usual. Still trying every few seconds.' : HINTS[hint]
   const spring = { type: 'spring' as const, stiffness: 260, damping: 26 }
 
   return createPortal(
