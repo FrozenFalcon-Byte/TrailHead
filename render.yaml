@@ -1,0 +1,41 @@
+# Render blueprint for the Trailhead API. Secrets are marked sync: false, so Render asks for them in the dashboard
+# and they never live in this file.
+services:
+  - type: web
+    name: trailhead-api
+    runtime: python
+    plan: free
+    region: oregon
+    buildCommand: pip install --upgrade pip && pip install .
+    startCommand: ./bin/render-start
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.8
+      - key: HOST
+        value: 0.0.0.0
+      - key: TRAILHEAD_AUTH
+        value: supabase
+      - key: DECISION_ENGINE
+        value: jev
+      - key: TRAILHEAD_DATA_URL
+        sync: false
+      - key: TRAILHEAD_WEB_ORIGINS
+        sync: false
+      - key: TRAILHEAD_WEB_ORIGIN_REGEX
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: BEATAPI_API_KEY
+        sync: false
+      - key: LLM_API_KEY
+        sync: false
+      - key: LLM_BASE_URL
+        sync: false
+      - key: LLM_MODEL
+        sync: false
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: GITHUB_TOKEN
+        sync: false

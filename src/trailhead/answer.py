@@ -191,6 +191,12 @@ async def answer_from_evidence(
     answering = [c for c in answer.verified if c.addresses >= ADDRESSES_AT]
     if not answering:
         answer.abstain_reason = "no claim that answers the question is supported by its evidence" if answer.verified else "no drafted claim is supported by its evidence"
+        if answer.verified:
+            # The question itself stays unanswered, but what was verified is still worth showing, labelled as background.
+            answer.status = "partial"
+            answer.confidence = max(c.p_support for c in answer.verified)
+            lead = "No recorded rationale answers the why directly. What the repository does show:" if wants_reason else "Nothing answers this directly. What the repository does show:"
+            answer.text, answer.render = f"{lead} {claims_as_text(answer.verified)}", "claims"
         return answer
     answer.status = "answered"
     answer.confidence = max(c.p_support for c in answering)

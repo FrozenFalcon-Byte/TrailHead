@@ -6,6 +6,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import os
 import time
 from contextlib import asynccontextmanager
 from typing import Any, AsyncIterator, Awaitable, Callable
@@ -53,6 +54,12 @@ class ExplainBody(BaseModel):
     engine: str | None = None
 
 
+class RankBody(BaseModel):
+    repo: str | None = None
+    engine: str | None = None
+    limit: int = Field(default=8, ge=1, le=20)
+
+
 class IngestBody(BaseModel):
     repo: str = Field(pattern=r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$")
 
@@ -72,7 +79,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             await ctx.aclose()
 
     app = FastAPI(title="Trailhead", version="0.1.0", lifespan=lifespan)
-    app.add_middleware(CORSMiddleware, allow_origins=list(settings.web_origins), allow_methods=["*"], allow_headers=["*"])
+    app.add_middleware(CORSMiddleware, allow_origins=list(settings.web_origins), allow_origin_regex=settings.web_origin_regex or None, allow_methods=["*"], allow_headers=["*"])
 
     async def user(request: Request) -> User:
         try:
@@ -266,19 +273,50 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
         return stream(job)
 
-    @app.get("/api/issues")
-    async def issues(repo: str | None = None, _: User = Depends(user)) -> dict[str, Any]:
-        """Ranks only issues already annotated, so this never waits on Jev. `trailhead pick` annotates more."""
+    rank_locks: dict[str, asyncio.Lock] = {}
+
+    async def issues_payload(ctx: Context) -> dict[str, Any]:
+        """Ranks only issues already annotated, so this never waits on Jev. Stored annotations are the cache."""
         from .picker import WEIGHTS, candidate_issues, pick_issues
 
-        ctx = ctx_for(repo)
         annotated = {int(r["ref"].split(":")[1]) for r in ctx.store.query("SELECT DISTINCT ref FROM annotations WHERE ref LIKE 'issue:%'")}
         numbers = [n for n in candidate_issues(ctx.store, limit=200) if n in annotated]
-        picks = []
-        for engine in {r["engine"] for r in ctx.store.query("SELECT DISTINCT engine FROM annotations WHERE ref LIKE 'issue:%'")}:
-            picks += [p.__dict__ | {"engine": engine} for p in await pick_issues(ctx.store, _NoCalls(), engine, numbers=numbers, top=50)]
+        best: dict[int, dict[str, Any]] = {}
+        engines = sorted({r["engine"] for r in ctx.store.query("SELECT DISTINCT engine FROM annotations WHERE ref LIKE 'issue:%'")}, key=lambda e: e != "jev")
+        for engine in engines:  # Jev's judgement wins when an issue was judged by more than one engine
+            for p in await pick_issues(ctx.store, _NoCalls(), engine, numbers=numbers, top=200):
+                best.setdefault(p.number, p.__dict__ | {"engine": engine})
         open_total = len(candidate_issues(ctx.store, limit=1000))
-        return {"weights": WEIGHTS, "picks": sorted(picks, key=lambda p: -p["score"]), "open_unlinked": open_total, "annotated": len(numbers)}
+        return {"weights": WEIGHTS, "picks": sorted(best.values(), key=lambda p: -p["score"])[:60], "open_unlinked": open_total, "annotated": len(best), "unranked": max(0, open_total - len(numbers))}
+
+    @app.get("/api/issues")
+    async def issues(repo: str | None = None, _: User = Depends(user)) -> dict[str, Any]:
+        return await issues_payload(ctx_for(repo))
+
+    @app.post("/api/issues/rank")
+    async def rank_issues(body: RankBody, _: User = Depends(user)) -> StreamingResponse:
+        """Judges the next few unranked open issues, one at a time, so the page fills in as it goes."""
+        from .annotate import annotate, question_set_for
+        from .picker import candidate_issues, pick_issues
+
+        ctx, kind = ctx_for(body.repo), engine_kind(body.engine)
+        lock = rank_locks.setdefault(ctx.repo, asyncio.Lock())
+
+        async def job(emit: Emit) -> dict[str, Any]:
+            async with lock:  # a second tab waits for the first instead of paying for the same requests
+                version = question_set_for("issue").version
+                done = {r["ref"] for r in ctx.store.query("SELECT DISTINCT ref FROM annotations WHERE ref LIKE 'issue:%' AND schema_version = ?", (version,))}
+                todo = [n for n in candidate_issues(ctx.store, limit=200) if f"issue:{n}" not in done][: body.limit]
+                emit("plan", {"todo": [{"number": n, "title": (ctx.store.one("SELECT title FROM issues WHERE number = ?", (n,)) or {"title": ""})["title"]} for n in todo]})
+                engine = ctx.engine(kind)
+                for n in todo:
+                    emit("reading", {"number": n})
+                    await annotate(ctx.store, engine, kind, "issue", refs=[f"issue:{n}"], concurrency=1)
+                    picked = await pick_issues(ctx.store, _NoCalls(), kind, numbers=[n], top=1)
+                    emit("ranked", {"number": n, "pick": (picked[0].__dict__ | {"engine": kind}) if picked else None})
+            return await issues_payload(ctx)
+
+        return stream(job)
 
     @app.get("/api/decisions")
     async def decisions(limit: int = 60, repo: str | None = None, _: User = Depends(user)) -> list[dict[str, Any]]:
@@ -332,4 +370,5 @@ def main() -> None:
     import uvicorn
 
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
-    uvicorn.run(create_app(), host="127.0.0.1", port=8000)
+    # Local runs stay on loopback; a host such as Render sets HOST=0.0.0.0 and PORT.
+    uvicorn.run(create_app(), host=os.environ.get("HOST", "127.0.0.1"), port=int(os.environ.get("PORT", "8000")), timeout_keep_alive=75)

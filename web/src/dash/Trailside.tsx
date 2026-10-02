@@ -1,5 +1,5 @@
 import { motion } from 'motion/react'
-import type { ReactNode } from 'react'
+import { Fragment, type ReactNode } from 'react'
 
 /* Pieces shared by Ask and Find: a signpost of example questions, a journey bar that doubles as the view
    switcher, and a logbook of earlier runs. */
@@ -36,24 +36,27 @@ export function Signposts({ items, onPick, title, color = 'var(--orange)' }: { i
 
 export type Station = { key: string; label: string; value: ReactNode; state: 'todo' | 'now' | 'done'; onClick?: () => void; active?: boolean }
 
-/** Stations along a trail. The trail fills as stations finish; the open station wears the ink pill. */
+/** Stations along a trail, joined by short connectors. A connector fills once the station before it is done;
+    the open station wears the ink pill. */
 export function JourneyBar({ stations, color = 'var(--blue)', id }: { stations: Station[]; color?: string; id: string }) {
-  const done = stations.filter((s) => s.state === 'done').length
-  const fill = stations.length > 1 ? Math.min(1, Math.max(0, (done - (stations.some((s) => s.state === 'now') ? 0.5 : 1)) / (stations.length - 1))) : 0
   return (
-    <div className="jb" style={{ ['--jb' as string]: color, ['--n' as string]: stations.length }} role="tablist">
-      <div className="jb-track" aria-hidden>
-        <motion.span className="jb-fill" initial={false} animate={{ scaleX: fill }} transition={{ type: 'spring', stiffness: 120, damping: 20 }} />
-      </div>
+    <div className="jb" style={{ ['--jb' as string]: color }} role="tablist">
       {stations.map((s, i) => (
-        <button key={s.key} type="button" role="tab" aria-selected={!!s.active} disabled={!s.onClick} className={`jb-st is-${s.state} ${s.active ? 'is-on' : ''}`} onClick={s.onClick}>
-          {s.active && <motion.span layoutId={`jb-${id}`} className="jb-pill" transition={{ type: 'spring', stiffness: 420, damping: 34 }} />}
-          <span className="jb-dot">{s.state === 'done' ? <svg viewBox="0 0 16 16" width={14} height={14} aria-hidden><path d="M3 8.5l3 3 7-7" fill="none" stroke="currentColor" strokeWidth={2.6} strokeLinecap="round" strokeLinejoin="round" /></svg> : i + 1}</span>
-          <span className="jb-copy">
-            <b>{s.label}</b>
-            <small>{s.value}</small>
-          </span>
-        </button>
+        <Fragment key={s.key}>
+          {i > 0 && (
+            <span className={`jb-link ${stations[i - 1].state === 'done' ? 'is-done' : ''} ${s.state === 'now' ? 'is-next' : ''}`} aria-hidden>
+              <motion.i initial={false} animate={{ scaleX: stations[i - 1].state === 'done' ? 1 : 0 }} transition={{ type: 'spring', stiffness: 160, damping: 22 }} />
+            </span>
+          )}
+          <button type="button" role="tab" aria-selected={!!s.active} disabled={!s.onClick} className={`jb-st is-${s.state} ${s.active ? 'is-on' : ''}`} onClick={s.onClick}>
+            {s.active && <motion.span layoutId={`jb-${id}`} className="jb-pill" transition={{ type: 'spring', stiffness: 420, damping: 34 }} />}
+            <span className="jb-dot">{s.state === 'done' ? <svg viewBox="0 0 16 16" width={14} height={14} aria-hidden><path d="M3 8.5l3 3 7-7" fill="none" stroke="currentColor" strokeWidth={2.6} strokeLinecap="round" strokeLinejoin="round" /></svg> : i + 1}</span>
+            <span className="jb-copy">
+              <b>{s.label}</b>
+              <small>{s.value}</small>
+            </span>
+          </button>
+        </Fragment>
       ))}
     </div>
   )

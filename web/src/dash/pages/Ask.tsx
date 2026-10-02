@@ -91,7 +91,7 @@ export default function Ask() {
     })
     const done = final as AskResult | null
     if (!done) return
-    toast({ tone: 'job', title: done.answer?.status === 'answered' ? 'Answer ready' : 'Abstained — not enough evidence', body: text.trim() })
+    toast({ tone: 'job', title: done.answer?.status === 'answered' ? 'Answer ready' : done.answer?.status === 'partial' ? 'Background found, no direct answer' : 'Abstained — not enough evidence', body: text.trim() })
     if (!prefs.autoSave) return
     try {
       const row = await saveItem('asks', repo, text.trim(), done)
@@ -146,7 +146,7 @@ export default function Ask() {
     { key: 'route', label: 'Route', value: routeName || 'what kind of answer', state: state(0) },
     { key: 'walk', label: 'Walk', value: v.nav?.requests ? `${v.nav.requests} Jev requests` : v.steps.length ? `${v.steps.length} decisions` : at > 1 ? 'not needed' : 'the tree to the files', state: state(1), onClick: v.steps.length || v.nav ? () => setTab('beam') : undefined, active: tab === 'beam' },
     { key: 'screen', label: 'Screen', value: v.evidence.length ? `${kept.length} of ${v.evidence.length} kept` : at > 2 ? 'not needed' : 'commits, PRs, code', state: state(2), onClick: v.evidence.length ? () => setTab('evidence') : undefined, active: tab === 'evidence' },
-    { key: 'check', label: 'Check', value: answer ? (answer.status === 'answered' ? `${Math.round((answer.confidence ?? 0) * 100)}% sure` : 'not sure') : 'every claim', state: state(3), onClick: answer ? () => setTab('answer') : undefined, active: tab === 'answer' },
+    { key: 'check', label: 'Check', value: answer ? (answer.status === 'answered' ? `${Math.round((answer.confidence ?? 0) * 100)}% sure` : answer.status === 'partial' ? 'background only' : 'not sure') : 'every claim', state: state(3), onClick: answer ? () => setTab('answer') : undefined, active: tab === 'answer' },
   ]
   const log: LogEntry[] = history.map((h) => ({
     id: h.id, title: h.title, ok: h.payload.answer?.status === 'answered', active: params.get('saved') === h.id,

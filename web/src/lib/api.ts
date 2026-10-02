@@ -1,5 +1,9 @@
 import { supabase } from './supabase'
 
+/** Where the API lives. Empty in development (Vite proxies /api); set VITE_API_URL when the API is hosted elsewhere. */
+const BASE = ((import.meta.env.VITE_API_URL as string | undefined) ?? '').replace(/\/$/, '')
+const url = (path: string) => (path.startsWith('/api') ? BASE + path : path)
+
 export class ApiError extends Error {
   status: number
   constructor(status: number, message: string) {
@@ -15,7 +19,7 @@ async function authHeader(): Promise<Record<string, string>> {
 }
 
 export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
-  const res = await fetch(path, {
+  const res = await fetch(url(path), {
     ...init,
     headers: { 'Content-Type': 'application/json', ...(await authHeader()), ...(init.headers || {}) },
   })
@@ -36,7 +40,7 @@ export type StreamEvent = { kind: string; data: any }
 
 /** POST that answers with Server-Sent Events. EventSource cannot send a body or headers, so this reads the stream by hand. */
 export async function stream(path: string, body: unknown, onEvent: (e: StreamEvent) => void, signal?: AbortSignal): Promise<void> {
-  const res = await fetch(path, {
+  const res = await fetch(url(path), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream', ...(await authHeader()) },
     body: JSON.stringify(body),

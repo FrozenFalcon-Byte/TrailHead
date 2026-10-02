@@ -1,0 +1,9 @@
+#!/bin/sh
+# Render start command: fetch the data snapshot and repository checkouts if this instance has none, then serve.
+set -e
+root="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$root"
+export PYTHONPATH="$root/src${PYTHONPATH:+:$PYTHONPATH}"
+export HOST="${HOST:-0.0.0.0}"
+python -m trailhead.deploy
+exec python -m trailhead.cli serve

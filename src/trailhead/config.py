@@ -57,6 +57,7 @@ class Settings:
     supabase_jwt_secret: str = ""  # only for projects still on the legacy HS256 secret; new ones publish a JWKS
     auth_mode: str = "supabase"  # supabase | off (local development only)
     web_origins: tuple[str, ...] = ("http://localhost:5173",)
+    web_origin_regex: str = ""  # e.g. https://trailhead-.*\.vercel\.app for preview deployments
 
     @property
     def cache_dir(self) -> Path:
@@ -147,5 +148,6 @@ def load_settings(env: Mapping[str, str] | None = None, env_file: Path | str | N
         supabase_url=get("SUPABASE_URL").rstrip("/"),
         supabase_jwt_secret=get("SUPABASE_JWT_SECRET"),
         auth_mode=get("TRAILHEAD_AUTH", "supabase").lower(),
-        web_origins=tuple(o.strip() for o in get("TRAILHEAD_WEB_ORIGINS", "http://localhost:5173").split(",") if o.strip()),
+        web_origins=tuple(o.strip().rstrip("/") for o in get("TRAILHEAD_WEB_ORIGINS", "http://localhost:5173").split(",") if o.strip()),
+        web_origin_regex=get("TRAILHEAD_WEB_ORIGIN_REGEX"),
     )

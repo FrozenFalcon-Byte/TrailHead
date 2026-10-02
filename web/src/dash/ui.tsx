@@ -5,6 +5,7 @@ import type { BeamStep } from '../motion/BeamColumns'
 import { Shape } from '../motion/Shapes'
 import { SplitReveal } from '../motion/SplitReveal'
 import { TrailSpinner } from '../motion/TrailSpinner'
+import { TrailLoader } from '../motion/TrailLoader'
 import { Link, useLocation } from 'react-router-dom'
 import { itemFor } from './nav'
 import { useDash } from './context'
@@ -204,14 +205,20 @@ export function Empty({ title, children }: { title: string; children?: ReactNode
 
 /** Probability as a small dial that winds up to its value, with the score in the middle. */
 export function Prob({ p, color = 'var(--orange)', size = 34 }: { p: number; color?: string; width?: number; size?: number }) {
-  const r = size / 2 - 3
+  const stroke = size < 40 ? 3 : 4
+  const r = size / 2 - stroke / 2 - 1
+  const pct = Math.round(p * 100)
+  // The number has to fit inside the ring: shrink it for three digits, and drop the % sign on small dials.
+  const withSign = size >= 44
+  const inner = size - stroke * 2 - 4
+  const font = Math.min(size * 0.3, inner / (String(pct).length * 0.62 + (withSign ? 0.45 : 0)))
   return (
-    <span className="d-dial" title={p.toFixed(2)} style={{ width: size, height: size }}>
+    <span className="d-dial" title={`${pct}%`} style={{ width: size, height: size }}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden>
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--line)" strokeWidth={4} />
-        <motion.circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color} strokeWidth={4} strokeLinecap="round" initial={{ pathLength: 0 }} animate={{ pathLength: Math.max(0.02, Math.min(1, p)) }} transition={{ duration: 0.9, ease: EASE }} />
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--line)" strokeWidth={stroke} />
+        <motion.circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color} strokeWidth={stroke} strokeLinecap="round" initial={{ pathLength: 0 }} animate={{ pathLength: Math.max(0.02, Math.min(1, p)) }} transition={{ duration: 0.9, ease: EASE }} />
       </svg>
-      <b>{Math.round(p * 100)}<small>%</small></b>
+      <b style={{ fontSize: font }}>{pct}{withSign && <small>%</small>}</b>
     </span>
   )
 }
@@ -413,12 +420,8 @@ export function useFetch<T>(path: string | null) {
   return { data, error: offline ? '' : error, loading, reloading: loading && data !== null, reload: () => setTick((t) => t + 1) }
 }
 
-export function Loading({ label = 'Walking over' }: { label?: string }) {
-  return (
-    <div style={{ padding: 40, display: 'grid', placeItems: 'center' }}>
-      <TrailSpinner label={label} />
-    </div>
-  )
+export function Loading({ label = 'Walking over', hints }: { label?: string; hints?: string[] }) {
+  return <TrailLoader label={label} hints={hints ?? ['Reading the map', 'Checking the path']} />
 }
 
 export const q = (repo: string) => (repo ? `repo=${encodeURIComponent(repo)}` : '')

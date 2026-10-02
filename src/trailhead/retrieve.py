@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 import time
 from pathlib import Path
 from dataclasses import asdict, dataclass, field
@@ -213,6 +214,58 @@ def dependents_evidence(store: Store, path: str) -> Evidence | None:
     text += "Source files that import it: " + (", ".join(source[:25]) or "none") + ".\n"
     text += "Test files that import it: " + (", ".join(tests[:20]) or "none") + "."
     return Evidence(f"graph:{path}", "graph", f"importers of {path}", text, "", 0.0, source="import_graph")
+
+
+TEXT_SLICE = 680
+TEXT_READ_LIMIT = 400_000
+# Files a project uses to say how it is set up, run and tested. Read as text, never run.
+GUIDE_NAMES = (
+    "CONTRIBUTING.md", "CONTRIBUTING.rst", "CONTRIBUTING", "docs/contributing.rst", "docs/contributing.md",
+    "README.md", "README.rst", "README", "INSTALL.md", "tox.ini", "pytest.ini", "noxfile.py", "Makefile",
+    "pyproject.toml", "setup.cfg", "package.json", "justfile",
+)
+RUN_HEADING = re.compile(r"^(#{1,4} *)?(running|run|how to run|testing|tests?)( the)?( tests?| test suite)?\s*\n?(?:[=\-~^]{3,})?$", re.I | re.M)
+RUN_WORDS = re.compile(r"\b(pytest|tox|nox|unittest|npm (run )?test|yarn test|make test|cargo test|go test|run(ning)? (the )?tests?|test suite|testenv)\b", re.I)
+
+
+def text_evidence(store: Store, repo_dir: Path, path: str, *, focus: re.Pattern[str] | None = None, slices: int = 2) -> list[Evidence]:
+    """Passages of a non-code file (a guide, a config) as documentation. With `focus`, the slices start where the
+    file first talks about it instead of at the top. The file is read as text and never run."""
+    root = Path(repo_dir).resolve()
+    target = (root / path).resolve()
+    if root not in target.parents or not target.is_file():
+        return []
+    try:
+        with target.open(encoding="utf-8", errors="replace") as fh:
+            text = fh.read(TEXT_READ_LIMIT)
+    except OSError:
+        return []
+    text = re.sub(r"\n{3,}", "\n\n", text).strip()
+    start = 0
+    if focus is not None:
+        hit = RUN_HEADING.search(text) if focus is RUN_WORDS else None
+        hit = hit or focus.search(text)
+        if hit is None:
+            return []
+        start = hit.start() if hit.re is RUN_HEADING else text.rfind("\n\n", 0, max(0, hit.start() - 120)) + 1
+    base = f"https://github.com/{store.get_meta('repo')}/blob/{store.get_meta('head') or 'HEAD'}/{path}"
+    out = []
+    for i in range(slices):
+        chunk = text[start + i * TEXT_SLICE : start + (i + 1) * TEXT_SLICE]
+        if chunk.strip():
+            out.append(Evidence(f"doc:{path}#{start + i * TEXT_SLICE}", "doc", path, chunk, base, 0.0, source="navigation"))
+    return out
+
+
+def guide_evidence(store: Store, repo_dir: Path, *, limit: int = 6) -> list[Evidence]:
+    """How-to-run passages from the repository's own guides and test configs, the parts that mention running tests."""
+    out: list[Evidence] = []
+    for name in GUIDE_NAMES:
+        found = text_evidence(store, repo_dir, name, focus=RUN_WORDS, slices=1 if name.endswith((".toml", ".cfg", ".json")) else 2)
+        out.extend(found)
+        if len(out) >= limit:
+            break
+    return out[:limit]
 
 
 def _comment_parent(store: Store, ref: str) -> str | None:

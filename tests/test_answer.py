@@ -69,11 +69,12 @@ async def test_supported_claims_become_prose_and_unsupported_ones_are_dropped(sc
     assert actions["support_c2"] == "dropped: evidence insufficient" and actions["addresses_c3"] == "background"
 
 
-async def test_abstains_with_raw_evidence_when_nothing_supports_a_reason(scripted):
+async def test_background_only_is_partial_and_never_claims_a_reason(scripted):
     llm = FakeLLM([{"text": "The counter was changed in a pull request.", "evidence": ["E1"]}])
     engine = scripted(verdicts({"c1": {"support": {"supports": 0.9, "insufficient": 0.1}, "direct": 0.9, "addresses": 0.1}}))
     answer = await answer_from_evidence(engine, llm, "Why one?", evidence(), wants_reason=True)
-    assert answer.status == "abstained" and answer.text == NO_RATIONALE and answer.confidence == 0.0
+    assert answer.status == "partial" and answer.text.startswith("No recorded rationale") and answer.render == "claims"
+    assert "The counter was changed in a pull request [E1]." in answer.text and answer.confidence == 0.9
     assert "answers the question" in answer.abstain_reason and len(answer.evidence) == 3 and len(llm.calls) == 1
 
     none = await answer_from_evidence(engine, FakeLLM([]), "Why one?", evidence(kept=False), wants_reason=True)

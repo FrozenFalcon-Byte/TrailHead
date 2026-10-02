@@ -19,25 +19,27 @@ const BADGE: Record<string, string> = { high: 'var(--green)', medium: 'var(--blu
 
 export function AnswerSheet({ answer, title, kicker }: { answer: AnswerLike; title?: ReactNode; kicker?: string }) {
   const ok = answer.status === 'answered'
+  const part = answer.status === 'partial'
+  const tone = ok ? 'var(--green)' : part ? 'var(--blue)' : 'var(--orange)'
   const cited = new Set(answer.claims?.flatMap((c) => c.evidence) ?? [])
   const sources = (answer.evidence ?? []).filter((e) => e.label && cited.has(e.label))
   return (
-    <motion.article className={`as ${ok ? 'is-ok' : 'is-unsure'}`} initial={{ y: 14 }} animate={{ y: 0 }} transition={{ duration: 0.45, ease: EASE }}>
+    <motion.article className={`as ${ok ? 'is-ok' : part ? 'is-part' : 'is-unsure'}`} initial={{ y: 14 }} animate={{ y: 0 }} transition={{ duration: 0.45, ease: EASE }}>
       <div className="as-top">
         <div className="as-stub">
           <motion.span initial={{ scale: 0, rotate: -120 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: 'spring', stiffness: 300, damping: 15, delay: 0.1 }}>
-            <Shape kind={ok ? 'circle' : 'tag'} color={ok ? 'var(--green)' : 'var(--orange)'} glyph={ok ? 'check' : 'signal'} size={40} />
+            <Shape kind={ok ? 'circle' : 'tag'} color={tone} glyph={ok ? 'check' : 'signal'} size={40} />
           </motion.span>
-          <b>{ok ? 'Answered' : 'Not sure'}</b>
+          <b>{ok ? 'Answered' : part ? 'Partly' : 'Not sure'}</b>
         </div>
         <div className="as-head">
           {kicker && <span className="as-kicker">{kicker}</span>}
           {title && <span className="as-title">{title}</span>}
-          {!ok && answer.abstain_reason && <span className="as-why">Held back because {answer.abstain_reason}.</span>}
+          {!ok && answer.abstain_reason && <span className="as-why">{part ? 'Background only: ' : 'Held back because '}{answer.abstain_reason}.</span>}
         </div>
         {answer.confidence != null && (
           <div className="as-conf">
-            <Prob p={answer.confidence} size={52} color={ok ? 'var(--green)' : 'var(--orange)'} />
+            <Prob p={answer.confidence} size={52} color={tone} />
             <span>confidence</span>
           </div>
         )}

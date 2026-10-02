@@ -86,3 +86,31 @@ def test_evals_include_injection_and_why_questions(tmp_path, monkeypatch):
     assert data["injection"]["jev"]["cases"][0] == {"id": "m01", "attack": True, "blocked": True, "technique": "override", "kind": "issue", "p": 0.9}
     assert "llm" not in data["injection"]
     assert data["why_items"][0]["claims"] == 2 and data["why_items"][0]["verified"] == 1
+
+
+def test_rank_judges_unranked_issues_once_and_streams_each(tmp_path, monkeypatch):
+    from conftest import ScriptedEngine
+    from trailhead.context import Context
+
+    seed(tmp_path)
+    store = Store(tmp_path / "trailhead.db")
+    store.executemany(
+        "INSERT INTO issues (number,is_pr,title,body,state,labels,author,created_at,merged) VALUES (?,?,?,?,?,?,?,?,?)",
+        [(7, 0, "Typo in docs", "Fix the typo.", "open", '["good first issue"]', "a", "2024-01-01", 0), (8, 0, "Rewrite the core", "Big.", "open", "[]", "b", "2024-01-02", 0)],
+    )
+    store.close()
+    answers = {"scope_clarity": 3, "prior_knowledge_needed": 0, "has_acceptance_criteria": 0.9, "touches_single_area": 0.9, "kind": "docs"}
+    engine = ScriptedEngine(lambda state, qid, q: answers.get(qid))
+    monkeypatch.setattr(Context, "engine", lambda self, kind=None: engine)
+    client = TestClient(create_app(settings_for(tmp_path, auth_mode="off")))
+    assert client.get("/api/issues").json()["unranked"] == 2
+
+    with client.stream("POST", "/api/issues/rank", json={"limit": 5}) as res:
+        body = "".join(res.iter_text())
+    assert body.count("event: ranked") == 2 and "event: done" in body
+    data = client.get("/api/issues").json()
+    assert data["annotated"] == 2 and data["unranked"] == 0 and data["picks"][0]["number"] in (7, 8)
+    calls = len(engine.calls)
+    with client.stream("POST", "/api/issues/rank", json={"limit": 5}) as res:
+        assert "event: ranked" not in "".join(res.iter_text())
+    assert len(engine.calls) == calls  # stored judgements are the cache

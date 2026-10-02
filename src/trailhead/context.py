@@ -28,7 +28,11 @@ class Context:
 
     @property
     def repo_dir(self) -> Path:
-        return Path(self.store.get_meta("repo_dir"))
+        stored = Path(self.store.get_meta("repo_dir"))
+        if stored.exists():
+            return stored
+        # On a fresh host the checkout lives under the data directory, wherever the snapshot was made.
+        return self.settings.data_dir / "repos" / self.repo.replace("/", "__").lower()
 
     def engine(self, kind: str | None = None) -> DecisionEngine:
         kind = kind or self.settings.decision_engine

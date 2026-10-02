@@ -8,7 +8,7 @@ from .answer import Answer, answer_from_evidence, answer_to_dict
 from .context import Context
 from .decisions import load_question_set
 from .navigate import NavPath, NavResult, NavStep, Navigator, nav_to_dict
-from .retrieve import Evidence, code_evidence, dependents_evidence, retrieve, retrieval_to_dict
+from .retrieve import Evidence, code_evidence, dependents_evidence, guide_evidence, retrieve, retrieval_to_dict
 
 Emit = Callable[[str, dict[str, Any]], None]
 ROUTE_MIN = 0.5  # below this the router's pick is not trusted and the broadest route is used
@@ -18,9 +18,9 @@ OUT_OF_SCOPE_AT = 0.6
 ROUTES: dict[str, dict[str, Any]] = {
     "where_is": {"navigate": True, "symbols": True, "answer": "location"},
     "how_does_it_work": {"navigate": True, "symbols": True, "code": 2, "history": 8, "kinds": None},
-    "why_built_this_way": {"navigate": True, "symbols": False, "code": 0, "history": 20, "kinds": None, "reason": True},
+    "why_built_this_way": {"navigate": True, "symbols": True, "code": 1, "history": 20, "kinds": None, "reason": True},
     "what_breaks_if_changed": {"navigate": True, "symbols": True, "code": 1, "graph": 2, "history": 8, "kinds": ("commit", "pr", "issue", "comment")},
-    "how_to_run_or_test": {"navigate": False, "code": 0, "history": 16, "kinds": ("doc",)},
+    "how_to_run_or_test": {"navigate": False, "code": 0, "guides": True, "history": 8, "kinds": ("doc", "pr", "issue", "comment")},
     "other": {"navigate": False, "answer": "out_of_scope"},
 }
 
@@ -100,6 +100,8 @@ async def ask(ctx: Context, question: str, *, engine_kind: str | None = None, em
             graph = dependents_evidence(ctx.store, path)
             if graph:
                 pinned.append(graph)
+        if plan.get("guides"):
+            pinned.extend(guide_evidence(ctx.store, ctx.repo_dir))
         history = plan.get("history", 0)
         if not plan.get("reason") and plan.get("kinds") is None and state.get("code_alone", 0.0) >= 0.5:
             history = min(history, 4)  # the router says the code is enough, so history only gets a small share

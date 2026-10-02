@@ -98,7 +98,7 @@ async def test_why_question_retrieves_history_verifies_and_cites(scripted, tmp_p
     out = await ask(ctx, "why does the retry counter start at one?")
     assert out["route"] == "why_built_this_way" and out["answer"]["status"] == "answered" and "[E1]" in out["answer"]["text"]
     kinds = {e["kind"] for e in out["retrieval"]["evidence"]}
-    assert kinds <= {"commit", "pr", "issue", "comment", "doc"} and out["navigation"]["paths"][0]["file"] == "pkg/retry.py"
+    assert kinds <= {"commit", "pr", "issue", "comment", "doc", "code"} and out["navigation"]["paths"][0]["file"] == "pkg/retry.py"
     purposes = [set(q) for _, q in engine.calls]
     assert any(any(k.startswith("support_") for k in q) for q in purposes) and any("adds_facts" in q for q in purposes)
 
@@ -111,4 +111,4 @@ async def test_out_of_scope_and_docs_routes_skip_navigation(scripted, tmp_path):
     engine = scripted(decider({"how_to_run_or_test": 0.9, "other": 0.1}))
     (tmp_path / "x").mkdir()
     out = await ask(FakeContext(engine, tmp_path / "x"), "how do I retry failed requests in tests?")
-    assert {e["kind"] for e in out["retrieval"]["evidence"]} == {"doc"} and "navigation" not in out
+    assert "doc" in {e["kind"] for e in out["retrieval"]["evidence"]} and {e["kind"] for e in out["retrieval"]["evidence"]} <= {"doc", "pr", "issue", "comment"} and "navigation" not in out

@@ -6,9 +6,11 @@ Reply with one JSON object and nothing else:
 {"claims": [{"text": "<one sentence>", "evidence": ["E1"]}]}
 
 Rules:
-- Each claim is one sentence that states one fact and can be checked against the passages it cites.
+- Each claim is one sentence that states one fact and can be checked against the passages it cites. Split "X, which does Y" into two claims.
+- Stay close to the passages' own wording, and quote commands, settings and file names exactly as written. Do not add colour such as "under the hood" or "simply".
+- For a how-to question, the first claim gives the exact command or steps the passages show.
 - Cite only passages that state the fact. Cite at least one and at most three passages per claim.
 - Use only what the passages say. Do not use outside knowledge about the project, and do not guess reasons.
-- For a why-question, a claim must carry the reason in the same sentence ("X was done because Y") and cite where the reason is stated.
+- For a why-question, a claim must carry the reason in the same sentence ("X was done because Y") and cite where the reason is stated. Reasons usually live in commit messages, pull request descriptions and review comments: look there first, and state the motive or problem they describe (a bug, a spec, a performance cost, a user request).
 - Put the claims that answer the question first. At most six claims.
 - If the passages do not answer the question, reply {"claims": []}.
