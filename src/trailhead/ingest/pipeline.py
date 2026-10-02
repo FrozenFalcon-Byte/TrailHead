@@ -23,7 +23,10 @@ _RST_RULE = re.compile(r"^([=\-~`^\"'*+#])\1{2,}\s*$")
 
 
 def repo_dir_for(settings: Settings, repo: str) -> Path:
-    return settings.data_dir / "repos" / repo.replace("/", "__")
+    base = settings.data_dir / "repos"
+    exact, lower = base / repo.replace("/", "__"), base / repo.replace("/", "__").lower()
+    # a host restore checks repositories out under a lower-case name; use that copy rather than cloning again
+    return lower if not exact.exists() and lower.exists() else exact
 
 
 def clone_or_update(settings: Settings, repo: str) -> Path:
@@ -31,7 +34,10 @@ def clone_or_update(settings: Settings, repo: str) -> Path:
         raise ValueError(f"repo must look like owner/name, got {repo!r}")
     target = repo_dir_for(settings, repo)
     if (target / ".git").exists():
-        subprocess.run(["git", "-C", str(target), "pull", "--ff-only", "-q"], check=False, capture_output=True)
+        # fetch the default branch by URL: restored checkouts are shallow, detached and have no remote to pull from
+        fetched = subprocess.run(["git", "-C", str(target), "fetch", "-q", f"https://github.com/{repo}.git", "HEAD"], check=False, capture_output=True, timeout=600)
+        if fetched.returncode == 0:
+            subprocess.run(["git", "-C", str(target), "-c", "advice.detachedHead=false", "checkout", "-q", "-f", "FETCH_HEAD"], check=False, capture_output=True)
     else:
         target.parent.mkdir(parents=True, exist_ok=True)
         subprocess.run(["git", "clone", "-q", f"https://github.com/{repo}.git", str(target)], check=True)

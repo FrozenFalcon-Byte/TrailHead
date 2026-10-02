@@ -197,6 +197,20 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     async def add_repo(body: IngestBody, _: User = Depends(user)) -> dict[str, Any]:
         return repos.start_ingest(settings, body.repo, github_token=body.github_token)
 
+    @app.post("/api/repos/refresh")
+    async def refresh_repo(body: RepoBody, _: User = Depends(user)) -> dict[str, Any]:
+        """Bring an onboarded repository up to date now: new commits, and issues and pull requests changed since."""
+        if not repos.settings_for(settings, body.repo).db_path.exists():
+            raise HTTPException(404, f"{body.repo} has not been onboarded")
+        return repos.start_ingest(settings, body.repo)
+
+    @app.post("/api/repos/check")
+    async def check_repo(body: RepoBody, _: User = Depends(user)) -> dict[str, Any]:
+        try:
+            return await asyncio.to_thread(repos.check_updates, settings, body.repo)
+        except ValueError as exc:
+            raise HTTPException(404, str(exc)) from exc
+
     @app.post("/api/repos/remove")
     async def remove_repo(body: RepoBody, _: User = Depends(user)) -> dict[str, Any]:
         ctx = contexts.pop(body.repo, None)

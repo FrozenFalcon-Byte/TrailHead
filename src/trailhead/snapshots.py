@@ -41,6 +41,10 @@ def _headers(settings: Settings) -> dict[str, str]:
     return {"Authorization": f"Bearer {settings.supabase_service_key}", "apikey": settings.supabase_service_key}
 
 
+def object_for(settings: Settings, db: Path) -> str:
+    return _object_for(settings, db)
+
+
 def _object_for(settings: Settings, db: Path) -> str:
     return MAIN if db.resolve() == (settings.data_dir / "trailhead.db").resolve() else f"{db.stem}.db.gz"
 

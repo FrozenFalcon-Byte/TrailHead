@@ -6242,3 +6242,6 @@ a.d-code.is-path:hover { translate: 0 -1px; background: color-mix(in srgb, var(-
 .rp-t__del:hover { background: color-mix(in srgb, var(--stop) 16%, var(--paper)); color: var(--stop); }
 .rp-t__del.is-yes { width: auto; padding: 0 14px; background: var(--stop); color: #fff; }
 .rp-t__del:disabled { opacity: 0.6; cursor: default; }
+.rp-t__del.is-update { font-size: 16px; }
+.rp-t__del.is-update:hover { background: color-mix(in srgb, var(--blue) 16%, var(--paper)); color: var(--blue); }
+.rp-camp__copy > .d-muted.small { display: block; margin-top: -4px; }

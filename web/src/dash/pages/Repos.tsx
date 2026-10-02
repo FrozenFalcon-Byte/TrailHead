@@ -20,6 +20,25 @@ const REPO_EXAMPLES = ['scrapy/scrapy', 'pallets/flask', 'psf/requests', 'encode
 const NAME = /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/
 
 const n = (v?: number) => (v ?? 0).toLocaleString()
+const since = (s?: number) => {
+  if (!s) return ''
+  const m = Math.round((Date.now() / 1000 - s) / 60)
+  return m < 1 ? 'just now' : m < 60 ? `${m} min ago` : m < 48 * 60 ? `${Math.round(m / 60)} h ago` : `${Math.round(m / 1440)} days ago`
+}
+
+/** Pulls new commits, and issues and pull requests changed since the last sync. Only what changed is fetched. */
+function useUpdate(repo: string) {
+  const { refreshRepos } = useDash()
+  return async () => {
+    try {
+      await api('/api/repos/refresh', { method: 'POST', body: JSON.stringify({ repo }) })
+      toast({ key: `update:${repo}`, tone: 'info', title: `Updating ${repo}`, body: 'Fetching what changed on GitHub; it stays usable meanwhile.' })
+      await refreshRepos()
+    } catch (e) {
+      notify.error('Could not start the update', errorText(e))
+    }
+  }
+}
 
 /** One onboarded repository as a ticket: its mark on the stub, what was read in a sentence, and what to do with it. */
 function RepoTicket({ r, active, onPick, i }: { r: RepoInfo; active: boolean; onPick: () => void; i: number }) {
@@ -31,6 +50,7 @@ function RepoTicket({ r, active, onPick, i }: { r: RepoInfo; active: boolean; on
   const look = lookFor(r.repo)
   const [owner, name] = r.repo.split('/')
   const { refreshRepos } = useDash()
+  const update = useUpdate(r.repo)
   const [confirm, setConfirm] = useState(false)
   const [removing, setRemoving] = useState(false)
   const canRemove = ready && !active && !!r.removable
@@ -52,6 +72,7 @@ function RepoTicket({ r, active, onPick, i }: { r: RepoInfo; active: boolean; on
       { label: active ? 'Current repository' : 'Use this repository', icon: '✓', disabled: active || !ready, run: onPick },
       { label: 'Ask about it', icon: '?', disabled: !ready, run: () => { onPick(); navigate('/app/ask') } },
       { label: 'Open its map', icon: '▸', disabled: !ready, run: () => { onPick(); navigate('/app/map') } },
+      { label: r.updating ? 'Updating…' : 'Check for updates', icon: '↻', disabled: !ready || !!r.updating, run: update },
       { label: 'Open on GitHub', icon: '↗', href: `https://github.com/${r.repo}` },
       { label: 'Copy name', icon: '⧉', run: () => navigator.clipboard?.writeText(r.repo).then(() => notify.ok('Copied', r.repo), () => undefined) },
       { label: r.removable === false ? 'Remove (the bundled one stays)' : active ? 'Remove (switch to another first)' : 'Remove repository', icon: '✕', danger: true, disabled: !canRemove, run: () => setConfirm(true) },
@@ -66,7 +87,8 @@ function RepoTicket({ r, active, onPick, i }: { r: RepoInfo; active: boolean; on
         <span className="rp-t__name"><span className="mono rp-t__owner">{owner}/</span><b className="mono">{name}</b></span>
         {running && <TrailSpinner label={r.step || 'Cloning and reading history'} />}
         {failed && <span className="small" style={{ color: 'var(--stop)' }}>{r.error}</span>}
-        {ready && (
+        {ready && r.updating && <TrailSpinner label={`Updating · ${r.updating}`} />}
+        {ready && !r.updating && (
           <span className="rp-t__read">
             <i>{n(r.files)} files</i><i>{n(r.symbols)} symbols</i><i>{n(r.commits)} commits</i><i>{n(r.pull_requests)} PRs</i><i>{n(r.issues)} issues</i>
           </span>
@@ -87,6 +109,7 @@ function RepoTicket({ r, active, onPick, i }: { r: RepoInfo; active: boolean; on
         ) : ready ? (
           <span className="rp-t__btns">
             <button className="d-chip" onClick={onPick} data-cursor="Switch to it">Use →</button>
+            <button className="rp-t__del is-update" onClick={update} disabled={!!r.updating} aria-label={`Update ${r.repo}`} data-cursor={r.updated_at ? `Updated ${since(r.updated_at)}` : 'Fetch what changed'}>↻</button>
             {canRemove && <button className="rp-t__del" onClick={() => setConfirm(true)} aria-label={`Remove ${r.repo}`} data-cursor="Remove from the shelf">✕</button>}
           </span>
         ) : running ? (
@@ -96,6 +119,16 @@ function RepoTicket({ r, active, onPick, i }: { r: RepoInfo; active: boolean; on
         )}
       </span>
     </motion.div>
+  )
+}
+
+function CampUpdate({ repo, busy }: { repo: string; busy: boolean }) {
+  const update = useUpdate(repo)
+  return (
+    <button className="d-chip" onClick={update} disabled={busy} data-cursor="Fetch new commits and issues">
+      <motion.span style={{ display: 'inline-block', marginRight: 6 }} animate={busy ? { rotate: 360 } : { rotate: 0 }} transition={busy ? { duration: 1.2, repeat: Infinity, ease: 'linear' } : { duration: 0.3 }}>↻</motion.span>
+      {busy ? 'Updating…' : 'Update'}
+    </button>
   )
 }
 
@@ -265,6 +298,11 @@ export default function Repos() {
           <h2 className="mono">{current?.repo ?? 'Pick a repository'}</h2>
           {current?.status === 'ready' ? (
             <p>{n(current.files)} files and {n(current.symbols)} symbols read, with {n(current.commits)} commits, {n(current.pull_requests)} pull requests and {n(current.issues)} issues behind them.</p>
+          ) : null}
+          {current?.status === 'ready' && current.updating ? (
+            <TrailSpinner label={`Updating · ${current.updating}`} />
+          ) : current?.status === 'ready' ? (
+            <span className="d-muted small">{current.updated_at ? `Updated ${since(current.updated_at)}. ` : ''}New commits and issues are fetched on their own when you open it.</span>
           ) : current ? (
             <p>{current.status === 'running' ? current.step || 'Reading its history…' : current.error}</p>
           ) : (
@@ -275,6 +313,7 @@ export default function Repos() {
               <button className="btn small" onClick={() => navigate('/app/ask')}><span>Ask about it</span><span className="arrow">→</span></button>
               <button className="d-chip" onClick={() => navigate('/app/map')}>Open the map</button>
               <a className="d-chip" href={`https://github.com/${current.repo}`} target="_blank" rel="noreferrer noopener">GitHub ↗</a>
+              <CampUpdate repo={current.repo} busy={!!current.updating} />
             </div>
           )}
         </div>

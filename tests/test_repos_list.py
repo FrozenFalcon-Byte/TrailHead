@@ -76,3 +76,36 @@ def test_removing_a_repository_takes_it_off_the_shelf_but_keeps_the_bundled_one(
     assert [r["repo"] for r in repos.list_repos(settings)] == ["scrapy/scrapy"]
     with pytest.raises(ValueError):
         repos.remove_repo(settings, "scrapy/scrapy")
+
+
+def test_an_update_keeps_the_repository_on_the_shelf_while_it_runs(tmp_path, monkeypatch):
+    import threading
+    import time
+
+    from trailhead.ingest import pipeline
+
+    data = tmp_path / "data"
+    store = Store(data / "trailhead.db")
+    store.set_meta("repo", "acme/widget")
+    store.close()
+    settings = replace(load_settings(env={}, env_file=None), data_dir=data)
+    monkeypatch.setattr(repos, "_jobs", {})
+    gate = threading.Event()
+
+    def slow_ingest(target, repo, *, progress, **_):
+        progress("Reading the commit history")
+        gate.wait(5)
+        return {}
+
+    monkeypatch.setattr(pipeline, "ingest", slow_ingest)
+    repos.start_ingest(settings, "acme/widget")
+    time.sleep(0.05)
+    [listed] = repos.list_repos(settings)
+    assert (listed["status"], listed["updating"]) == ("ready", "Reading the commit history")
+    gate.set()
+    for _ in range(50):
+        if repos._jobs["acme/widget"]["status"] == "done":
+            break
+        time.sleep(0.02)
+    [listed] = repos.list_repos(settings)
+    assert listed["updating"] == "" and listed["updated_at"] > 0

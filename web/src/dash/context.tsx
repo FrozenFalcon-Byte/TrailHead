@@ -21,6 +21,10 @@ export type RepoInfo = {
   snapshot_note?: string
   kept?: boolean | null
   removable?: boolean
+  /** The step an update is on, while a ready repository is being brought up to date. */
+  updating?: string
+  checked_at?: number
+  updated_at?: number
   replaced?: string[]
   error?: string
 }
@@ -141,6 +145,41 @@ export function DashProvider({ children }: { children: ReactNode }) {
     const id = setInterval(() => setNow(Date.now()), 500)
     return () => clearInterval(id)
   }, [])
+
+  // Updates: when a repository is opened (and again when the tab comes back), ask whether GitHub has anything new.
+  // The server answers from two small requests at most every ten minutes and starts the update itself.
+  useEffect(() => {
+    if (!repo || offline) return
+    let last = 0
+    const check = () => {
+      if (document.visibilityState !== 'visible' || Date.now() - last < 10 * 60_000) return
+      last = Date.now()
+      api<{ new: boolean; what?: string[] }>('/api/repos/check', { method: 'POST', body: JSON.stringify({ repo }) })
+        .then((r) => {
+          if (!r.new) return
+          const what = r.what?.includes('commits') && r.what.includes('issues') ? 'new commits and issue activity' : r.what?.includes('commits') ? 'new commits' : 'new issue activity'
+          toast({ key: `update:${repo}`, tone: 'info', title: `Updating ${repo}`, body: `GitHub has ${what}. Pulling it in; everything stays usable meanwhile.` })
+          refreshRepos().catch(() => undefined)
+        }, () => undefined)
+    }
+    check()
+    document.addEventListener('visibilitychange', check)
+    return () => document.removeEventListener('visibilitychange', check)
+  }, [repo, offline, refreshRepos])
+  // While any update runs, follow it; when one finishes, every page fetches again so the new data shows.
+  const updatingNow = useRef(new Set<string>())
+  useEffect(() => {
+    const now = new Set(repos.filter((r) => r.updating).map((r) => r.repo))
+    const done = [...updatingNow.current].filter((r) => !now.has(r) && repos.some((x) => x.repo === r && x.status === 'ready'))
+    updatingNow.current = now
+    if (done.length) {
+      done.forEach((r) => toast({ key: `update:${r}`, tone: 'success', title: `${r} is up to date`, body: 'New commits, issues and pull requests are in.' }))
+      window.dispatchEvent(new CustomEvent('th:refresh'))
+    }
+    if (!now.size) return
+    const id = setTimeout(() => refreshRepos().catch(() => undefined), 3000)
+    return () => clearTimeout(id)
+  }, [repos, refreshRepos])
 
   // When the host finishes waking, fetch everything at once rather than waiting for the next tick.
   const wake = useWake()

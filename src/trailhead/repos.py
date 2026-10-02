@@ -66,10 +66,14 @@ def list_repos(settings: Settings) -> list[dict[str, Any]]:
             continue
         store = Store(path)
         name = store.get_meta("repo")
-        # a database that is still being written belongs to its running job, not the shelf
-        if name and jobs.get(name, {}).get("status") not in ("running", "failed"):
-            out.append({**summary(store), "status": "ready", "kept": snapshots.kept(settings, path), "replaced": jobs.get(name, {}).get("replaced", []),
-                        "removable": path != settings.data_dir / "trailhead.db"})
+        job = jobs.get(name, {})
+        updating = job.get("status") == "running" and job.get("refresh")
+        # a database that is still being written for the first time belongs to its running job, not the shelf;
+        # one being brought up to date stays usable and only says so
+        if name and (updating or job.get("status") not in ("running", "failed")):
+            out.append({**summary(store), "status": "ready", "kept": snapshots.kept(settings, path), "replaced": job.get("replaced", []),
+                        "removable": path != settings.data_dir / "trailhead.db", "updating": job.get("step", "") if updating else "",
+                        "checked_at": float(store.get_meta("checked_at") or 0), "updated_at": float(store.get_meta("updated_at") or 0)})
         store.close()
     known = {r["repo"] for r in out}
     out += [{"repo": repo, **{k: v for k, v in job.items() if k != "trace"}} for repo, job in jobs.items() if repo not in known and job["status"] in ("running", "failed")]
@@ -94,9 +98,9 @@ def start_ingest(settings: Settings, repo: str, *, github: bool = True, github_t
     with _lock:
         if _jobs.get(repo, {}).get("status") == "running":
             return _public(repo)
-        _jobs[repo] = {"status": "running", "started": time.time(), "error": "", "step": "Starting"}
+        fresh = not target.db_path.exists()
+        _jobs[repo] = {"status": "running", "started": time.time(), "error": "", "step": "Starting", "refresh": not fresh}
         stop = _stops[repo] = threading.Event()
-    fresh = not target.db_path.exists()
 
     def progress(note: str) -> None:
         if stop.is_set():
@@ -110,8 +114,11 @@ def start_ingest(settings: Settings, repo: str, *, github: bool = True, github_t
         try:
             target.db_path.parent.mkdir(parents=True, exist_ok=True)
             report = ingest(target, repo, github=github, progress=progress, github_token=github_token)
-            # keep a copy off this machine so the repository survives a redeploy on a host without a lasting disk
-            if snapshots.enabled(settings):
+            # keep a copy off this machine so the repository survives a redeploy on a host without a lasting disk.
+            # An update only refreshes a copy storage already holds, so it never pushes out the repository kept there.
+            stored = snapshots.stored(settings) if snapshots.enabled(settings) and not fresh else None
+            keep = fresh or (stored is not None and snapshots.object_for(settings, target.db_path) in stored)
+            if snapshots.enabled(settings) and keep:
                 progress("Saving a copy that survives restarts")
                 removed: list[str] = []
                 try:
@@ -123,6 +130,10 @@ def start_ingest(settings: Settings, repo: str, *, github: bool = True, github_t
                 store = Store(target.db_path)
                 store.set_meta("snapshot_note", note)
                 store.close()
+            store = Store(target.db_path)
+            store.set_meta("updated_at", str(time.time()))
+            store.set_meta("checked_at", str(time.time()))
+            store.close()
             with _lock:
                 _jobs[repo].update(status="done", finished=time.time(), step="", report=json.loads(json.dumps(report, default=str)))
         except Cancelled:
@@ -165,6 +176,51 @@ def remove_repo(settings: Settings, repo: str) -> dict[str, Any]:
         p.unlink(missing_ok=True)
     shutil.rmtree(repo_dir_for(settings, repo), ignore_errors=True)
     return {"repo": repo, "status": "removed", "note": note}
+
+
+CHECK_EVERY_S = 10 * 60
+
+
+def check_updates(settings: Settings, repo: str, *, force: bool = False) -> dict[str, Any]:
+    """Whether GitHub has anything this copy lacks: a new commit on the default branch, or an issue or pull request
+    (or a comment on one) updated since the last sync. Two small requests, at most once every ten minutes per
+    repository unless forced. When something is new, the update starts in the background."""
+    import subprocess
+
+    from .ingest.github import GitHub, GitHubError, resolve_token
+
+    path = settings_for(settings, repo).db_path
+    if not path.exists():
+        raise ValueError(f"{repo} has not been onboarded")
+    with _lock:
+        if _jobs.get(repo, {}).get("status") == "running":
+            return {"repo": repo, "new": False, "updating": True}
+    store = Store(path)
+    try:
+        if not force and time.time() - float(store.get_meta("checked_at") or 0) < CHECK_EVERY_S:
+            return {"repo": repo, "new": False, "updating": False, "recent": True}
+        store.set_meta("checked_at", str(time.time()))
+        head, mark = store.get_meta("head") or "", store.get_meta("gh_since_issues") or ""
+    finally:
+        store.close()
+    found: list[str] = []
+    remote = subprocess.run(["git", "ls-remote", f"https://github.com/{repo}.git", "HEAD"], capture_output=True, text=True, timeout=30, check=False)
+    tip = remote.stdout.split()[0] if remote.returncode == 0 and remote.stdout.strip() else ""
+    if tip and tip != head:
+        found.append("commits")
+    if mark:
+        gh = GitHub(resolve_token(settings.github_token))
+        try:
+            items = gh._get(f"https://api.github.com/repos/{repo}/issues", {"state": "all", "since": mark, "per_page": 5}).json()
+            if any((i.get("updated_at") or "") > mark for i in items):
+                found.append("issues")
+        except GitHubError:
+            pass
+        finally:
+            gh.close()
+    if found:
+        start_ingest(settings, repo)
+    return {"repo": repo, "new": bool(found), "what": found, "updating": bool(found)}
 
 
 def stop_ingest(repo: str) -> dict[str, Any]:
