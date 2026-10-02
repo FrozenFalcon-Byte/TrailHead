@@ -1,16 +1,22 @@
-import { motion, useMotionValueEvent, useReducedMotion, useScroll, useSpring, useTransform } from 'motion/react'
+import { motion, useMotionValue, useMotionValueEvent, useReducedMotion, useScroll, useSpring, useTransform } from 'motion/react'
 import { useId, useMemo, useRef, useState } from 'react'
 
-/* The folder as a trail map. Subfolders are regions of terrain, files are pins, and a dashed trail walks from
-   region to region. Meadow, mountains, forests, a river and a grid make it read as a map; the grid gives every place a reference
-   (B3) that the gazetteer under the map shares. Scrolling draws the trail, walks a flag along it, turns the
-   compass, raises the mountains and blows the clouds along. Clicking a region zooms into it and the next folder unfolds. */
+/* The folder as a trail map, drawn as a little diorama: a slab of meadow with a soil edge, set under a sky with
+   layered ridges like the homepage. Subfolders are raised plateaus, files are pins, and a dashed trail walks from
+   region to region. Mountains, forests, a river and a grid make it read as a map; the grid gives every place a
+   reference (B3) that the gazetteer under the map shares. Depth is only hinted: extruded edges, cast shadows,
+   clouds whose shadows slide over the ground, and ridges that shift a little with scroll and the pointer.
+   Clicking a region zooms into it and the next folder unfolds. */
 
 export type MapChild = { id: string; name: string; kind: string; summary: string; annotations: Record<string, string> }
 export type Place = MapChild & { x: number; y: number; r: number; ref: string; fill: string; blob: string }
 
 export const W = 1000
 export const H = 600
+const SKY = 156 // sky band above the land
+const SLAB = 26 // the slab's front edge below it
+const LX = 12 // the slab sits slightly in from the sheet's sides
+const VH = SKY + H + SLAB + 10
 const M = 64
 const COLS = 'ABCDEFGH'
 const ROWS = 5
@@ -114,7 +120,7 @@ export function layoutPlaces(children: MapChild[], seed: string) {
     if (sp.y < 70 || sp.x < 110 || sp.x > W - 110) continue // leave the compass alone
     if (mountains.some((m) => Math.hypot(m.x - sp.x, m.y - sp.y) < 170)) continue
     const size = Math.min(95, sp.c)
-    if (sp.y + size * 0.35 > H - 16 || sp.y - size * 0.9 < 28) continue
+    if (sp.y + size * 0.35 > H - 30 || sp.y - size * 0.9 < 28) continue
     const count = 2 + Math.floor(rnd(seed, `mc${sp.x}`) * 2)
     mountains.push({
       x: sp.x, y: sp.y + size * 0.35,
@@ -127,8 +133,32 @@ export function layoutPlaces(children: MapChild[], seed: string) {
     .map((sp) => ({ x: sp.x, y: sp.y, s: 0.75 + rnd(seed, `ts${sp.x}${sp.y}`) * 0.55, pine: rnd(seed, `tp${sp.x}${sp.y}`) > 0.4 }))
     .sort((p, q) => p.y - q.y)
   const tufts = spots.filter((sp) => sp.c > 6 && sp.c <= 14 && rnd(seed, `g${sp.x}${sp.y}`) > 0.5).slice(0, 40)
-  const clouds = [0, 1, 2].map((k) => ({ x: W * (0.15 + 0.32 * k) + (rnd(seed, `cx${k}`) - 0.5) * 80, y: 40 + rnd(seed, `cy${k}`) * (H * 0.55), s: 0.8 + rnd(seed, `cs${k}`) * 0.6 }))
-  return { places, trail, river, mountains, trees, tufts, clouds, hidden: Math.max(0, children.length - MAX), layers }
+  const clouds = [0, 1, 2, 3].map((k) => ({ x: W * (0.1 + 0.26 * k) + (rnd(seed, `cx${k}`) - 0.5) * 80, y: 50 + rnd(seed, `cy${k}`) * (H * 0.6), s: 0.8 + rnd(seed, `cs${k}`) * 0.6, d: 70 + rnd(seed, `cd${k}`) * 50 }))
+  const ripples = [0.18, 0.52, 0.83].map((f, k) => { const x = W * f + (rnd(seed, `rp${k}`) - 0.5) * 60; return { x, y: riverY(x) } })
+  return { places, trail, river, ripples, mountains, trees, tufts, clouds, hidden: Math.max(0, children.length - MAX), layers }
+}
+
+/** The horizon: a far range of sharp peaks with snow on the tallest, and a rounder near range in front. */
+function horizon(seed: string) {
+  const far: Pt[] = []
+  for (let x = -40, i = 0; x <= W + 60; x += 52 + rnd(seed, `hf${i}`) * 30, i++) far.push([x, i % 2 ? SKY - 30 - rnd(seed, `hv${i}`) * 24 : SKY - 66 - rnd(seed, `hp${i}`) * 62])
+  const snow = far.flatMap((p, i) => {
+    if (i % 2 || i === 0 || i === far.length - 1 || p[1] > SKY - 92) return []
+    const [l, r] = [far[i - 1], far[i + 1]]
+    const k = 15 / (l[1] - p[1])
+    const q = 15 / (r[1] - p[1])
+    const a: Pt = [p[0] + (l[0] - p[0]) * k, p[1] + 15]
+    const b: Pt = [p[0] + (r[0] - p[0]) * q, p[1] + 15]
+    return [`M${a[0].toFixed(1)} ${a[1].toFixed(1)} L${p[0].toFixed(1)} ${p[1].toFixed(1)} L${b[0].toFixed(1)} ${b[1].toFixed(1)} L${(p[0] + 4).toFixed(1)} ${(p[1] + 9).toFixed(1)} L${(p[0] - 3).toFixed(1)} ${(p[1] + 14).toFixed(1)} Z`]
+  })
+  const near: Pt[] = []
+  for (let x = -60, i = 0; x <= W + 80; x += 110 + rnd(seed, `hn${i}`) * 60, i++) near.push([x, SKY - 10 - rnd(seed, `hh${i}`) * 44])
+  const base = SKY + 12
+  return {
+    far: `M-40 ${base} ${far.map(([x, y]) => `L${x.toFixed(1)} ${y.toFixed(1)}`).join(' ')} L${W + 60} ${base} Z`,
+    snow,
+    near: `${smooth(near, false)} L${W + 80} ${base} L-60 ${base} Z`,
+  }
 }
 
 export function TrailMap({ items, seed, label, picked, hover, onHover, onOpen, onPick }: {
@@ -152,10 +182,21 @@ export function TrailMap({ items, seed, label, picked, hover, onHover, onOpen, o
   const draw = useTransform(prog, [0.15, 0.6], [0, 1])
   const turn = useTransform(prog, [0, 1], [-70, 70])
   const flow = useTransform(prog, [0, 1], [0, -120])
-  const rise = useTransform(prog, [0, 0.5, 1], [16, 0, -10])
+  const rise = useTransform(prog, [0, 0.5, 1], [6, 0, -10])
   const breeze = useTransform(prog, [0, 1], [-60, 60])
   const breezeBack = useTransform(prog, [0, 1], [50, -50])
-  const maskId = `tm-trail-${useId().replace(/:/g, '')}`
+  const sky = useMemo(() => horizon(seed), [seed])
+  const farY = useTransform(prog, [0, 1], [10, -6])
+  const nearY = useTransform(prog, [0, 1], [18, -10])
+  // A light pointer parallax: far things move least, things in the air most.
+  const px = useMotionValue(0)
+  const sx = useSpring(px, { stiffness: 60, damping: 18 })
+  const farX = useTransform(sx, (v) => v * -4)
+  const nearX = useTransform(sx, (v) => v * -9)
+  const airX = useTransform(sx, (v) => v * 12)
+  const uid = useId().replace(/:/g, '')
+  const maskId = `tm-trail-${uid}`
+  const clipId = `tm-land-${uid}`
   useMotionValueEvent(draw, 'change', (v) => {
     const el = trailRef.current
     if (!el || reduce) return
@@ -165,13 +206,23 @@ export function TrailMap({ items, seed, label, picked, hover, onHover, onOpen, o
   })
   const here = map.places.find((p) => p.id === picked)
   const tip = map.places.find((p) => p.id === hover)
-  const zoomBox = zoom ? `${zoom.x - zoom.r * 2.4} ${zoom.y - zoom.r * 1.44} ${zoom.r * 4.8} ${zoom.r * 2.88}` : `0 0 ${W} ${H}`
+  const zoomBox = zoom ? `${zoom.x - zoom.r * 2.4} ${SKY + zoom.y - zoom.r * 1.44} ${zoom.r * 4.8} ${zoom.r * 2.88}` : `0 0 ${W} ${VH}`
+  const DEPTH = 9
 
   return (
-    <div className="tm" ref={frame}>
+    <div
+      className="tm"
+      ref={frame}
+      onPointerMove={(e) => {
+        if (reduce || e.pointerType !== 'mouse') return
+        const r = e.currentTarget.getBoundingClientRect()
+        px.set(((e.clientX - r.left) / r.width - 0.5) * 2)
+      }}
+      onPointerLeave={() => px.set(0)}
+    >
       <motion.div className="tm-sheet" initial={reduce ? false : { rotateX: -64, y: -12 }} animate={{ rotateX: 0, y: 0 }} transition={{ type: 'spring', stiffness: 140, damping: 18 }}>
         <motion.svg
-          viewBox={`0 0 ${W} ${H}`}
+          viewBox={`0 0 ${W} ${VH}`}
           animate={{ viewBox: zoomBox }}
           transition={{ duration: zoom ? 0.6 : 0, ease: [0.6, 0, 0.3, 1] }}
           onAnimationComplete={() => { if (zoom) { const id = zoom.id; setZoom(null); onOpen(id) } }}
@@ -179,6 +230,46 @@ export function TrailMap({ items, seed, label, picked, hover, onHover, onOpen, o
           role="img"
           aria-label={`Map of ${label}`}
         >
+          <defs>
+            <clipPath id={clipId}><rect x={LX} y={0} width={W - LX * 2} height={H} rx={26} /></clipPath>
+          </defs>
+
+          {/* sky: sun, far range, near range, a flock */}
+          <g className="tm-sky">
+            <motion.g style={{ x: reduce ? 0 : farX, y: reduce ? 0 : farY }}>
+              <circle cx={W * 0.8} cy={SKY - 104} r={26} className="tm-sun" />
+              <path d={sky.far} className="tm-far" />
+              {sky.snow.map((d, i) => <path key={i} d={d} className="tm-far__snow" />)}
+            </motion.g>
+            {!reduce && map.clouds.slice(0, 2).map((c, i) => (
+              <g key={i} className="tm-drift" style={{ animationDuration: `${c.d * 1.6}s`, animationDelay: `${-c.d * 1.6 * (c.x / W)}s` }}>
+                <g transform={`translate(0 ${SKY - 132 + i * 38}) scale(${(c.s * 0.6).toFixed(2)})`}>
+                  <path d="M-34 8 A12 12 0 0 1 -22 -6 A16 16 0 0 1 6 -12 A14 14 0 0 1 30 -2 A10 10 0 0 1 34 8 Z" className="tm-cloud" />
+                </g>
+              </g>
+            ))}
+            <motion.g style={{ x: reduce ? 0 : nearX, y: reduce ? 0 : nearY }}>
+              <path d={sky.near} className="tm-near" />
+            </motion.g>
+            {!reduce && (
+              <g className="tm-flock">
+                {[[0, 0], [16, 7], [-14, 9], [30, 15]].map(([x, y], i) => (
+                  <g key={i} transform={`translate(${x} ${SKY - 128 + y})`}>
+                    <path d="M-6 0 Q-3 -4 0 0 Q3 -4 6 0" className="tm-bird" style={{ animationDelay: `${i * -0.17}s` }} />
+                  </g>
+                ))}
+              </g>
+            )}
+          </g>
+
+          {/* the slab: soil, a grass edge, then the land on top */}
+          <rect x={LX} y={SKY + 20} width={W - LX * 2} height={H + SLAB - 20} rx={26} className="tm-slab__soil" />
+          <path d={`M${LX + 30} ${SKY + H + 15} H${W - LX - 30} M${LX + 60} ${SKY + H + 21} H${W - LX - 90}`} className="tm-slab__strata" />
+          <rect x={LX} y={SKY + 8} width={W - LX * 2} height={H + 4} rx={26} className="tm-slab__edge" />
+          <rect x={LX} y={SKY} width={W - LX * 2} height={H} rx={26} className="tm-slab__top" />
+
+          <g transform={`translate(0 ${SKY})`}>
+          <g clipPath={`url(#${clipId})`}>
           {/* grid and its references */}
           <g className="tm-grid">
             {Array.from({ length: COLS.length - 1 }, (_, i) => <line key={`v${i}`} x1={((i + 1) * W) / COLS.length} x2={((i + 1) * W) / COLS.length} y1={0} y2={H} />)}
@@ -191,10 +282,17 @@ export function TrailMap({ items, seed, label, picked, hover, onHover, onOpen, o
             <path d={map.river} className="tm-river__bank" />
             <path d={map.river} className="tm-river__bed" />
             <motion.path d={map.river} className="tm-river__flow" style={{ strokeDashoffset: reduce ? 0 : flow }} />
+            {!reduce && map.ripples.map((r, i) => (
+              <g key={i} transform={`translate(${r.x.toFixed(1)} ${r.y.toFixed(1)})`}>
+                <ellipse rx={7} ry={2.6} className="tm-ripple" style={{ animationDelay: `${i * -1.1}s` }} />
+                <ellipse rx={7} ry={2.6} className="tm-ripple" style={{ animationDelay: `${i * -1.1 - 1.6}s` }} />
+              </g>
+            ))}
           </g>
 
           <g className="tm-tufts">
             {map.tufts.map((t, i) => <path key={i} d={`M${t.x - 5} ${t.y} l2 -6 l2 6 l2 -8 l2 8 l2 -5`} />)}
+          </g>
           </g>
 
           <motion.g className="tm-mountains" style={{ y: reduce ? 0 : rise }}>
@@ -234,16 +332,6 @@ export function TrailMap({ items, seed, label, picked, hover, onHover, onOpen, o
             ))}
           </g>
 
-          <g className="tm-clouds">
-            {map.clouds.map((c, i) => (
-              <motion.g key={i} style={{ x: reduce ? 0 : i % 2 ? breeze : breezeBack }}>
-                <g transform={`translate(${c.x.toFixed(0)} ${c.y.toFixed(0)}) scale(${c.s.toFixed(2)})`}>
-                  <path d="M-34 8 A12 12 0 0 1 -22 -6 A16 16 0 0 1 6 -12 A14 14 0 0 1 30 -2 A10 10 0 0 1 34 8 Z" className="tm-cloud" />
-                </g>
-              </motion.g>
-            ))}
-          </g>
-
           {map.trail && (
             <>
               <mask id={maskId} maskUnits="userSpaceOnUse" x={0} y={0} width={W} height={H}>
@@ -267,7 +355,9 @@ export function TrailMap({ items, seed, label, picked, hover, onHover, onOpen, o
               transition={{ type: 'spring', stiffness: 220, damping: 14, delay: 0.15 + i * 0.04 }}
               style={{ transformBox: 'fill-box', transformOrigin: 'center' }}
             >
-              <path d={p.blob} transform="translate(5 6)" className="tm-region__shadow" />
+              <path d={p.blob} transform={`translate(7 ${DEPTH + 6})`} className="tm-region__shadow" />
+              <path d={p.blob} transform={`translate(0 ${DEPTH})`} style={{ fill: `color-mix(in srgb, ${p.fill} 66%, #17161b)` }} className="tm-region__side" />
+              {[0.8, 0.6, 0.4, 0.2].map((f) => <path key={f} d={p.blob} transform={`translate(0 ${(DEPTH * f).toFixed(1)})`} style={{ fill: `color-mix(in srgb, ${p.fill} 66%, #17161b)` }} className="tm-region__fill" />)}
               <path d={p.blob} style={{ fill: p.fill }} className="tm-region__land" />
               <path d={blobAt(`${p.id}i`, p.x, p.y, p.r * 0.55, 0.3)} className="tm-region__ring" />
               <text x={p.x} y={p.y + 5} className="tm-region__name" style={{ fontSize: Math.max(10, Math.min(15, (p.r * 2.1) / Math.max(5, Math.min(p.name.length, 12)) * 1.6)) }}>{p.name.length > 12 ? `${p.name.slice(0, 11)}…` : p.name}</text>
@@ -316,16 +406,46 @@ export function TrailMap({ items, seed, label, picked, hover, onHover, onOpen, o
             <text x={W - 62} y={28} className="tm-compass__n">N</text>
           </motion.g>
 
+          {/* things in the air: clouds whose shadows slide over the ground, and a balloon */}
+          <motion.g className="tm-clouds" style={{ x: reduce ? 0 : airX }}>
+            {map.clouds.map((c, i) => (
+              <motion.g key={i} style={{ x: reduce ? 0 : i % 2 ? breeze : breezeBack }}>
+                <g className={reduce ? undefined : 'tm-drift'} transform={reduce ? `translate(${c.x.toFixed(0)} 0)` : undefined} style={reduce ? undefined : { animationDuration: `${c.d}s`, animationDelay: `${-c.d * (c.x / W)}s` }}>
+                  <g transform={`translate(0 ${c.y.toFixed(0)})`}>
+                    <ellipse cy={54 * c.s} rx={36 * c.s} ry={9 * c.s} className="tm-cloud__shadow" />
+                    <g transform={`scale(${c.s.toFixed(2)})`}>
+                      <path d="M-34 8 A12 12 0 0 1 -22 -6 A16 16 0 0 1 6 -12 A14 14 0 0 1 30 -2 A10 10 0 0 1 34 8 Z" className="tm-cloud" />
+                    </g>
+                  </g>
+                </g>
+              </motion.g>
+            ))}
+            {!reduce && (
+              <g className="tm-drift is-slow" style={{ animationDelay: `${-140 * rnd(seed, 'balloon')}s` }}>
+                <g transform={`translate(0 ${(H * (0.22 + rnd(seed, 'by') * 0.3)).toFixed(0)})`}>
+                  <ellipse cy={78} rx={11} ry={3.4} className="tm-cloud__shadow" />
+                  <g className="tm-balloon">
+                    <path d="M-5 13 L-4 21 M5 13 L4 21" className="tm-balloon__rope" />
+                    <rect x={-5} y={20} width={10} height={7} rx={2} className="tm-balloon__basket" />
+                    <path d="M0 -24 C14 -24 18 -12 15 -3 C12 6 5 10 4 14 H-4 C-5 10 -12 6 -15 -3 C-18 -12 -14 -24 0 -24 Z" className="tm-balloon__top" />
+                    <path d="M0 -24 C6 -24 7 -12 6 -3 C5 6 3 10 2 14 H-2 C-3 10 -5 6 -6 -3 C-7 -12 -6 -24 0 -24 Z" className="tm-balloon__band" />
+                  </g>
+                </g>
+              </g>
+            )}
+          </motion.g>
+
           <g className="tm-scale" transform={`translate(28 ${H - 30})`}>
             <rect width={40} height={8} className="is-a" />
             <rect x={40} width={40} height={8} className="is-b" />
             <rect x={80} width={40} height={8} className="is-a" />
             <text y={-6}>{map.places.length} places · grid squares are the references below</text>
           </g>
+          </g>
         </motion.svg>
 
         {tip && (
-          <div className="tm-tip" style={{ left: `${(tip.x / W) * 100}%`, top: `${((tip.y - (tip.kind === 'dir' ? tip.r * 0.8 : 34)) / H) * 100}%` }}>
+          <div className="tm-tip" style={{ left: `${(tip.x / W) * 100}%`, top: `${((SKY + tip.y - (tip.kind === 'dir' ? tip.r * 0.8 : 34)) / VH) * 100}%` }}>
             <b>{tip.name}{tip.kind === 'dir' ? '/' : ''} <i>{tip.ref}</i></b>
             <span>{tip.summary || 'No summary yet.'}</span>
           </div>

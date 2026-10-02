@@ -5478,7 +5478,7 @@ html[data-motion='calm'] .d-page :is(.d-card, .p-card, .h-card, .pd-sec, .e-pane
 .tm-sheet {
   position: relative; transform-origin: top center;
   border-radius: 24px; overflow: hidden;
-  background: color-mix(in srgb, var(--mint) 80%, var(--limeade));
+  background: var(--sky);
   border: 2px solid var(--solid); box-shadow: 0 6px 0 var(--solid);
 }
 .tm-svg { display: block; width: 100%; height: auto; user-select: none; }
@@ -5491,7 +5491,9 @@ html[data-motion='calm'] .d-page :is(.d-card, .p-card, .h-card, .pd-sec, .e-pane
 .tm-trail__ghost { fill: none; stroke: var(--solid); stroke-opacity: 0.12; stroke-width: 4; stroke-linecap: round; stroke-dasharray: 2 10; }
 .tm-trail { fill: none; stroke: var(--orange); stroke-width: 4; stroke-linecap: round; stroke-dasharray: 1 11; }
 .tm-region { cursor: pointer; }
-.tm-region__shadow { fill: var(--solid); }
+.tm-region__shadow { fill: var(--solid); opacity: 0.16; }
+.tm-region__side { stroke: var(--solid); stroke-width: 2.5; stroke-linejoin: round; }
+.tm-region__fill { stroke: none; }
 .tm-region__land { stroke: var(--solid); stroke-width: 2.5; transition: filter 0.2s; }
 .tm-region__ring { fill: none; stroke: var(--solid); stroke-opacity: 0.18; stroke-width: 1.5; }
 .tm-region.is-hover .tm-region__land { filter: brightness(1.06) saturate(1.3); }
@@ -5573,7 +5575,31 @@ html[data-motion='calm'] .d-page :is(.d-card, .p-card, .h-card, .pd-sec, .e-pane
 .tm-tree__round { fill: color-mix(in srgb, var(--lime) 70%, var(--green)); stroke: var(--solid); stroke-width: 1.6; }
 .tm-cloud { fill: var(--surface); fill-opacity: 0.92; stroke: var(--solid); stroke-width: 1.8; stroke-linejoin: round; }
 .tm-clouds { pointer-events: none; }
-@media (prefers-reduced-motion: reduce) { .tm-tree { animation: none; } }
+/* 2.5D: sky, horizon, the slab and things in the air */
+.tm-sun { fill: var(--yellow); stroke: var(--solid); stroke-width: 2; }
+.tm-far { fill: color-mix(in srgb, var(--violet) 22%, var(--lilac)); }
+.tm-far__snow { fill: var(--surface); }
+.tm-near { fill: color-mix(in srgb, var(--green) 26%, var(--mint)); }
+.tm-slab__top { fill: color-mix(in srgb, var(--mint) 80%, var(--limeade)); stroke: var(--solid); stroke-width: 2.5; }
+.tm-slab__edge { fill: color-mix(in srgb, var(--green) 52%, var(--mint)); stroke: var(--solid); stroke-width: 2.5; }
+.tm-slab__soil { fill: color-mix(in srgb, #8a5a34 62%, var(--peach)); stroke: var(--solid); stroke-width: 2.5; }
+.tm-slab__strata { fill: none; stroke: var(--solid); stroke-opacity: 0.22; stroke-width: 2; stroke-dasharray: 14 9; stroke-linecap: round; }
+.tm-cloud__shadow { fill: var(--solid); opacity: 0.1; }
+.tm-drift { animation: tm-drift linear infinite; }
+.tm-drift.is-slow { animation-duration: 140s; }
+@keyframes tm-drift { from { transform: translateX(-140px); } to { transform: translateX(1140px); } }
+.tm-flock { animation: tm-drift 46s linear infinite; animation-delay: -12s; }
+.tm-bird { fill: none; stroke: var(--solid); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transform-box: fill-box; transform-origin: center; animation: tm-flap 0.7s ease-in-out infinite; }
+@keyframes tm-flap { 50% { transform: scaleY(-0.6); } }
+.tm-ripple { fill: none; stroke: var(--surface); stroke-width: 1.6; transform-box: fill-box; transform-origin: center; animation: tm-ripple 3.2s ease-out infinite; }
+@keyframes tm-ripple { from { transform: scale(0.3); opacity: 0.9; } to { transform: scale(2); opacity: 0; } }
+.tm-balloon { animation: tm-bob 5s ease-in-out infinite; }
+@keyframes tm-bob { 50% { transform: translateY(-7px); } }
+.tm-balloon__top { fill: var(--orange); stroke: var(--solid); stroke-width: 2; stroke-linejoin: round; }
+.tm-balloon__band { fill: var(--butter); stroke: var(--solid); stroke-width: 1.5; stroke-linejoin: round; }
+.tm-balloon__basket { fill: #8a5a34; stroke: var(--solid); stroke-width: 1.8; }
+.tm-balloon__rope { stroke: var(--solid); stroke-width: 1.4; }
+@media (prefers-reduced-motion: reduce) { .tm-tree, .tm-drift, .tm-flock, .tm-bird, .tm-ripple, .tm-balloon { animation: none; } }
 
 /* ---------- Tour: scouting the trail ---------- */
 .sc-wrap { overflow: hidden; }
