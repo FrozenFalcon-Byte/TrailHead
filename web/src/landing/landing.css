@@ -587,7 +587,7 @@
 }
 .l-rx__stage {
   --top: clamp(78px, 11svh, 104px);
-  --pw: min(540px, 88vw, calc((100svh - var(--top) - 70px) * 0.74));
+  --pw: min(440px, 56vw, calc((100svh - var(--top) - 60px) * 0.62));
   position: sticky;
   top: 0;
   height: 100svh;
@@ -636,48 +636,60 @@
   background: color-mix(in srgb, var(--ink) 18%, transparent);
   transition: background 0.4s;
 }
-/* the printer: a desk thermal printer drawn front-on, its mouth sitting right where the paper starts */
+/* the printer: a desk thermal printer at the foot of the screen, seen from the front and a little
+   above; its slot sits at 82/240 of the drawing, so the paper rises from 0.263 of its width up */
+.l-rx__stage { --prw: calc(var(--pw) * 1.68); --pb: clamp(14px, 3svh, 34px); --slot: calc(var(--pb) + var(--prw) * 0.2633); }
 .l-rx__printer {
   position: absolute;
   z-index: 20;
+  pointer-events: none;
   left: 50%;
-  top: calc(var(--top) + 60px);
-  width: calc(var(--pw) + 120px);
-  max-width: 96vw;
-  translate: -50% -100%;
-  transform-origin: 50% 100%;
-  filter: drop-shadow(0 14px 18px rgba(0, 0, 0, 0.22));
+  bottom: var(--pb);
+  width: var(--prw);
+  translate: -50% 0;
+}
+.l-rx__printer.is-back { z-index: 5; }
+@media (max-width: 640px) {
+  /* on a phone the printer is wider than the screen and bleeds off both edges, so the paper can stay readable */
+  .l-rx__stage { --pw: min(72vw, calc((100svh - var(--top) - 120px) * 0.62)); --pb: 64px; }
 }
 .l-rx__machine { display: block; width: 100%; height: auto; overflow: visible; }
-.l-rx__lid { fill: var(--solid-2, #2a2930); }
-.l-rx__window { fill: #f3eee2; stroke: #0b0b0d; stroke-width: 3; }
-.l-rx__turn { stroke: #cfc8b6; stroke-width: 2.5; stroke-linecap: round; stroke-dasharray: 18 14; }
-.l-rx__turn.is-mid { stroke: #b9b19c; stroke-dasharray: 26 10; }
+.l-rx__shadow { fill: rgba(0, 0, 0, 0.16); }
+.l-rx__deck { fill: #2c2b33; }
+.l-rx__lid { fill: #3a3942; }
+.l-rx__roll { fill: #4a4953; }
+.l-rx__seam { fill: none; stroke: #23222a; stroke-width: 2; }
+.l-rx__turn { stroke: #6f6d79; stroke-width: 2.5; stroke-linecap: round; stroke-dasharray: 18 14; }
+.l-rx__turn.is-mid { stroke: #5c5a66; stroke-dasharray: 26 10; }
 .l-rx__body { fill: var(--solid, #141417); }
-.l-rx__bevel { fill: var(--solid-2, #2a2930); }
+.l-rx__edge { stroke: #4a4953; stroke-width: 2; }
+.l-rx__foot { fill: #0b0b0d; }
 .l-rx__pwr { fill: #22c55e; }
-.l-rx__tiny { font: 700 8px/1 var(--mono, ui-monospace), monospace; fill: #8d8b96; letter-spacing: 0.08em; white-space: pre; }
+.l-rx__tiny { font: 700 9px/1 var(--mono, ui-monospace), monospace; fill: #8d8b96; letter-spacing: 0.08em; white-space: pre; }
 .l-rx__lcd { fill: #c9e86a; stroke: #0b0b0d; stroke-width: 3; }
-.l-rx__lcdtext { font: 800 15px/1 var(--mono, ui-monospace), monospace; fill: #1b2a06; letter-spacing: 0.05em; }
-.l-rx__brand { font: 800 11px/1 var(--mono, ui-monospace), monospace; fill: #b5b3bd; letter-spacing: 0.16em; }
-.l-rx__vent { fill: #2f2e36; }
+.l-rx__lcdtext { font: 800 17px/1 var(--mono, ui-monospace), monospace; fill: #1b2a06; letter-spacing: 0.05em; }
+.l-rx__brand { font: 800 12px/1 var(--mono, ui-monospace), monospace; fill: #8d8b96; letter-spacing: 0.22em; }
+.l-rx__vent { fill: #2a2930; }
 .l-rx__btn-base { fill: #0b0b0d; }
 .l-rx__btn { fill: var(--orange, #ff6b3d); }
-.l-rx__btntext { font: 800 10px/1 var(--mono, ui-monospace), monospace; fill: #141417; letter-spacing: 0.08em; }
+.l-rx__btntext { font: 800 12px/1 var(--mono, ui-monospace), monospace; fill: #141417; letter-spacing: 0.08em; }
 .l-rx__mouth { fill: #050506; }
-.l-rx__teeth { fill: #a19fab; stroke: #6e6c77; stroke-width: 1.5; stroke-linejoin: round; }
-/* the receipts run straight down out of the slot */
+.l-rx__glow { fill: var(--orange); filter: drop-shadow(0 0 6px var(--orange)); }
+.l-rx__teeth { fill: #b8b6c0; stroke: #77757f; stroke-width: 1.2; stroke-linejoin: round; }
+/* everything above the slot; paper below the slot line is still inside the printer, so it is clipped */
 .l-rx__run {
   position: absolute;
-  left: 50%;
-  top: calc(var(--top) + 52px);
-  width: var(--pw);
-  translate: -50% 0;
+  inset: 0 0 var(--slot) 0;
+  overflow: hidden;
+  z-index: 10;
 }
 .l-rx__slip {
   position: absolute;
-  inset: 0 0 auto;
-  transform-origin: 50% 0;
+  left: 50%;
+  bottom: 0;
+  width: var(--pw);
+  margin-left: calc(var(--pw) / -2);
+  transform-origin: 50% 100%;
   will-change: transform;
   container-type: inline-size;
 }
@@ -777,16 +789,7 @@
   text-transform: uppercase;
   background: color-mix(in srgb, var(--surface) 72%, transparent);
 }
-.l-rx__head {
-  position: absolute;
-  left: -3%;
-  right: -3%;
-  height: 4px;
-  margin-top: -2px;
-  border-radius: 999px;
-  background: var(--orange);
-  box-shadow: 0 0 12px var(--orange);
-}
+
 @media (max-width: 980px) {
   .l-rx__tags {
     display: none;

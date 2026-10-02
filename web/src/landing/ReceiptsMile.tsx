@@ -2,9 +2,9 @@ import { AnimatePresence, motion, useMotionValueEvent, useScroll, useTransform, 
 import { useEffect, useRef, useState } from 'react'
 import { COSTS, INJECTION, NAV_RESULTS, TOUR_RESULTS } from './receipts'
 
-/* Mile 5, the receipts, as one full-bleed motion graphic. A wide thermal printer hangs at the top of
-   the screen and prints a receipt straight down the middle; the receipt *is* the copy (headline, the
-   sentence behind it, the numbers). Scroll feeds the paper past the print head, the verdict stamp
+/* Mile 5, the receipts, as one full-bleed motion graphic. A desk thermal printer sits at the foot of
+   the screen and prints a receipt up out of its slot; the receipt *is* the copy (headline, the
+   sentence behind it, the numbers). Scroll feeds the paper out of the slot, the verdict stamp
    thumps down, then the slip tears off and gets pinned to the wall on alternating sides while the
    whole scene floods with the next receipt's colour. The last receipt stays under the printer. */
 
@@ -93,11 +93,12 @@ const N = SLIPS.length
 const FEED = [0.04, 0.6] as const
 const STAMP = [0.62, 0.7] as const
 const FLY = [0.8, 0.98] as const
-// Where finished slips get pinned: alternate walls, stepping down. x in px from centre, y in px.
+// Where finished slips get pinned: alternate walls, stepping down. x in px from centre, y in px from the slot
+// (negative is up); the slip scales about its bottom edge, and nothing may drop below the slot.
 const wall = (k: number, w: number) => {
   const side = k % 2 ? 1 : -1
   const wide = w >= 980
-  return { x: side * (wide ? Math.min(w * 0.33, 520) : w * 0.9), y: wide ? 50 + Math.floor(k / 2) * 230 : -260, s: wide ? 0.46 : 0.5, r: side * (5 + k * 2) }
+  return { x: side * (wide ? Math.min(w * 0.33, 520) : w * 0.9), y: wide ? -240 + Math.floor(k / 2) * 225 : -260, s: wide ? 0.46 : 0.5, r: side * (5 + k * 2) }
 }
 
 function useWidth() {
@@ -128,9 +129,10 @@ export function Receipts() {
   const spin = useTransform(p, (v) => -v * N * 900)
   const led = useTransform(feeding, (f) => (f ? 'var(--lime)' : '#3a3940'))
   const press = useTransform(feeding, (f) => (f ? 3 : 0))
+  // A printer at work hums: a tiny vertical buzz while the paper feeds.
   const shake = useTransform(p, (v) => {
     const t = v * N - Math.min(N - 1, Math.floor(v * N))
-    return t > FEED[0] && t < FEED[1] ? Math.sin(t * 160) * 1.4 : 0
+    return t > FEED[0] && t < FEED[1] ? Math.sin(t * 220) * 1.2 : 0
   })
   const s = SCENES[scene]
 
@@ -155,41 +157,47 @@ export function Receipts() {
             </div>
           </div>
 
-          <motion.div className="l-rx__printer" style={{ rotate: shake }} aria-hidden>
-            <svg viewBox="0 0 660 156" className="l-rx__machine">
-              {/* paper roll under a smoked lid; the dashes turn as paper feeds */}
-              <rect x={150} y={4} width={360} height={62} rx={30} className="l-rx__lid" />
-              <rect x={196} y={16} width={268} height={30} rx={14} className="l-rx__window" />
-              <motion.line x1={206} y1={24} x2={454} y2={24} className="l-rx__turn" style={{ strokeDashoffset: spin }} />
-              <motion.line x1={206} y1={31} x2={454} y2={31} className="l-rx__turn is-mid" style={{ strokeDashoffset: spin }} />
-              <motion.line x1={206} y1={38} x2={454} y2={38} className="l-rx__turn" style={{ strokeDashoffset: spin }} />
-              {/* body */}
-              <rect x={8} y={52} width={644} height={92} rx={24} className="l-rx__body" />
-              <rect x={8} y={52} width={644} height={14} rx={7} className="l-rx__bevel" />
-              {/* left: lights and the little display */}
-              <circle cx={44} cy={86} r={6} className="l-rx__pwr" />
-              <motion.circle cx={64} cy={86} r={6} style={{ fill: led }} />
-              <text x={36} y={108} className="l-rx__tiny">PWR  FEED</text>
-              <rect x={92} y={74} width={84} height={30} rx={7} className="l-rx__lcd" />
-              <text x={134} y={94} textAnchor="middle" className="l-rx__lcdtext">{String(printed).padStart(2, '0')}/{String(N).padStart(2, '0')}</text>
-              {/* maker's plate */}
-              <text x={330} y={92} textAnchor="middle" className="l-rx__brand">TRAILHEAD · TP-5 · THERMAL RECEIPTS</text>
-              {/* right: vents and the feed button */}
-              {Array.from({ length: 7 }, (_, i) => <rect key={i} x={480 + i * 11} y={76} width={4} height={28} rx={2} className="l-rx__vent" />)}
-              <motion.g style={{ y: press }}>
-                <rect x={572} y={78} width={52} height={26} rx={10} className="l-rx__btn-base" />
-                <rect x={572} y={74} width={52} height={26} rx={10} className="l-rx__btn" />
-                <text x={598} y={91} textAnchor="middle" className="l-rx__btntext">FEED</text>
-              </motion.g>
-              {/* the mouth and its tear bar */}
-              <rect x={44} y={124} width={572} height={14} rx={7} className="l-rx__mouth" />
-              <path d={`M40 138 ${Array.from({ length: 48 }, (_, i) => `L${46 + i * 12} 154 L${52 + i * 12} 138`).join(' ')} L620 138 Z`} className="l-rx__teeth" />
+          <motion.div className="l-rx__printer is-back" style={{ y: shake }} aria-hidden>
+            <svg viewBox="0 0 600 240" className="l-rx__machine">
+              <ellipse cx={300} cy={226} rx={286} ry={12} className="l-rx__shadow" />
+              {/* the top deck, seen from a little above, and the clamshell lid over the paper roll */}
+              <path d="M74 30 Q76 18 90 18 L510 18 Q524 18 526 30 L582 98 L18 98 Z" className="l-rx__deck" />
+              <path d="M96 26 L504 26 L546 82 L54 82 Z" className="l-rx__lid" />
+              <path d="M118 30 Q300 6 482 30 L496 48 Q300 26 104 48 Z" className="l-rx__roll" />
+              <path d="M104 48 Q300 26 496 48" className="l-rx__seam" />
+              {/* the paper roll turning, seen through the smoked window */}
+              <motion.line x1={150} y1={58} x2={450} y2={58} className="l-rx__turn" style={{ strokeDashoffset: spin }} />
+              <motion.line x1={140} y1={66} x2={460} y2={66} className="l-rx__turn is-mid" style={{ strokeDashoffset: spin }} />
             </svg>
           </motion.div>
-
           <div className="l-rx__run">
             {SLIPS.map((slip, k) => <Slip key={slip.title} k={k} slip={slip} p={p} w={w} />)}
           </div>
+          {/* the paper passes between these two layers: in front of the lid, behind the slot's lip */}
+          <motion.div className="l-rx__printer is-front" style={{ y: shake }} aria-hidden>
+            <svg viewBox="0 0 600 240" className="l-rx__machine">
+              {/* the slot the paper rises out of, with its tear bar */}
+              <rect x={116} y={79} width={368} height={10} rx={5} className="l-rx__mouth" />
+              <motion.rect x={124} y={80} width={352} height={4} rx={2} className="l-rx__glow" style={{ opacity: feeding }} />
+              <path d={`M116 89 ${Array.from({ length: 30 }, (_, i) => `L${122 + i * 12} 95 L${128 + i * 12} 89`).join(' ')} L484 89 L484 92 L116 92 Z`} className="l-rx__teeth" />
+              {/* the front face */}
+              <path d="M18 98 L582 98 L582 196 Q582 216 562 216 L38 216 Q18 216 18 196 Z" className="l-rx__body" />
+              <path d="M18 98 L582 98" className="l-rx__edge" />
+              <circle cx={56} cy={136} r={7} className="l-rx__pwr" />
+              <motion.circle cx={80} cy={136} r={7} style={{ fill: led }} />
+              <text x={46} y={160} className="l-rx__tiny">PWR  FEED</text>
+              <rect x={112} y={122} width={92} height={32} rx={8} className="l-rx__lcd" />
+              <text x={158} y={143} textAnchor="middle" className="l-rx__lcdtext">{String(printed).padStart(2, '0')}/{String(N).padStart(2, '0')}</text>
+              <text x={300} y={186} textAnchor="middle" className="l-rx__brand">TRAILHEAD · TP-5</text>
+              {Array.from({ length: 6 }, (_, i) => <rect key={i} x={250 + i * 18} y={124} width={8} height={30} rx={4} className="l-rx__vent" />)}
+              <motion.g style={{ y: press }}>
+                <rect x={470} y={128} width={74} height={32} rx={12} className="l-rx__btn-base" />
+                <rect x={470} y={123} width={74} height={32} rx={12} className="l-rx__btn" />
+                <text x={507} y={143} textAnchor="middle" className="l-rx__btntext">FEED</text>
+              </motion.g>
+              <rect x={44} y={214} width={512} height={9} rx={4.5} className="l-rx__foot" />
+            </svg>
+          </motion.div>
         </motion.div>
       </section>
       <div className="l-rx__after t-sky">
@@ -216,15 +224,13 @@ function Slip({ k, slip, p, w }: { k: number; slip: (typeof SLIPS)[number]; p: M
   // The tear: a kick against the direction of travel before it sails to the wall.
   const rotate = useTransform(fly, (f) => lerp(0, to.r, f) + Math.sin(f * Math.PI) * -to.r * 2.4)
   const shown = useTransform(local, (t) => (t > FEED[0] - 0.02 ? 1 : 0))
-  // Paper comes out of the slot from the top down; the print head is the moving edge.
-  const reveal = useTransform(feed, (f) => `inset(0 0 ${((1 - f) * 100).toFixed(2)}% 0)`)
-  const head = useTransform(feed, (f) => `${(f * 100).toFixed(2)}%`)
-  const headOn = useTransform(local, (t) => (t > FEED[0] && t < FEED[1] + 0.02 ? 1 : 0))
+  // Paper rises out of the slot top edge first; everything below the slot is still inside the printer.
+  const rise = useTransform(feed, (f) => `${((1 - f) * 100).toFixed(2)}%`)
   const stampScale = useTransform(stamp, (t) => lerp(2.6, 1, t))
   const stampRot = useTransform(stamp, (t) => lerp(-34, -12, t))
   return (
     <motion.div className="l-rx__slip" style={{ x, y, scale, rotate, opacity: shown, zIndex: 10 + k }}>
-      <motion.div className="l-rx__paper-clip" style={{ clipPath: reveal }}>
+      <motion.div className="l-rx__paper-clip" style={{ y: rise }}>
         <article className="l-rx__paper">
           <div className="l-rx__ptop mono">
             <span>#{String(k + 1).padStart(3, '0')} · {slip.title}</span>
@@ -246,7 +252,6 @@ function Slip({ k, slip, p, w }: { k: number; slip: (typeof SLIPS)[number]; p: M
           </motion.span>
         </article>
       </motion.div>
-      <motion.span className="l-rx__head" style={{ top: head, opacity: headOn }} />
     </motion.div>
   )
 }
