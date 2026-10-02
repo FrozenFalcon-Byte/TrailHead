@@ -1,15 +1,15 @@
-import { animate, motion, useMotionValue, useReducedMotion, useSpring, useTransform } from 'motion/react'
+import { animate, motion, useMotionValue, useReducedMotion, useSpring } from 'motion/react'
 import { useEffect, useRef, useState } from 'react'
 import { useAuth } from '../lib/auth'
 import { useAvatar } from '../lib/profile'
 
 /* The profile photo as a compass. A bezel of ticks surrounds the photo and turns to face the pointer, the photo
-   leans toward it, and "Change" is stamped on when you hover. A new photo opens through an iris while the bezel
+   stays put, and "Change" is stamped on when you hover. The frame can be the compass, a plain circle or a square. A new photo opens through an iris while the bezel
    swings a full turn, so changing it feels like something happened. */
 
 const TICKS = 48
 
-export function PhotoDial({ size = 132, onEdit }: { size?: number; onEdit: () => void }) {
+export function PhotoDial({ size = 132, onEdit, frame = 'compass' }: { size?: number; onEdit: () => void; frame?: 'compass' | 'circle' | 'square' }) {
   const src = useAvatar()
   const { displayName } = useAuth()
   const reduce = useReducedMotion()
@@ -17,19 +17,15 @@ export function PhotoDial({ size = 132, onEdit }: { size?: number; onEdit: () =>
   const [hover, setHover] = useState(false)
   const turn = useMotionValue(0)
   const bezel = useSpring(turn, { stiffness: 120, damping: 16 })
-  const tx = useSpring(0, { stiffness: 220, damping: 18 })
-  const ty = useSpring(0, { stiffness: 220, damping: 18 })
-  const rotateX = useTransform(ty, (v) => -v * 14)
-  const rotateY = useTransform(tx, (v) => v * 14)
   const outer = size + 34
+  const open = frame === 'square' ? 'inset(0% round 26%)' : 'circle(50% at 50% 50%)'
+  const shut = frame === 'square' ? 'inset(50% round 26%)' : 'circle(0% at 50% 50%)'
 
   const onMove = (e: React.PointerEvent) => {
     if (reduce) return
     const r = ref.current!.getBoundingClientRect()
     const x = (e.clientX - r.left) / r.width - 0.5
     const y = (e.clientY - r.top) / r.height - 0.5
-    tx.set(x)
-    ty.set(y)
     // turn the bezel the short way round toward the pointer
     const target = (Math.atan2(y, x) * 180) / Math.PI + 90
     const now = turn.get()
@@ -37,8 +33,6 @@ export function PhotoDial({ size = 132, onEdit }: { size?: number; onEdit: () =>
   }
   const onLeave = () => {
     setHover(false)
-    tx.set(0)
-    ty.set(0)
   }
 
   // a new photo: swing the bezel a whole turn
@@ -55,8 +49,8 @@ export function PhotoDial({ size = 132, onEdit }: { size?: number; onEdit: () =>
     <motion.button
       ref={ref}
       type="button"
-      className="pdl"
-      style={{ width: outer, height: outer, perspective: 600 }}
+      className={`pdl is-${frame}`}
+      style={{ width: outer, height: outer }}
       onClick={onEdit}
       onPointerMove={onMove}
       onPointerEnter={() => setHover(true)}
@@ -67,19 +61,19 @@ export function PhotoDial({ size = 132, onEdit }: { size?: number; onEdit: () =>
       aria-label="Change profile photo"
       data-cursor="Change photo"
     >
-      <motion.svg viewBox="-50 -50 100 100" className="pdl-bezel" style={{ rotate: bezel }} aria-hidden>
+      {frame === 'compass' && <motion.svg viewBox="-50 -50 100 100" className="pdl-bezel" style={{ rotate: bezel }} aria-hidden>
         <circle r={48} className="pdl-bezel__rim" />
         {Array.from({ length: TICKS }, (_, i) => (
           <line key={i} y1={-46} y2={i % 12 === 0 ? -40 : i % 4 === 0 ? -42.5 : -44} className={i % 12 === 0 ? 'is-major' : ''} transform={`rotate(${(i * 360) / TICKS})`} />
         ))}
         <path d="M0 -49 L4 -41 L-4 -41 Z" className="pdl-bezel__north" />
-      </motion.svg>
-      <motion.span className="pdl-face" style={{ width: size, height: size, rotateX, rotateY }}>
+      </motion.svg>}
+      <motion.span className="pdl-face" style={{ width: size, height: size }}>
         <motion.span
           key={src || 'none'}
           className="pdl-iris"
-          initial={first.current ? false : { clipPath: 'circle(0% at 50% 50%)', scale: 1.15 }}
-          animate={{ clipPath: 'circle(50% at 50% 50%)', scale: 1 }}
+          initial={first.current ? false : { clipPath: shut, scale: 1.15 }}
+          animate={{ clipPath: open, scale: 1 }}
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
         >
           {src ? <img src={src} alt="" width={size} height={size} referrerPolicy="no-referrer" draggable={false} /> : <svg viewBox="0 0 100 100" className="pdl-blank" aria-label={displayName || 'No photo yet'}><path d="M8 82 L40 34 L56 56 L66 44 L92 82 Z" className="pdl-blank__peak" /><path d="M33 45 L40 34 L47 45 L42 42 L38 47 Z" className="pdl-blank__snow" /><circle cx={72} cy={26} r={8} className="pdl-blank__sun" /></svg>}

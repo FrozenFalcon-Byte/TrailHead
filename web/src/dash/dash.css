@@ -6155,18 +6155,58 @@ html[data-side='accent'] .d-side .d-nav a.active { color: #fbf8f1; }
 .p-pass__stub .p-pass__remove { color: var(--pass-ink, var(--solid)); }
 .p-pass__fact { display: inline-flex; }
 .p-pass__fact > * { flex: 1; }
-.p-cust { position: absolute; top: 14px; right: 18px; z-index: 5; }
-.p-pass-wrap:has(.p-pass.is-tag) .p-cust { right: 70px; }
-.p-cust__btn { display: inline-flex; align-items: center; gap: 7px; border: 0; padding: 7px 12px; border-radius: 12px; background: var(--surface); color: var(--ink); font: 800 12.5px var(--chunk); cursor: pointer; }
-.p-cust__tray { position: absolute; right: 0; top: calc(100% + 8px); width: 260px; display: grid; gap: 8px; padding: 14px; border-radius: calc(20px * var(--round, 1)); background: var(--solid); color: var(--on-solid); box-shadow: 0 18px 40px rgba(0, 0, 0, 0.18); }
-.p-cust__label { font: 800 10.5px var(--chunk); letter-spacing: 0.08em; text-transform: uppercase; color: color-mix(in srgb, var(--on-solid) 50%, transparent); }
-.p-cust__swatches { display: flex; gap: 8px; }
-.p-cust__swatches button { position: relative; width: 30px; height: 30px; border: 0; border-radius: 10px; cursor: pointer; }
-.p-cust__ring { position: absolute; inset: -4px; border-radius: 13px; box-shadow: 0 0 0 2.5px var(--on-solid); }
-.p-cust__shapes { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-.p-cust__shapes button { position: relative; display: grid; justify-items: center; gap: 4px; border: 0; padding: 8px 6px; border-radius: 12px; background: color-mix(in srgb, var(--on-solid) 8%, transparent); color: var(--on-solid); font: 700 12px var(--chunk); cursor: pointer; }
-.p-cust__shapes button.is-on { color: var(--solid); }
-.p-cust__shapes button > *:not(.p-cust__pill) { position: relative; }
-.p-cust__pill { position: absolute; inset: 0; border-radius: 12px; background: var(--lime); }
-.p-cust__toggles { display: grid; gap: 6px; margin-top: 4px; }
-.p-cust__toggles label { display: flex; align-items: center; justify-content: space-between; font: 700 13px var(--chunk); }
+/* "Your pass" tab */
+.p-cust__card { display: grid; gap: 10px; align-content: start; }
+.p-cust__card > .d-muted { margin-top: -4px; }
+.p-cust__label { margin-top: 8px; font: 800 11px var(--chunk); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-soft); }
+.p-cust__swatches { display: flex; flex-wrap: wrap; gap: 10px; }
+.p-cust__swatches button { position: relative; width: 40px; height: 40px; border: 0; border-radius: 13px; cursor: pointer; }
+.p-cust__ring { position: absolute; inset: -5px; border-radius: 17px; box-shadow: 0 0 0 2.5px var(--ink); }
+.p-cust__pick { display: grid; gap: 8px; }
+.p-cust__pick button { position: relative; display: grid; justify-items: center; align-content: center; gap: 6px; min-height: 64px; border: 0; padding: 10px 6px; border-radius: 16px; background: var(--surface); color: var(--ink); font: 750 12.5px var(--chunk); cursor: pointer; transition: transform 0.2s var(--ease-out); }
+.p-cust__pick button:hover { transform: translateY(-2px); }
+.p-cust__pick button.is-on { color: var(--on-solid); }
+.p-cust__pick button > *:not(.p-cust__pill) { position: relative; }
+.p-cust__pill { position: absolute; inset: 0; border-radius: 16px; background: var(--solid); }
+.p-cust__aa { font-size: 21px; line-height: 1; }
+.p-cust__input { width: 100%; }
+.p-cust__toggles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.p-cust__toggles label { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 14px; border-radius: 16px; background: var(--surface); font: 750 14px var(--chunk); cursor: pointer; }
+@media (max-width: 860px) { .p-cust__toggles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 520px) { .p-cust__toggles { grid-template-columns: 1fr; } }
+
+/* Name lettering */
+.p-cust__aa.font-bold { font-family: var(--display); }
+.p-cust__aa.font-clean { font-family: 'Inter Variable', system-ui, sans-serif; letter-spacing: -0.03em; }
+.p-cust__aa.font-mono { font-family: ui-monospace, 'SF Mono', Menlo, monospace; letter-spacing: -0.04em; }
+.p-cust__aa.font-hand { font-family: 'Caveat', cursive; font-weight: 600; }
+.p-pass.font-bold .p-pass__name { font-family: var(--display); }
+.p-pass.font-clean .p-pass__name { font-family: 'Inter Variable', system-ui, sans-serif; font-weight: 750; letter-spacing: -0.035em; }
+.p-pass.font-mono .p-pass__name { font-family: ui-monospace, 'SF Mono', Menlo, monospace; font-weight: 700; letter-spacing: -0.05em; font-size: clamp(28px, 3.1vw, 44px); }
+.p-pass.font-hand .p-pass__name { font-family: 'Caveat', cursive; font-weight: 600; font-size: clamp(42px, 4.6vw, 66px); line-height: 0.9; }
+
+/* Plain card: no perforation */
+.p-pass.is-card .p-pass__stub::after { display: none; }
+.p-pass.is-card .p-pass__stub { margin: 14px; border-radius: calc(24px * var(--round, 1)); }
+
+/* Stub on the right */
+.p-pass.is-flip { grid-template-columns: auto minmax(0, 1fr) auto; }
+.p-pass.is-flip .p-pass__stub { order: 3; }
+.p-pass.is-flip .p-pass__main { order: 1; padding-left: 34px; padding-right: 44px; }
+.p-pass.is-flip .p-pass__stamps { order: 2; }
+.p-pass.is-flip .p-pass__stub::after { right: auto; left: -6px; }
+.p-pass.is-flip .p-pass__trail { left: 30px; right: 220px; }
+.p-pass.is-flip.is-tag { clip-path: polygon(54px 0, 100% 0, 100% 100%, 54px 100%, 0 50%); padding-right: 0; padding-left: 40px; }
+.p-pass.no-stamps { grid-template-columns: auto minmax(0, 1fr); }
+.p-pass.is-flip.no-stamps { grid-template-columns: minmax(0, 1fr) auto; }
+
+/* Photo frames */
+.pdl.is-square .pdl-face, .pdl.is-square .pdl-iris { border-radius: 26%; }
+@media (max-width: 1100px) {
+  .p-pass.is-flip { grid-template-columns: minmax(0, 1fr) auto; }
+  .p-pass.is-flip .p-pass__stub { order: 2; }
+  .p-pass.is-flip .p-pass__stamps { order: 3; }
+}
+@media (max-width: 680px) {
+  .p-pass.is-flip { grid-template-columns: 1fr; }
+}

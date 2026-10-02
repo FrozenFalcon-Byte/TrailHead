@@ -11,8 +11,8 @@ import { SplitReveal } from './SplitReveal'
 import { LeavingSheet } from './UpdateSheet'
 
 /* When a newer build of the site is out, wherever you are (landing, guide, dashboard), a splash rolls up: the
-   mountains rise, the sun comes up, and the card says what changed. "Later" folds the splash down into a small flag
-   in the corner that opens it again; "Update now" hands over to the walk that carries on through the reload. */
+   mountains rise, the sun comes up, and the card says what changed. "Later" shrinks the splash into the corner, where a small flag
+   springs up that opens it again; "Update now" hands over to the walk that carries on through the reload. */
 
 const BULLETS: { kind: ShapeKind; color: string; glyph: Glyph }[] = [
   { kind: 'tag', color: 'var(--orange)', glyph: 'flag' },
@@ -30,25 +30,28 @@ export function UpdateSplash() {
   const release = useRelease()
   const notice = usePref('updateNotice')
   const reduce = useReducedMotion()
-  const [open, setOpen] = useState(false)
+  // 'off' until a release is seen, so the corner flag never flashes up before the splash rolls in.
+  const [view, setView] = useState<'off' | 'open' | 'chip'>('off')
   const [going, setGoing] = useState(false)
+  const open = view === 'open'
+  const setOpen = (v: boolean) => setView(v ? 'open' : 'chip')
   const shown = useRef('')
 
   useEffect(() => {
     if (!release || shown.current === release.id) return
     shown.current = release.id
     if (notice === 'auto' && document.visibilityState === 'hidden') return void window.location.reload()
-    if (notice !== 'quiet') setOpen(true)
+    setView(notice === 'quiet' ? 'chip' : 'open')
   }, [release, notice])
 
   useEffect(() => {
     if (!open) return
-    const esc = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false)
+    const esc = (e: KeyboardEvent) => e.key === 'Escape' && setView('chip')
     document.addEventListener('keydown', esc)
     return () => document.removeEventListener('keydown', esc)
   }, [open])
 
-  if (!release) return null
+  if (!release || view === 'off') return null
   // Commit subjects run long; the part before a colon is the headline, the rest is trimmed.
   const changes = release.changes.slice(0, 3).map((c) => { const head = c.split(':')[0]; const t = head.length >= 12 && head.length < 90 ? head : c; return t.length > 96 ? `${t.slice(0, 94).trimEnd()}…` : t })
   const spring = reduce ? { duration: 0 } : { type: 'spring' as const, stiffness: 220, damping: 26 }
@@ -57,7 +60,9 @@ export function UpdateSplash() {
     <>
       <AnimatePresence>
         {open ? (
-          <motion.div key="splash" layoutId="th-update" className="usp" role="dialog" aria-modal="true" aria-label="A new version is ready" transition={spring} style={{ borderRadius: 0 }}>
+          <motion.div key="splash" className="usp" role="dialog" aria-modal="true" aria-label="A new version is ready"
+            initial={reduce ? false : { y: '100%' }} animate={{ y: 0, scale: 1, borderRadius: 0 }} exit={reduce ? { opacity: 0 } : { scale: 0.04, borderRadius: 400, transition: { duration: 0.45, ease: [0.76, 0, 0.24, 1] } }}
+            transition={spring} style={{ transformOrigin: '40px calc(100% - 40px)' }}>
             <motion.div className="usp-in" initial={{ y: 30 }} animate={{ y: 0 }} exit={{ y: 20, scale: 0.9 }} transition={spring}>
               <motion.span className="usp-mark" initial={{ rotate: -30, scale: 0.4 }} animate={{ rotate: 0, scale: 1 }} transition={{ type: 'spring', stiffness: 260, damping: 13, delay: 0.15 }}>
                 <Mark size={64} />
@@ -96,7 +101,9 @@ export function UpdateSplash() {
           </motion.div>
         ) : (
           !going && (
-            <motion.button key="chip" layoutId="th-update" className="usp-chip" onClick={() => setOpen(true)} transition={spring} style={{ borderRadius: 18 }} aria-label="A new version is ready" data-cursor="See what changed">
+            <motion.button key="chip" className="usp-chip" onClick={() => setOpen(true)}
+              initial={reduce ? false : { scale: 0, rotate: -20 }} animate={{ scale: 1, rotate: 0, transition: { type: 'spring', stiffness: 380, damping: 18, delay: 0.25 } }} exit={{ scale: 0, rotate: 20, transition: { duration: 0.15 } }}
+              style={{ borderRadius: 18, transformOrigin: 'left bottom' }} aria-label="A new version is ready" data-cursor="See what changed">
               <motion.span animate={{ rotate: [0, -10, 0] }} transition={{ duration: 1.6, repeat: Infinity, repeatDelay: 2.4 }} style={{ display: 'inline-flex' }}>
                 <Shape kind="tag" color="var(--orange)" glyph="flag" size={24} play={false} />
               </motion.span>

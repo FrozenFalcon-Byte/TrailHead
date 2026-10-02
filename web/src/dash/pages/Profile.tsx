@@ -16,7 +16,7 @@ import { EASE, Note, PageHead } from '../ui'
 import { Shape } from '../../motion/Shapes'
 import { SplitReveal } from '../../motion/SplitReveal'
 import { usePrefs } from '../../lib/prefs'
-import { PassTilt } from '../PassCustom'
+import { PASS_LABEL, PassFrame, PassPanel } from '../PassCustom'
 import { CountUp, Donut } from '../viz'
 import { GitHubLogo, GoogleLogo, MailLogo } from '../../motion/Logos'
 
@@ -25,6 +25,7 @@ const TABS = [
   { id: 'security', label: 'Security', kind: 'square', color: 'var(--green)', glyph: 'check' },
   { id: 'sessions', label: 'Sessions', kind: 'tag', color: 'var(--orange)', glyph: 'signal' },
   { id: 'data', label: 'Your data', kind: 'circle', color: 'var(--blue)', glyph: 'file' },
+  { id: 'pass', label: 'Your pass', kind: 'tag', color: 'var(--yellow)', glyph: 'flag' },
 ] as const
 
 const PROVIDERS: { id: string; name: string; note: string; color: string; logo: (on: boolean) => React.ReactNode }[] = [
@@ -46,8 +47,13 @@ export default function Profile() {
   const { profile, upgraded, reload } = useProfile()
   const photo = useAvatar()
   const signOutHere = useSignOut()
-  const [tab, setTab] = useState<string>(window.location.hash === '#security' ? 'security' : 'details')
+  const [tab, setTab] = useState<string>(window.location.hash === '#security' ? 'security' : window.location.hash === '#pass' ? 'pass' : 'details')
   const lastTab = useRef(0)
+  useEffect(() => {
+    const go = () => ['#security', '#pass', '#details', '#sessions', '#data'].includes(window.location.hash) && setTab(window.location.hash.slice(1))
+    window.addEventListener('hashchange', go)
+    return () => window.removeEventListener('hashchange', go)
+  }, [])
 
   const [editing, setEditing] = useState(false)
   const [form, setForm] = useState({ display_name: '', headline: '', location: '', website: '', bio: '' })
@@ -196,23 +202,29 @@ export default function Profile() {
         </Note>
       )}
 
-      <PassTilt shape={prefs.passShape} color={prefs.passColor}>
+      <PassFrame>
         <motion.div className="p-pass__stub" key={prefs.passColor} initial={{ rotateY: -70, scaleY: 0.92 }} animate={{ rotateY: 0, scaleY: 1 }} transition={{ type: 'spring', stiffness: 160, damping: 16 }} style={{ transformOrigin: 'right center' }}>
-          <PhotoDial size={132} onEdit={() => setEditing(true)} />
+          <PhotoDial size={132} frame={prefs.passFrame} onEdit={() => setEditing(true)} />
           {photo && <button className="p-pass__remove" onClick={() => run('photo', removeAvatar, 'Photo removed')} disabled={busy === 'photo'}>Remove photo</button>}
         </motion.div>
         <div className="p-pass__main">
-          <span className="p-pass__kind">Trail pass · {bypass ? 'local' : `No. ${(user?.id ?? '').slice(0, 8).toUpperCase()}`}</span>
-          <SplitReveal as="h2" className="chunk p-pass__name" text={form.display_name || displayName || 'Hiker'} immediate delay={0.25} stagger={0.05} />
-          <p className="p-pass__head">{form.headline || (bypass ? 'Exploring in local mode' : 'Add a headline in Details')}</p>
+          <span className="p-pass__kind">{prefs.passLabel.trim().slice(0, 24) || PASS_LABEL} · {bypass ? 'local' : `No. ${(user?.id ?? '').slice(0, 8).toUpperCase()}`}</span>
+          <SplitReveal key={prefs.passFont} as="h2" className="chunk p-pass__name" text={form.display_name || displayName || 'Hiker'} immediate delay={0.05} stagger={0.05} />
+          <AnimatePresence initial={false}>
+            {prefs.passHeadline && (
+              <motion.p className="p-pass__head" initial={{ rotateX: -90, y: -6 }} animate={{ rotateX: 0, y: 0 }} exit={{ rotateX: -90, y: -6, transition: { duration: 0.15 } }} transition={{ type: 'spring', stiffness: 260, damping: 20 }} style={{ transformOrigin: 'top' }}>
+                {form.headline || (bypass ? 'Exploring in local mode' : 'Add a headline in Details')}
+              </motion.p>
+            )}
+          </AnimatePresence>
           <div className="p-pass__facts">
             {[
               prefs.passEmail && user?.email ? <span key="mail"><i>✉</i>{user.email}</span> : null,
-              form.location ? <span key="loc"><i>⌖</i>{form.location}</span> : null,
-              form.website ? <a key="web" href={form.website} target="_blank" rel="noreferrer noopener"><i>↗</i>{form.website.replace(/^https?:\/\//, '')}</a> : null,
-              <span key="since"><i>◷</i>member {since(user?.created_at)}</span>,
+              prefs.passDetails && form.location ? <span key="loc"><i>⌖</i>{form.location}</span> : null,
+              prefs.passDetails && form.website ? <a key="web" href={form.website} target="_blank" rel="noreferrer noopener"><i>↗</i>{form.website.replace(/^https?:\/\//, '')}</a> : null,
+              prefs.passDetails ? <span key="since"><i>◷</i>member {since(user?.created_at)}</span> : null,
             ].filter(Boolean).map((el, i) => (
-              <motion.span key={i} className="p-pass__fact" initial={{ scale: 0.6, rotate: -8, y: 10 }} animate={{ scale: 1, rotate: 0, y: 0 }} transition={{ type: 'spring', stiffness: 320, damping: 16, delay: 0.4 + i * 0.07 }} whileHover={{ y: -3, rotate: -1.5 }}>
+              <motion.span key={(el as React.ReactElement).key ?? i} className="p-pass__fact" initial={{ scale: 0.6, rotate: -8, y: 10 }} animate={{ scale: 1, rotate: 0, y: 0 }} transition={{ type: 'spring', stiffness: 320, damping: 16, delay: 0.4 + i * 0.07 }} whileHover={{ y: -3, rotate: -1.5 }}>
                 {el}
               </motion.span>
             ))}
@@ -241,10 +253,10 @@ export default function Profile() {
             </motion.div>
           )}
         </AnimatePresence>
-        <svg className="p-pass__trail" viewBox="0 0 600 24" preserveAspectRatio="none" aria-hidden>
+        {prefs.passTrail && <svg className="p-pass__trail" viewBox="0 0 600 24" preserveAspectRatio="none" aria-hidden>
           <motion.path d="M0 12 C 60 2, 110 22, 170 12 S 280 2, 340 12 S 450 22, 510 12 S 580 4, 600 10" fill="none" stroke="var(--ink)" strokeOpacity={0.25} strokeWidth={2.5} strokeDasharray="2 8" strokeLinecap="round" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 1.6, ease: EASE, delay: 0.3 }} />
-        </svg>
-      </PassTilt>
+        </svg>}
+      </PassFrame>
 
       <nav className="p-tabs" aria-label="Profile sections">
         {tabs.map((t) => (
@@ -353,6 +365,8 @@ export default function Profile() {
               )}
             </div>
           )}
+
+          {tab === 'pass' && <PassPanel />}
 
           {tab === 'data' && (
             <div className="p-grid">

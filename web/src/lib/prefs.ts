@@ -59,7 +59,14 @@ export type Prefs = {
   hiddenNav: string
   mapScenery: boolean
   passColor: 'yellow' | 'orange' | 'violet' | 'blue' | 'green' | 'lime'
-  passShape: 'ticket' | 'tag'
+  passShape: 'ticket' | 'tag' | 'card'
+  passFont: 'bold' | 'clean' | 'mono' | 'hand'
+  passFrame: 'compass' | 'circle' | 'square'
+  passStub: 'left' | 'right'
+  passLabel: string
+  passHeadline: boolean
+  passDetails: boolean
+  passTrail: boolean
   passEmail: boolean
   passStats: boolean
   passStamps: boolean
@@ -144,6 +151,13 @@ export const DEFAULTS: Prefs = {
   mapScenery: true,
   passColor: 'yellow',
   passShape: 'ticket',
+  passFont: 'bold',
+  passFrame: 'compass',
+  passStub: 'left',
+  passLabel: '',
+  passHeadline: true,
+  passDetails: true,
+  passTrail: true,
   passEmail: true,
   passStats: true,
   passStamps: true,
@@ -174,7 +188,10 @@ const CHOICES: Partial<Record<keyof Prefs, readonly string[]>> = {
   headingFont: ['bricolage', 'inter', 'mono'],
   overviewLayout: ['bento', 'pairs', 'stack'],
   passColor: ['yellow', 'orange', 'violet', 'blue', 'green', 'lime'],
-  passShape: ['ticket', 'tag'],
+  passShape: ['ticket', 'tag', 'card'],
+  passFont: ['bold', 'clean', 'mono', 'hand'],
+  passFrame: ['compass', 'circle', 'square'],
+  passStub: ['left', 'right'],
 }
 
 function load(): Prefs {
