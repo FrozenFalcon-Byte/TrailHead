@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import Any
 
 from .config import Settings
+from . import snapshots
 from .store import Store
 
 _NAME = re.compile(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$")
@@ -67,7 +68,7 @@ def list_repos(settings: Settings) -> list[dict[str, Any]]:
         name = store.get_meta("repo")
         # a database that is still being written belongs to its running job, not the shelf
         if name and jobs.get(name, {}).get("status") not in ("running", "failed"):
-            out.append({**summary(store), "status": "ready"})
+            out.append({**summary(store), "status": "ready", "kept": snapshots.kept(settings, path), "replaced": jobs.get(name, {}).get("replaced", [])})
         store.close()
     known = {r["repo"] for r in out}
     out += [{"repo": repo, **{k: v for k, v in job.items() if k != "trace"}} for repo, job in jobs.items() if repo not in known and job["status"] in ("running", "failed")]
@@ -109,14 +110,15 @@ def start_ingest(settings: Settings, repo: str, *, github: bool = True, github_t
             target.db_path.parent.mkdir(parents=True, exist_ok=True)
             report = ingest(target, repo, github=github, progress=progress, github_token=github_token)
             # keep a copy off this machine so the repository survives a redeploy on a host without a lasting disk
-            from . import snapshots
-
             if snapshots.enabled(settings):
                 progress("Saving a copy that survives restarts")
+                removed: list[str] = []
                 try:
-                    note = snapshots.save(settings, target.db_path)
+                    note, removed = snapshots.save(settings, target.db_path)
                 except Exception as exc:
                     note = f"Could not save a copy across restarts ({type(exc).__name__})."
+                with _lock:
+                    _jobs[repo]["replaced"] = [r for r in removed if r != repo]
                 store = Store(target.db_path)
                 store.set_meta("snapshot_note", note)
                 store.close()

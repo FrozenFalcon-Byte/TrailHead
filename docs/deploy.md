@@ -52,7 +52,9 @@ Re-run `pack` and upload a new release whenever you want the hosted copy to pick
 Free instances sleep after 15 minutes idle. The first request after that takes about a minute while the instance
 wakes and restores the snapshot. With `SUPABASE_SERVICE_ROLE_KEY` set, every repository onboarded on the host is
 saved to a private Supabase Storage bucket (`trailhead-repos`, created on first use) when its ingest finishes, and
-restored on each boot, so it survives sleeps and redeploys. Databases over 48 MB compressed cannot be kept on the
+restored on each boot, so it survives sleeps and redeploys. Only the newest onboarding is kept: saving it removes
+every other snapshot, and those repositories last until the next restart. `/api/health` reports `snapshots`
+as `off`, `ready` or the storage error. Databases over 48 MB compressed cannot be kept on the
 free plan; the Repositories page says so. Issues graded on the First issues page are still lost when it sleeps. Browsers keep their own copy of graded issues, and the page grades a few
 more on each visit.
 

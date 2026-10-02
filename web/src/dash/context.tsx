@@ -19,9 +19,11 @@ export type RepoInfo = {
   step?: string
   github_note?: string
   snapshot_note?: string
+  kept?: boolean | null
+  replaced?: string[]
   error?: string
 }
-export type Health = { ok: boolean; auth: string; engines: string[]; default_engine: string; next_slot_s: number }
+export type Health = { ok: boolean; auth: string; engines: string[]; default_engine: string; next_slot_s: number; snapshots?: string }
 export type ServerConfig = {
   default_engine: string
   engines: string[]

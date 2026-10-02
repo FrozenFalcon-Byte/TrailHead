@@ -56,6 +56,7 @@ function RepoTicket({ r, active, onPick, i }: { r: RepoInfo; active: boolean; on
         )}
         {ready && r.github_note && <span className="rp-t__note small">Pull requests and issues were skipped: {r.github_note} Onboard it again later to fetch them.</span>}
         {ready && r.snapshot_note && <span className="rp-t__note small">{r.snapshot_note} It stays until the server restarts.</span>}
+        {ready && !r.snapshot_note && r.kept === false && <span className="rp-t__note small">Not kept across restarts: a newer onboarding took its place in storage. It stays until the server restarts; onboard it again to keep it.</span>}
       </span>
       <span className="rp-t__end">
         {active ? (
@@ -102,7 +103,7 @@ function StopButton({ repo, stopping }: { repo: string; stopping: boolean }) {
 }
 
 export default function Repos() {
-  const { repos, repo, setRepo, refreshRepos, offline, recheck, checking } = useDash()
+  const { repos, repo, setRepo, refreshRepos, offline, recheck, checking, health } = useDash()
   const navigate = useNavigate()
   const { user, connectGitHub, bypass } = useAuth()
   const [name, setName] = useState('')
@@ -122,7 +123,7 @@ export default function Repos() {
     repos.forEach((r) => {
       const before = was.current[r.repo]
       if (r.status === 'running') told.current.delete(r.repo)
-      if (before === 'running' && r.status === 'ready' && !told.current.has(r.repo) && told.current.add(r.repo)) toast({ key: `ready:${r.repo}`, tone: 'job', title: `${r.repo} is ready`, body: `${r.files?.toLocaleString()} files and ${r.commits?.toLocaleString()} commits read.`, action: { label: 'Use it', run: () => setRepo(r.repo) } })
+      if (before === 'running' && r.status === 'ready' && !told.current.has(r.repo) && told.current.add(r.repo)) toast({ key: `ready:${r.repo}`, tone: 'job', title: `${r.repo} is ready`, body: `${r.files?.toLocaleString()} files and ${r.commits?.toLocaleString()} commits read.${r.kept ? ' Kept across server restarts.' : ''}${r.replaced?.length ? ` ${r.replaced.join(', ')} gave up ${r.replaced.length > 1 ? 'their' : 'its'} saved copy and will be gone after the next restart.` : ''}`, action: { label: 'Use it', run: () => setRepo(r.repo) } })
       if (before === 'running' && r.status === 'failed') notify.error(`${r.repo} failed`, r.error)
       was.current[r.repo] = r.status
     })
@@ -257,7 +258,7 @@ export default function Repos() {
             <TypedField className="mono" value={name} onValue={setName} suggestions={REPO_EXAMPLES} placeholder="owner/name" aria-label="Repository" disabled={offline} />
             <button className="btn" type="submit" disabled={!name.trim() || offline}><span>Onboard</span><span className="arrow">→</span></button>
           </div>
-          <span className="rp-add__hint">Big histories take a while. Annotations and summaries run from the command line afterwards.</span>
+          <span className="rp-add__hint">Big histories take a while.{health?.snapshots === 'ready' ? ' Only the newest repository you onboard is kept when the server restarts; onboarding another frees the last one’s space, and it stays here until the next restart.' : ' Annotations and summaries run from the command line afterwards.'}</span>
         </form>
       </section>
 

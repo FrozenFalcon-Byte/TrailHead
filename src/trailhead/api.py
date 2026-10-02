@@ -16,7 +16,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
-from . import evals, repos
+from . import evals, repos, snapshots
 from .auth import AuthError, User, Verifier
 from .config import ENGINE_KINDS, Settings, load_settings
 from .context import Context
@@ -162,7 +162,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     @app.get("/api/health")
     async def health() -> dict[str, Any]:
         return {"ok": True, "auth": settings.auth_mode, "auth_configured": verifier.configured, "engines": list(ENGINE_KINDS),
-                "default_engine": settings.decision_engine, "next_slot_s": round(next_slot(), 1)}
+                "default_engine": settings.decision_engine, "next_slot_s": round(next_slot(), 1),
+                "snapshots": await asyncio.to_thread(snapshots.status, settings)}
 
     @app.get("/api/config")
     async def config(_: User = Depends(user)) -> dict[str, Any]:
@@ -190,7 +191,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     @app.get("/api/repos")
     async def list_repos(_: User = Depends(user)) -> list[dict[str, Any]]:
-        return repos.list_repos(settings)
+        return await asyncio.to_thread(repos.list_repos, settings)
 
     @app.post("/api/repos")
     async def add_repo(body: IngestBody, _: User = Depends(user)) -> dict[str, Any]:

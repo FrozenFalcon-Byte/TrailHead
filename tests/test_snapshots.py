@@ -18,6 +18,10 @@ def _fake_storage(monkeypatch):
         if path == "/storage/v1/object/list/trailhead-repos":
             return httpx.Response(200, json=[{"name": n} for n in objects] + [{"name": "../../etc/passwd"}])
         name = path.rsplit("/", 1)[-1]
+        if req.method == "DELETE":
+            for n in __import__("json").loads(req.read())["prefixes"]:
+                objects.pop(n, None)
+            return httpx.Response(200, json=[])
         if req.method == "POST":
             objects[name] = req.read()
             return httpx.Response(200, json={"Key": name})
@@ -36,8 +40,18 @@ def test_an_onboarded_repository_comes_back_after_the_disk_is_wiped(tmp_path, mo
     store = Store(db)
     store.set_meta("repo", "acme/widget")
     store.close()
-    assert snapshots.save(host, db) == ""
+    assert snapshots.save(host, db) == ("", [])
     assert list(objects) == ["acme__widget.db.gz"]
+
+    # onboarding a second repository replaces the first in storage, while it stays on this disk
+    other = host.data_dir / "dbs" / "acme__gadget.db"
+    store = Store(other)
+    store.set_meta("repo", "acme/gadget")
+    store.close()
+    assert snapshots.save(host, other) == ("", ["acme/widget"])
+    assert list(objects) == ["acme__gadget.db.gz"]
+    assert snapshots.kept(host, other) is True and snapshots.kept(host, db) is False
+    assert snapshots.save(host, db) == ("", ["acme/gadget"])
 
     fresh = replace(base, data_dir=tmp_path / "after")
     written = snapshots.restore(fresh, log=lambda *a, **k: None)
