@@ -1,7 +1,8 @@
+import { BASE } from './base'
 import { supabase } from './supabase'
+import { noteAlive, suspectSleep } from './wake'
 
-/** Where the API lives. Empty in development (Vite proxies /api); set VITE_API_URL when the API is hosted elsewhere. */
-export const BASE = ((import.meta.env.VITE_API_URL as string | undefined) ?? '').replace(/\/$/, '')
+export { BASE }
 const url = (path: string) => (path.startsWith('/api') ? BASE + path : path)
 
 export class ApiError extends Error {
@@ -18,8 +19,22 @@ async function authHeader(): Promise<Record<string, string>> {
   return data.session ? { Authorization: `Bearer ${data.session.access_token}` } : {}
 }
 
+/* Every call to our own API also tells the wake watcher how the host is doing: an answer means it is up, while a
+   network failure or a gateway error (what a sleeping free host returns) means it has probably gone to sleep. */
+async function watched(path: string, init: RequestInit): Promise<Response> {
+  const ours = path.startsWith('/api')
+  try {
+    const res = await fetch(url(path), init)
+    if (ours) (res.status === 502 || res.status === 503 || res.status === 504 ? suspectSleep() : noteAlive())
+    return res
+  } catch (err) {
+    if (ours && !(err instanceof DOMException && err.name === 'AbortError')) suspectSleep()
+    throw err
+  }
+}
+
 export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
-  const res = await fetch(url(path), {
+  const res = await watched(path, {
     ...init,
     headers: { 'Content-Type': 'application/json', ...(await authHeader()), ...(init.headers || {}) },
   })
@@ -40,7 +55,7 @@ export type StreamEvent = { kind: string; data: any }
 
 /** POST that answers with Server-Sent Events. EventSource cannot send a body or headers, so this reads the stream by hand. */
 export async function stream(path: string, body: unknown, onEvent: (e: StreamEvent) => void, signal?: AbortSignal): Promise<void> {
-  const res = await fetch(url(path), {
+  const res = await watched(path, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream', ...(await authHeader()) },
     body: JSON.stringify(body),

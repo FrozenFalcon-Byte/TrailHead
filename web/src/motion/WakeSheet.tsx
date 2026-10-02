@@ -1,11 +1,13 @@
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { COLD_START_S, dismissWake, useWake, watchWake } from '../lib/wake'
 
 /* The wait for a sleeping server, told as dawn at a ranger station. While the host boots, the sun climbs behind
    the peak in step with the real seconds, the stove smokes and a marker walks the trail toward the station. The
    moment /api/health answers, the sun clears the ridge, the window lights, a flag goes up and the card says how
-   long it took before tucking itself away. It can be folded into a corner chip and keeps counting there. */
+   long it took before lifting away. It covers any page as a splash; "Keep browsing" shrinks it into a small toast
+   in the corner that keeps counting and opens the splash again when pressed. */
 
 const TRAIL = 'M18 104 C 70 104, 92 84, 140 86 S 214 104, 262 96 S 318 80, 334 82'
 const EASE = [0.76, 0, 0.24, 1] as const
@@ -87,6 +89,7 @@ function WalkerAt({ frac }: { frac: number }) {
 
 export function WakeSheet() {
   const w = useWake()
+  const reduce = useReducedMotion()
   const [folded, setFolded] = useState(false)
   const [hint, setHint] = useState(0)
   const live = w.phase === 'waking'
@@ -100,72 +103,90 @@ export function WakeSheet() {
     const id = window.setInterval(() => setHint((n) => (n + 1) % HINTS.length), 3200)
     return () => window.clearInterval(id)
   }, [live])
-  // a fresh wait always opens unfolded; the good news unfolds a folded card too
+  // every new wait opens as the full splash; a toast stays a toast through the good news
+  useEffect(() => setFolded(false), [w.since])
   useEffect(() => {
-    if (awake) setFolded(false)
-  }, [awake])
+    if (!shown) return
+    const esc = (e: KeyboardEvent) => e.key === 'Escape' && setFolded(true)
+    document.addEventListener('keydown', esc)
+    return () => document.removeEventListener('keydown', esc)
+  }, [shown])
 
   const over = secs > COLD_START_S + 5
   const title = awake ? `Awake. That took ${took}s.` : w.phase === 'down' ? 'The server did not wake' : over ? 'Nearly there' : 'Waking the server'
   const line = awake ? 'Everything is loading now.' : w.phase === 'down' ? 'It stopped answering for over two minutes. It may be redeploying.' : over ? 'Taking a little longer than usual. Still trying every few seconds.' : HINTS[hint]
+  const spring = { type: 'spring' as const, stiffness: 260, damping: 26 }
 
-  return (
+  return createPortal(
     <AnimatePresence>
-      {shown && folded && !awake && (
+      {shown && !folded && (
+        <motion.div
+          key="splash"
+          className={`wks is-${w.phase}`}
+          role="status"
+          aria-live="polite"
+          initial={reduce ? false : { y: '100%' }}
+          animate={{ y: 0, scale: 1, borderRadius: 0 }}
+          exit={reduce ? { opacity: 0 } : awake ? { y: '-100%', transition: { duration: 0.6, ease: EASE } } : { scale: 0.05, borderRadius: 400, transition: { duration: 0.45, ease: EASE } }}
+          transition={spring}
+          style={{ transformOrigin: '44px calc(100% - 44px)' }}
+        >
+          <motion.div className="wks-in" initial={{ y: 30 }} animate={{ y: 0 }} transition={{ ...spring, delay: 0.1 }}>
+            <motion.div className="wks-scene" initial={{ rotate: -3, scale: 0.92 }} animate={{ rotate: 0, scale: 1 }} transition={{ type: 'spring', stiffness: 200, damping: 14, delay: 0.15 }}>
+              <Dawn frac={frac} awake={awake} />
+            </motion.div>
+            <span className="wks-kicker">{awake ? 'Server awake' : w.phase === 'down' ? 'Server' : 'Cold start'}</span>
+            <span className="wk-title wks-title">
+              <AnimatePresence mode="popLayout" initial={false}>
+                <motion.b key={title} initial={{ y: 30, rotateX: -80 }} animate={{ y: 0, rotateX: 0 }} exit={{ y: -30, rotateX: 80 }} transition={{ type: 'spring', stiffness: 320, damping: 22 }}>{title}</motion.b>
+              </AnimatePresence>
+            </span>
+            <span className="wk-line wks-line">
+              <AnimatePresence mode="popLayout" initial={false}>
+                <motion.span key={line} initial={{ y: 14, rotateX: -70 }} animate={{ y: 0, rotateX: 0 }} exit={{ y: -14, rotateX: 70 }} transition={{ type: 'spring', stiffness: 320, damping: 24 }}>{line}</motion.span>
+              </AnimatePresence>
+            </span>
+            {live && (
+              <div className="wks-meter" aria-label={`${Math.floor(secs)} seconds of about ${COLD_START_S}`}>
+                <div className="wks-bar"><motion.i animate={{ scaleX: Math.min(0.97, frac) }} transition={{ duration: 0.4, ease: 'linear' }} /></div>
+                <span className="mono"><b>{Math.floor(secs)}s</b> of about {COLD_START_S}s</span>
+              </div>
+            )}
+            <div className="wks-go">
+              {live && <motion.button className="wks-btn is-solid" whileHover={{ y: -2 }} whileTap={{ scale: 0.95 }} onClick={() => setFolded(true)} data-cursor="Shrink this to a toast">Keep browsing</motion.button>}
+              {awake && <motion.button className="wks-btn is-solid" whileHover={{ y: -2 }} whileTap={{ scale: 0.95 }} onClick={dismissWake}>Go</motion.button>}
+              {w.phase === 'down' && <>
+                <motion.button className="wks-btn is-solid" whileHover={{ y: -2 }} whileTap={{ scale: 0.95 }} onClick={() => watchWake()}>Try again</motion.button>
+                <button className="wks-btn" onClick={() => setFolded(true)}>Keep browsing</button>
+              </>}
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+      {shown && folded && (
         <motion.button
-          key="chip"
-          className="wk-chip"
-          onClick={() => setFolded(false)}
-          initial={{ y: 60, scale: 0.6 }}
-          animate={{ y: 0, scale: 1 }}
-          exit={{ y: 60, scale: 0.6 }}
-          transition={{ type: 'spring', stiffness: 380, damping: 24 }}
-          aria-label="Show the server wake-up card"
+          key="toast"
+          className={`wkt is-${w.phase}`}
+          onClick={() => (awake ? dismissWake() : setFolded(false))}
+          initial={reduce ? false : { scale: 0, rotate: -12, y: 20 }}
+          animate={{ scale: 1, rotate: 0, y: 0, transition: { type: 'spring', stiffness: 380, damping: 20, delay: 0.3 } }}
+          exit={{ scale: 0.4, y: 30, opacity: 0, transition: { duration: 0.25 } }}
+          style={{ transformOrigin: 'left bottom' }}
+          aria-label={awake ? 'The server is awake' : 'Open the server wake-up screen'}
+          data-cursor={awake ? 'Done' : 'Open'}
         >
           <svg viewBox="0 0 36 36" className="wk-chip__ring" aria-hidden>
             <circle cx="18" cy="18" r="15" className="wk-chip__track" />
-            <motion.circle cx="18" cy="18" r="15" className="wk-chip__fill" animate={{ pathLength: Math.min(0.96, frac) }} transition={{ duration: 0.4, ease: 'linear' }} />
+            <motion.circle cx="18" cy="18" r="15" className="wk-chip__fill" animate={{ pathLength: awake ? 1 : Math.min(0.96, frac) }} transition={{ duration: 0.4, ease: 'linear' }} />
+            {awake && <motion.path d="M11 18.5l4.5 4.5L25 13.5" className="wkt-check" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 0.35 }} style={{ rotate: 90, originX: '18px', originY: '18px' }} />}
           </svg>
-          <span><b>{Math.floor(secs)}s</b> waking</span>
+          <span className="wkt-copy">
+            <b>{awake ? 'Server awake' : w.phase === 'down' ? 'Server not answering' : 'Waking the server'}</b>
+            <small>{awake ? `took ${took}s` : w.phase === 'down' ? 'tap to try again' : `${Math.floor(secs)}s of about ${COLD_START_S}s`}</small>
+          </span>
         </motion.button>
       )}
-      {shown && !folded && (
-        <motion.aside
-          key="sheet"
-          className={`wk is-${w.phase}`}
-          role="status"
-          aria-live="polite"
-          initial={{ y: 140, rotate: -2, clipPath: 'inset(0% 0% 0% 0% round 26px)' }}
-          animate={{ y: 0, rotate: 0, clipPath: 'inset(0% 0% 0% 0% round 26px)' }}
-          exit={awake ? { y: -30, clipPath: 'inset(0% 0% 100% 0% round 26px)', transition: { duration: 0.55, ease: EASE } } : { y: 160, rotate: 2, transition: { duration: 0.4, ease: EASE } }}
-          transition={{ type: 'spring', stiffness: 260, damping: 24 }}
-          layout
-        >
-          <Dawn frac={frac} awake={awake} />
-          <div className="wk-copy">
-            <span className="wk-title">
-              <AnimatePresence mode="popLayout" initial={false}>
-                <motion.b key={title} initial={{ y: 18, rotateX: -80 }} animate={{ y: 0, rotateX: 0 }} exit={{ y: -18, rotateX: 80 }} transition={{ type: 'spring', stiffness: 320, damping: 22 }}>{title}</motion.b>
-              </AnimatePresence>
-            </span>
-            <span className="wk-line">
-              <AnimatePresence mode="popLayout" initial={false}>
-                <motion.span key={line} initial={{ y: 12, rotateX: -70 }} animate={{ y: 0, rotateX: 0 }} exit={{ y: -12, rotateX: 70 }} transition={{ type: 'spring', stiffness: 320, damping: 24 }}>{line}</motion.span>
-              </AnimatePresence>
-            </span>
-          </div>
-          <div className="wk-side">
-            {live && (
-              <span className="wk-count" aria-label={`${Math.floor(secs)} seconds of about ${COLD_START_S}`}>
-                <b className="mono">{Math.floor(secs)}</b><small>of ~{COLD_START_S}s</small>
-              </span>
-            )}
-            {live && <button className="wk-btn" onClick={() => setFolded(true)}>Fold away</button>}
-            {awake && <button className="wk-btn is-solid" onClick={dismissWake}>Go</button>}
-            {w.phase === 'down' && <button className="wk-btn is-solid" onClick={() => watchWake()}>Try again</button>}
-          </div>
-        </motion.aside>
-      )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body,
   )
 }

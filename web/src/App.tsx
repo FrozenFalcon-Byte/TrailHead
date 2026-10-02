@@ -102,7 +102,7 @@ export default function App() {
       <QrSheet />
       <ContextMenu />
       <Toaster />
-      {(area === 'app' || area === 'welcome') && <WakeSheet />}
+      <WakeSheet />
       <MomentLayer />
       <UpdateSplash />
     </MotionConfig>
