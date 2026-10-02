@@ -1,7 +1,8 @@
-import { AnimatePresence, motion, useMotionValueEvent, useScroll, useTransform, type MotionValue } from 'motion/react'
+import { motion, useMotionValueEvent, useScroll, useTransform, type MotionValue } from 'motion/react'
 import { useRef, useState } from 'react'
 import { useTheme } from '../lib/theme'
 import { Shape } from '../motion/Shapes'
+import { Odometer, TrailCaption } from './TrailText'
 
 /* The opening of the field guide, told as one scroll-driven scene in a 1600×900 world. Scrolling builds the
    landscape a piece at a time: the ridges and the mountain rise, a river runs down from a spring, a forest grows
@@ -76,6 +77,9 @@ const STONES = [[0.3, 1], [0.45, -1], [0.62, 1], [0.78, -1], [0.9, 1]].map(([t, 
   const w = 5 + 82 * Math.pow(r.t, 1.15) + 20
   return { x: r.x - Math.sin(r.ang) * w * side, y: r.y + Math.cos(r.ang) * w * side, s: 0.7 + r.t }
 })
+
+// The caption card takes the colour of what each beat is about: mountain, river, forest, trail, summit.
+const TONES = ['transparent', 'var(--lilac)', 'var(--sky)', 'var(--mint)', 'var(--peach)', 'var(--butter)']
 
 const PALETTE = {
   light: { sky: ['#ffe4d8', '#dfe9ff', '#e9e6ff'], far: '#d9d2fb', mid: '#c7dbfb', mountain: '#cdd5fb', shade: '#b4bdf3', meadow: '#cdeccf', snow: '#ffffff', river: '#8fb3ff', bank: '#b5e3c0', stone: '#c3bdd6', tree: ['#1fa456', '#5cc07f'] },
@@ -225,19 +229,8 @@ export function Story() {
         </svg>
 
         <div className={`fg-story__caption ${beat === 0 ? 'is-title' : ''}`}>
-          <AnimatePresence mode="wait" initial={false}>
-            <motion.div
-              key={beat}
-              initial={{ rotateX: -80, y: -10 }}
-              animate={{ rotateX: 0, y: 0, transition: { type: 'spring', stiffness: 160, damping: 18 } }}
-              exit={{ rotateX: 80, y: 10, transition: { duration: 0.18 } }}
-              style={{ transformOrigin: 'top center' }}
-            >
-              <span className="fg-story__n">{BEATS[beat].n}</span>
-              {beat === 0 ? <h1>{BEATS[beat].title}</h1> : <h2>{BEATS[beat].title}</h2>}
-              <p>{BEATS[beat].body}</p>
-            </motion.div>
-          </AnimatePresence>
+          <TrailCaption k={beat} big={beat === 0} tone={TONES[beat]} title={BEATS[beat].title} body={BEATS[beat].body}
+            kicker={beat === 0 ? BEATS[0].n : <><Odometer value={BEATS[beat].n.slice(0, 2)} />{BEATS[beat].n.slice(2)}</>} />
         </div>
         <div className="fg-story__alt" aria-hidden>
           <span>altitude</span>

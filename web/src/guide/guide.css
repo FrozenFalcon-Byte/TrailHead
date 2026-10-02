@@ -263,10 +263,7 @@ html[data-theme='dark'] .fg-carry__in{background:#26252c}
 .fg-story__stage{position:sticky;top:10px;height:calc(100svh - 20px);margin-top:10px;border-radius:28px;overflow:hidden;isolation:isolate}
 .fg-story__svg{position:absolute;inset:0;width:100%;height:100%;display:block}
 .fg-story__sign{font:900 19px 'Inter Variable',sans-serif;fill:#fff;letter-spacing:.04em}
-.fg-story__caption{position:absolute;left:clamp(18px,4vw,56px);top:clamp(18px,5vh,56px);max-width:min(520px,calc(100% - 36px));perspective:900px;z-index:2}
-.fg-story__caption > div{background:var(--surface);border-radius:24px;padding:20px 24px 22px;box-shadow:0 1px 0 var(--line)}
-.fg-story__caption.is-title > div{background:transparent;padding:0;box-shadow:none}
-.fg-story__n{display:inline-block;font:800 12px 'Inter Variable',sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:8px}
+.fg-story__caption{position:absolute;left:clamp(18px,4vw,56px);top:clamp(18px,5vh,56px);width:min(520px,calc(100% - 36px));z-index:2}
 .fg-story__caption h1{font:800 clamp(38px,5vw,72px)/.95 'Bricolage Grotesque Variable',sans-serif;letter-spacing:-.025em;margin:0 0 14px;color:var(--ink)}
 .fg-story__caption h2{font:800 clamp(24px,3vw,36px)/1.04 'Bricolage Grotesque Variable',sans-serif;letter-spacing:-.015em;margin:0 0 10px;color:var(--ink)}
 .fg-story__caption p{font:500 16px/1.5 'Inter Variable',sans-serif;color:var(--ink-soft);margin:0}
@@ -281,8 +278,7 @@ html[data-theme='dark'] .fg-carry__in{background:#26252c}
 /* ---------- the journey strip ---------- */
 .fg-journey{position:sticky;top:10px;z-index:20;height:clamp(124px,19vh,184px);margin-top:18px;border-radius:24px;overflow:hidden;background:var(--sky);box-shadow:0 0 0 10px var(--paper)}
 .fg-journey__svg{position:absolute;inset:0;width:100%;height:100%;display:block}
-.fg-journey__tag{position:absolute;left:14px;top:12px;perspective:600px}
-.fg-journey__tag > div{background:var(--surface);border-radius:14px;padding:7px 12px 8px}
+.fg-journey__tag{position:absolute;left:14px;top:12px}
 .fg-journey__tag small{display:block;font:800 10px/1.2 'Inter Variable',sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft)}
 .fg-journey__tag b{display:block;font:800 16px/1.1 'Bricolage Grotesque Variable',sans-serif;color:var(--ink)}
 .fg-journey__birds{animation:fg-birds 26s linear infinite}
@@ -313,7 +309,7 @@ html[data-theme='dark'] .fg-carry__in{background:#26252c}
   .fg-nav__label{display:none}
   .fg-nav a.active .fg-nav__label{display:inline}
   .fg-main{padding:0 6px}
-  .fg-story__caption > div{padding:16px 18px}
+  .fg-story__caption .tt{padding:16px 18px}
   .fg-story__caption p{font-size:14.5px}
 }
 @media (prefers-reduced-motion: reduce){
@@ -322,3 +318,32 @@ html[data-theme='dark'] .fg-carry__in{background:#26252c}
 .fg-ripple{animation:fg-ripple 2.4s ease-in-out infinite}
 @keyframes fg-ripple{0%{transform:translateX(-14px);opacity:0}30%,70%{opacity:.9}100%{transform:translateX(18px);opacity:0}}
 @media (prefers-reduced-motion: reduce){.fg-ripple{animation:none;opacity:.7}}
+
+/* ---------- trail captions (TrailText.tsx) ---------- */
+.tt{position:relative;border-radius:24px;padding:20px 24px 18px;transition:background .6s var(--ease-out);overflow:visible}
+.tt-block{position:relative}
+.tt-word{display:inline-block;white-space:pre;transform-origin:50% 100%;will-change:transform}
+.tt-kicker{display:flex;align-items:center;gap:4px;font:800 12px 'Inter Variable',sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:8px}
+.tt-trail{position:relative;width:240px;max-width:100%;height:20px;margin:2px 0 8px}
+.tt-trail svg{width:240px;height:20px;display:block;overflow:visible}
+.tt-trail__line{fill:none;stroke:var(--orange);stroke-width:3.5;stroke-linecap:round;stroke-dasharray:1 0}
+.tt-trail__flag{position:absolute;left:0;top:0;offset-rotate:0deg;offset-anchor:50% 90%;line-height:0}
+.tt-title{margin:0;color:var(--ink)}
+.tt-body{margin:0;font:500 16px/1.5 'Inter Variable',sans-serif;color:var(--ink-soft)}
+.fg-story__caption h1.tt-title{font:800 clamp(38px,5vw,72px)/.95 'Bricolage Grotesque Variable',sans-serif;letter-spacing:-.025em}
+.fg-story__caption h2.tt-title{font:800 clamp(24px,3vw,36px)/1.04 'Bricolage Grotesque Variable',sans-serif;letter-spacing:-.015em}
+.fg-story__caption.is-title .tt{padding:0}
+.fg-story__caption.is-title .tt-body{font-size:18px;max-width:40ch;color:var(--ink)}
+.tt-odo{display:inline-flex}
+.tt-odo__wheel{display:inline-block;height:1em;line-height:1em;overflow:hidden;vertical-align:-.12em}
+.tt-odo__strip{display:flex;flex-direction:column}
+.tt-odo__strip span{height:1em;line-height:1em}
+.tt--tag{border-radius:14px;padding:7px 12px 2px}
+.tt--tag .tt-kicker{font-size:10px;letter-spacing:.1em;margin-bottom:2px}
+.tt--tag h2.tt-title{font:800 16px/1.1 'Bricolage Grotesque Variable',sans-serif}
+.tt--tag .tt-trail,.tt--carry .tt-trail{width:120px;height:12px;margin:0 0 4px;overflow:hidden}
+.tt--tag .tt-trail svg,.tt--carry .tt-trail svg{width:120px;height:10px}
+.tt--tag .tt-trail__flag,.tt--carry .tt-trail__flag{display:none}
+.tt--carry{padding:0;border-radius:0}
+.tt--carry .tt-kicker{font-size:10.5px;color:color-mix(in srgb,var(--on-solid) 45%,transparent);margin:0}
+.tt--carry h2.tt-title{font:800 16px/1.15 'Bricolage Grotesque Variable',sans-serif;color:var(--on-solid);margin:3px 0 0}

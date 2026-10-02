@@ -1,8 +1,9 @@
-import { AnimatePresence, motion, useMotionValue, useMotionValueEvent, useTransform, type MotionValue } from 'motion/react'
+import { motion, useMotionValue, useMotionValueEvent, useTransform, type MotionValue } from 'motion/react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTheme } from '../lib/theme'
 import { Shape } from '../motion/Shapes'
 import { CHAPTERS, type Place } from './chapters'
+import { Odometer, TrailCaption } from './TrailText'
 
 /* The journey strip: a long side-on landscape pinned above the chapters. Reading the guide walks the flag along it,
    from the trailhead, over the river and through the forest, up to the summit. Each chapter has its own landmark,
@@ -161,12 +162,8 @@ export function Journey({ pos, active }: { pos: MotionValue<number>; active: num
       </motion.svg>
 
       <div className="fg-journey__tag">
-        <AnimatePresence mode="wait" initial={false}>
-          <motion.div key={active} initial={{ rotateX: -85 }} animate={{ rotateX: 0, transition: { type: 'spring', stiffness: 180, damping: 17 } }} exit={{ rotateX: 85, transition: { duration: 0.14 } }} style={{ transformOrigin: 'top center' }}>
-            <small>Stop {String(active).padStart(2, '0')}</small>
-            <b>{CHAPTERS[active].where}</b>
-          </motion.div>
-        </AnimatePresence>
+        <TrailCaption k={active} className="tt--tag" tone="var(--surface)" title={CHAPTERS[active].where}
+          kicker={<>Stop <Odometer value={String(active).padStart(2, '0')} /></>} />
       </div>
     </div>
   )

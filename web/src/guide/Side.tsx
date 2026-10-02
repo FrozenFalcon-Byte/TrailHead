@@ -1,10 +1,11 @@
-import { AnimatePresence, motion } from 'motion/react'
+import { motion } from 'motion/react'
 import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { makeQr } from '../lib/qr'
 import { Wordmark } from '../motion/Mark'
 import { Shape } from '../motion/Shapes'
 import { CHAPTERS } from './chapters'
+import { TrailCaption } from './TrailText'
 
 /* The guide's sidebar, built like the dashboard's: a dark rounded column with grouped links, a Shape icon for each
    chapter and a lime pill that slides to the chapter you are reading. Below the links sits a QR code that always
@@ -39,18 +40,13 @@ export function Side({ active, onJump }: { active: number; onJump: (i: number) =
         ))}
       </nav>
       <div className="fg-carry">
-        <AnimatePresence mode="wait" initial={false}>
-          <motion.div key={here.id} className="fg-carry__in"
-            initial={{ rotateX: -80 }} animate={{ rotateX: 0, transition: { type: 'spring', stiffness: 170, damping: 18 } }} exit={{ rotateX: 80, transition: { duration: 0.15 } }}
-            style={{ transformOrigin: 'top center' }}>
-            <Qr text={`${location.origin}/guide#${here.id}`} />
-            <div>
-              <small>You are at</small>
-              <b>{here.where}</b>
-              <span>Scan to open this stop on your phone.</span>
-            </div>
-          </motion.div>
-        </AnimatePresence>
+        <div className="fg-carry__in">
+          <Qr text={`${location.origin}/guide#${here.id}`} />
+          <div>
+            <TrailCaption k={here.id} className="tt--carry" tone="transparent" kicker="You are at" title={here.where} />
+            <span>Scan to open this stop on your phone.</span>
+          </div>
+        </div>
       </div>
       <Link to="/app" className="fg-side__app">Open the app <span aria-hidden>→</span></Link>
     </aside>
