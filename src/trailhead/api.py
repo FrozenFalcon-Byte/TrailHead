@@ -208,6 +208,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         top_dirs = [dict(r) for r in store.query("SELECT path, summary FROM dirs WHERE path NOT LIKE '%/%' AND path NOT LIKE '.%' ORDER BY path")]
         return {**repos.summary(store), "layers": layers, "top_dirs": top_dirs, "next_slot_s": round(next_slot(), 1)}
 
+    @app.get("/api/suggest")
+    async def suggest(repo: str | None = None, _: User = Depends(user)) -> dict[str, Any]:
+        from .suggest import payload
+
+        return payload(ctx_for(repo).store)
+
     @app.get("/api/tree")
     async def tree(path: str = "", repo: str | None = None, _: User = Depends(user)) -> dict[str, Any]:
         ctx = ctx_for(repo)

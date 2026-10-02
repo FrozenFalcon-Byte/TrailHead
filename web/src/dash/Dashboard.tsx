@@ -8,6 +8,8 @@ import '@fontsource-variable/inter'
 import './dash.css'
 import { useAuth } from '../lib/auth'
 import { momentTo } from '../lib/moment'
+import { Palette } from './Palette'
+import { RepoSplash } from './RepoSplash'
 import { setPrefs, usePrefs } from '../lib/prefs'
 import { startSettingsSync, useAvatar, useProfile } from '../lib/profile'
 import { notify } from '../lib/toast'
@@ -279,7 +281,7 @@ function useShortcuts(enabled: boolean) {
           e.preventDefault()
           field.focus()
         }
-      } else if (e.key === '?') notify.info('Keyboard shortcuts', 'G then O/A/T/F/I/M/D/E/R/P/S/H jumps to a page · / focuses the search box · R refreshes · , opens Settings')
+      } else if (e.key === '?') notify.info('Keyboard shortcuts', '⌘K opens the command box · G then O/A/T/F/I/M/D/E/R/P/S/H jumps to a page · / focuses the search box · R refreshes · , opens Settings')
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
@@ -297,6 +299,13 @@ function Shell() {
   useShortcuts(prefs.shortcuts)
   useEffect(() => startSettingsSync(), [])
   useEffect(() => setOpen(false), [location.pathname])
+  // each page names its tab, so several open tabs can be told apart
+  useEffect(() => {
+    document.title = `${itemFor(location.pathname).label} · Trailhead`
+    return () => {
+      document.title = 'Trailhead — find your way into any codebase'
+    }
+  }, [location.pathname])
   useEffect(() => {
     const again = () => recheck()
     window.addEventListener('th:refresh', again)
@@ -376,6 +385,8 @@ function Shell() {
         </div>
       </aside>
       <AnimatePresence>{open && <motion.div onClick={() => setOpen(false)} initial={{ opacity: 0 }} animate={{ opacity: 0.45 }} exit={{ opacity: 0 }} style={{ position: 'fixed', inset: 0, background: 'var(--solid)', zIndex: 55 }} />}</AnimatePresence>
+      <Palette onSignOut={() => signOut()} />
+      <RepoSplash />
       <main className="d-main">
         <div className="d-sheet">
           <TopBar onMenu={() => setOpen(true)} />

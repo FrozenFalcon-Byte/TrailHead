@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from 'motion/react'
 import { TypedField } from '../../motion/TypedField'
-import { TOUR_EXAMPLES } from '../examples'
+import { useStarters } from '../examples'
 import { useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { api } from '../../lib/api'
@@ -22,11 +22,6 @@ type Stop = { path: string; need: number; entry: number; tentative: boolean; sum
 type Candidate = { path: string; sources: string[]; need: number | null; entry: number | null; nav_score: number; history_score: number }
 export type TourData = { goal: string; stops: Stop[]; candidates: Candidate[]; requests: number; input_tokens: number; notes: string; skipped: Record<string, string>; navigation: any }
 
-const GOALS = [
-  'I want to add a new retry policy that backs off exponentially.',
-  'I need to understand how item pipelines process scraped items.',
-  'Fix a bug where cookies are not sent after a redirect.',
-]
 const SOURCE_LABEL: Record<string, string> = { navigation: 'found by navigation', history: 'changed in similar past work', imports: 'imported by the main file' }
 
 const TOUR_STEPS = [
@@ -38,6 +33,7 @@ const TOUR_STEPS = [
 
 export default function TourPage() {
   const { repo, engine } = useDash()
+  const { starters } = useStarters(repo)
   const prefs = usePrefs()
   const job = useJob<TourData>('/api/tour')
   const guide = useJob<{ goal: string; answer: AnswerLike }>('/api/tour/explain')
@@ -176,7 +172,7 @@ export default function TourPage() {
       </Card>
       <Card title="Start from a goal" delay={0.15}>
         <div className="d-list">
-          {GOALS.map((g, i) => <Row key={g} i={i} onClick={() => plan(g)} lead={<span className="d-li__dir">→</span>} title={g} />)}
+          {starters.tour.map((g, i) => <Row key={repo + g} i={i} onClick={() => plan(g)} lead={<span className="d-li__dir">→</span>} title={g} />)}
         </div>
       </Card>
     </>
@@ -186,7 +182,7 @@ export default function TourPage() {
     <div className="d-body">
       <PageHead theme="mint" kicker="Guided tour" title="Your reading" oblique="trail" note="Say what you want to do; get the files to read, in order.">
         <form onSubmit={(e) => { e.preventDefault(); plan() }} className="d-compose">
-          <TypedField multiline rows={2} value={goal} onValue={setGoal} suggestions={TOUR_EXAMPLES} maxLength={1200} aria-label="Goal" />
+          <TypedField multiline rows={2} value={goal} onValue={setGoal} key={repo} suggestions={starters.tour} maxLength={1200} aria-label="Goal" />
           <div className="d-compose__bar">
             <label className="d-opt">
               <Toggle on={notes} onChange={setNotes} label="Write notes for each stop" />

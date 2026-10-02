@@ -1,7 +1,7 @@
 import { AnimatePresence, motion } from 'motion/react'
 import { TreeTrail } from '../TreeTrail'
 import { TypedField } from '../../motion/TypedField'
-import { ASK_EXAMPLES, FIND_EXAMPLES, TOUR_EXAMPLES } from '../examples'
+import { useStarters } from '../examples'
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../lib/auth'
@@ -22,9 +22,9 @@ type Pick = { number: number; title: string; url: string; score: number; kind: s
 type Decision = { id: number; ts: number; purpose: string; answer: string; confidence: number | null; engine: string; cached: number }
 
 const MODES = [
-  { value: 'ask', label: 'Ask', hints: ASK_EXAMPLES, go: 'Ask it' },
-  { value: 'tour', label: 'Tour', hints: TOUR_EXAMPLES, go: 'Plan a tour' },
-  { value: 'find', label: 'Find', hints: FIND_EXAMPLES, go: 'Find the file' },
+  { value: 'ask', label: 'Ask', go: 'Ask it' },
+  { value: 'tour', label: 'Tour', go: 'Plan a tour' },
+  { value: 'find', label: 'Find', go: 'Find the file' },
 ] as const
 type Mode = (typeof MODES)[number]['value']
 const LAYER_COLORS = ['var(--violet)', 'var(--orange)', 'var(--green)', 'var(--yellow)', 'var(--blue)', 'var(--lime)', 'var(--stop)', 'var(--dim)']
@@ -35,6 +35,7 @@ function Quick() {
   const [mode, setMode] = useState<Mode>('ask')
   const [text, setText] = useState('')
   const m = MODES.find((x) => x.value === mode)!
+  const { starters } = useStarters(repo)
   const go = (e: React.FormEvent) => {
     e.preventDefault()
     if (text.trim().length < 3) return
@@ -44,7 +45,7 @@ function Quick() {
     <form className="d-quick" onSubmit={go}>
       <Segmented value={mode} onChange={setMode} options={MODES.map(({ value, label }) => ({ value, label }))} label="What to do" />
       <div className="d-quick__row">
-        <TypedField key={mode} value={text} onValue={setText} suggestions={m.hints} aria-label={m.go} maxLength={mode === 'tour' ? 1200 : 500} />
+        <TypedField key={`${mode}:${repo}`} value={text} onValue={setText} suggestions={starters[mode]} aria-label={m.go} maxLength={mode === 'tour' ? 1200 : 500} />
         <button className="btn" type="submit" disabled={!repo || text.trim().length < 3}>
           <AnimatePresence mode="popLayout" initial={false}>
             <motion.span key={mode} initial={{ y: 12, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -12, opacity: 0 }} transition={{ duration: 0.22 }}>{m.go}</motion.span>

@@ -8,24 +8,17 @@ import { errorText, notify, toast } from '../../lib/toast'
 import { Select } from '../../motion/Select'
 import { TrailSpinner } from '../../motion/TrailSpinner'
 import { GH_TOKEN_KEY } from '../../pages/AuthCallback'
+import { LOOKS, lookFor } from '../looks'
 import { useDash, type RepoInfo } from '../context'
 import { Donut, PALETTE, Treemap } from '../viz'
 import { Card, EASE, Empty, Note, PageHead, RefreshButton, Split } from '../ui'
-import { Shape, type Glyph, type ShapeKind } from '../../motion/Shapes'
+import { Shape } from '../../motion/Shapes'
 import { TypedField } from '../../motion/TypedField'
 
 type GhRepo = { full_name: string; description: string | null; stargazers_count: number; language: string | null; private: boolean; html_url: string; pushed_at: string }
 const REPO_EXAMPLES = ['scrapy/scrapy', 'pallets/flask', 'psf/requests', 'encode/httpx', 'tiangolo/fastapi', 'django/django']
 const NAME = /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/
 
-const LOOKS: { kind: ShapeKind; color: string; bg: string; glyph: Glyph }[] = [
-  { kind: 'square', color: 'var(--orange)', bg: 'var(--peach)', glyph: 'folder' },
-  { kind: 'circle', color: 'var(--blue)', bg: 'var(--sky)', glyph: 'branch' },
-  { kind: 'tag', color: 'var(--violet)', bg: 'var(--lilac)', glyph: 'pr' },
-  { kind: 'circle', color: 'var(--green)', bg: 'var(--mint)', glyph: 'pine' },
-  { kind: 'square', color: 'var(--yellow)', bg: 'var(--butter)', glyph: 'file' },
-]
-const lookFor = (name: string) => LOOKS[[...name].reduce((a, c) => a + c.charCodeAt(0), 0) % LOOKS.length]
 const n = (v?: number) => (v ?? 0).toLocaleString()
 
 /** One onboarded repository as a ticket: its mark on the stub, what was read in a sentence, and what to do with it. */
@@ -194,7 +187,7 @@ export default function Repos() {
   
   const current = repos.find((r) => r.repo === repo)
   const others = repos.filter((r) => r.repo !== repo)
-  const pick = (r: RepoInfo) => { setRepo(r.repo); notify.ok(`Switched to ${r.repo}`) }
+  const pick = (r: RepoInfo) => setRepo(r.repo)
   const look = current ? lookFor(current.repo) : LOOKS[0]
 
   const aside = (

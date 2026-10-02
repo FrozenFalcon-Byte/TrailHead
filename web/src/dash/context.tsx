@@ -150,6 +150,8 @@ export function DashProvider({ children }: { children: ReactNode }) {
       repos,
       repo,
       setRepo: (r) => {
+        // a deliberate move between two repositories gets the full-screen arrival in RepoSplash
+        if (repo && r && r !== repo) window.dispatchEvent(new CustomEvent('th:switch', { detail: { from: repo, to: r } }))
         setRepoState(r)
         write('th-repo', r)
       },

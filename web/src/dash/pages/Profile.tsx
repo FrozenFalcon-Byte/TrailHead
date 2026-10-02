@@ -8,9 +8,10 @@ import { playMoment } from '../../lib/moment'
 import { removeAvatar, saveProfile, useAvatar, useProfile } from '../../lib/profile'
 import { errorText, notify } from '../../lib/toast'
 import { AvatarEditor } from '../AvatarEditor'
+import { PhotoDial } from '../PhotoDial'
 import { ProfileDetails } from '../ProfileDetails'
 import { EmailCard, KeyRing, PasswordCard } from '../ProfileSecurity'
-import { Avatar, useSignOut } from '../Dashboard'
+import { useSignOut } from '../Dashboard'
 import { EASE, Note, PageHead } from '../ui'
 import { Shape } from '../../motion/Shapes'
 import { CountUp, Donut } from '../viz'
@@ -193,11 +194,7 @@ export default function Profile() {
 
       <motion.section className="p-pass" initial={{ opacity: 0, y: 24, rotate: -0.6 }} animate={{ opacity: 1, y: 0, rotate: 0 }} transition={{ duration: 0.7, ease: EASE }}>
         <div className="p-pass__stub">
-          <button className="p-photo" onClick={() => setEditing(true)} data-cursor="Change photo" aria-label="Change profile photo">
-            <Avatar size={132} radius={66} />
-            <span className="p-photo__edit">Change</span>
-            <motion.span className="p-photo__ring" animate={{ rotate: 360 }} transition={{ duration: 24, repeat: Infinity, ease: 'linear' }} />
-          </button>
+          <PhotoDial size={132} onEdit={() => setEditing(true)} />
           {photo && <button className="p-pass__remove" onClick={() => run('photo', removeAvatar, 'Photo removed')} disabled={busy === 'photo'}>Remove photo</button>}
         </div>
         <div className="p-pass__main">

@@ -10,6 +10,7 @@ import { errorText, notify, toast } from '../../lib/toast'
 import { BeamColumns } from '../../motion/BeamColumns'
 import { EvidenceCard } from '../../motion/EvidenceCard'
 import { useDash } from '../context'
+import { useStarters } from '../examples'
 import { AnswerSheet } from '../AnswerSheet'
 import { JourneyBar, Logbook, Signposts, type LogEntry, type Station } from '../Trailside'
 import { ago, Card, Gate, JobStatus, Note, PageHead, Prob, Row, toBeamSteps, useJob } from '../ui'
@@ -24,13 +25,6 @@ export type AskResult = {
   answer: AnswerData
 }
 
-const EXAMPLES = [
-  'Where are failed requests retried?',
-  'How does the scheduler decide which request goes next?',
-  'Why does the HTTP cache middleware store responses on disk?',
-  'What breaks if I change how Request.meta is copied?',
-  'How do I run the test suite?',
-]
 const ROUTE_NAMES: Record<string, string> = {
   where_is: 'where is', how_does_it_work: 'how it works', why_built_this_way: 'why it was built this way',
   what_breaks_if_changed: 'what breaks', how_to_run_or_test: 'how to run or test', other: 'out of scope',
@@ -52,6 +46,7 @@ function view(result: AskResult | null, events: { kind: string; data: any }[]): 
 
 export default function Ask() {
   const { repo, engine } = useDash()
+  const { starters, ready } = useStarters(repo)
   const prefs = usePrefs()
   const job = useJob<AskResult>('/api/ask')
   const [question, setQuestion] = useState('')
@@ -159,7 +154,7 @@ export default function Ask() {
     <div className="d-body">
       <PageHead theme="sky" kicker="Ask the codebase" title="Ask it" oblique="straight" note="Cited answers, or an honest “not sure”.">
         <form onSubmit={(e) => { e.preventDefault(); run() }} className="d-ask">
-          <TypedField value={question} onValue={setQuestion} suggestions={EXAMPLES} maxLength={500} aria-label="Question" />
+          <TypedField value={question} onValue={setQuestion} key={repo} suggestions={starters.ask} maxLength={500} aria-label="Question" />
           <button className="btn" type="submit" disabled={job.running || !repo || question.trim().length < 3}>
             <span>{job.running ? 'Walking…' : 'Ask'}</span><span className="arrow">→</span>
           </button>
@@ -232,7 +227,7 @@ export default function Ask() {
             )}
           </AnimatePresence>
 
-          {!started && !job.error && repo && prefs.askExamples && <Signposts title="Not sure where to start? Take a trail." items={EXAMPLES} onPick={(q) => run(q)} color="var(--blue)" />}
+          {!started && !job.error && repo && prefs.askExamples && ready && <Signposts key={repo} title="Not sure where to start? Take a trail." items={starters.ask} onPick={(q) => run(q)} color="var(--blue)" />}
         </div>
         <aside className="desk-rail">
           <Logbook title="Earlier questions" entries={log} empty={`Your questions about this repository are logged here${prefs.autoSave ? '' : ' when you save them'}.`} />

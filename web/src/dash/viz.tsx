@@ -1,4 +1,4 @@
-import { animate, AnimatePresence, motion } from 'motion/react'
+import { animate, motion } from 'motion/react'
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 
 const EASE = [0.22, 1, 0.36, 1] as const
@@ -100,12 +100,11 @@ export function Donut({ data, size = 156, thick = 20, label = 'total', legend = 
           })}
         </svg>
         <div className="v-donut__mid">
-          <AnimatePresence mode="popLayout" initial={false}>
-            <motion.div key={on?.label ?? '_'} initial={{ y: 8, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -8, opacity: 0 }} transition={{ duration: 0.2 }}>
-              <b>{on ? fmt(on.value) : <CountUp to={data.reduce((a, d) => a + d.value, 0)} format={fmt} />}</b>
-              <span>{on ? `${on.label} · ${Math.round((on.value / total) * 100)}%` : label}</span>
-            </motion.div>
-          </AnimatePresence>
+          {/* replaced in place on hover; exit animations would stack copies when the pointer sweeps across */}
+          <motion.div key={on?.label ?? '_'} initial={{ y: 6 }} animate={{ y: 0 }} transition={{ type: 'spring', stiffness: 500, damping: 30 }}>
+            <b>{on ? fmt(on.value) : <CountUp to={data.reduce((a, d) => a + d.value, 0)} format={fmt} />}</b>
+            <span>{on ? `${on.label} · ${Math.round((on.value / total) * 100)}%` : label}</span>
+          </motion.div>
         </div>
       </div>
       {legend && (
@@ -183,11 +182,9 @@ export function Columns({ data, h = 150, color = 'var(--violet)', format, ticks 
   return (
     <div className="v-cols">
       <div className="v-cols__read">
-        <AnimatePresence mode="popLayout" initial={false}>
-          <motion.span key={on?.label ?? '_'} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.18 }}>
-            {on ? <><b>{fmt(on.value)}</b> {on.hint ?? on.label}</> : <span className="d-muted">Hover a column</span>}
-          </motion.span>
-        </AnimatePresence>
+        <motion.span key={on?.label ?? '_'} initial={{ y: 5 }} animate={{ y: 0 }} transition={{ type: 'spring', stiffness: 500, damping: 30 }}>
+          {on ? <><b>{fmt(on.value)}</b> {on.hint ?? on.label}</> : <span className="d-muted">Hover a column</span>}
+        </motion.span>
       </div>
       <div className="v-cols__plot" style={{ height: h }} onMouseLeave={() => setHover(null)}>
         <div className="v-cols__grid" aria-hidden><i /><i /><i /></div>

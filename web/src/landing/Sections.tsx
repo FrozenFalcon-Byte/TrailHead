@@ -109,7 +109,7 @@ export function HowItWorks() {
   const graphics = [<IngestGraphic key="i" />, <NavigateGraphic key="n" local={local} />, <VerifyGraphic key="v" />, <WalkGraphic key="w" />]
   const step = STEPS[active]
   return (
-    <section ref={ref} id="how" className="l-how t-butter" style={{ height: `${(n + 1) * 100 + 20}vh` }}>
+    <section ref={ref} id="how" className="l-how t-butter" style={{ height: `${(n + 1) * 60 + 20}vh` }}>
       <div className="l-how__sticky">
         <motion.div className="l-how__intro" style={{ y: headY, scale: headScale }}>
           <div className="l-head__tags">

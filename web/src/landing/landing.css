@@ -578,7 +578,7 @@
 /* ---------- Receipts: a full-bleed printer that prints the copy ---------- */
 .l-rx {
   position: relative;
-  height: 560vh;
+  height: 300vh;
   background: var(--bg);
 }
 .l-rx__after {
@@ -1069,7 +1069,7 @@
 /* ---------- Climb: scroll-driven scene ---------- */
 .l-climb {
   position: relative;
-  height: 520vh;
+  height: 280vh;
 }
 .l-climb__stage {
   position: sticky;
@@ -1177,7 +1177,7 @@
 /* ---------- Mile 1: lost (pinned motion graphic) ---------- */
 .l-lost {
   position: relative;
-  height: 680vh;
+  height: 340vh;
 }
 .l-lost__stage {
   position: sticky;
@@ -1434,7 +1434,7 @@
 /* ---------- Mile 2: the junction (signpost + card deck) ---------- */
 .l-junc {
   position: relative;
-  height: 380vh;
+  height: 220vh;
 }
 .l-junc__stage {
   position: sticky;

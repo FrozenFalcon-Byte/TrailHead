@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { TypedField } from '../../motion/TypedField'
-import { FIND_EXAMPLES } from '../examples'
+import { useStarters } from '../examples'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { motion } from 'motion/react'
 import { Shape } from '../../motion/Shapes'
@@ -13,10 +13,10 @@ import { Gate, JobStatus, Note, PageHead, Prob, toBeamSteps, useJob } from '../u
 
 type NavData = { query: string; paths: { nodes: string[]; score: number; file: string; edge_probabilities: number[] }[]; steps: any[]; symbols: Record<string, { name: string; line: number }>; separation_ratio: number | null; requests: number; cached_requests: number; input_tokens: number; latency_ms: number }
 
-const EXAMPLES = ['Where is the robots.txt check?', 'Where are cookies merged into outgoing requests?', 'Where does the crawler decide to stop when idle?']
 
 export default function Find() {
   const { repo, engine } = useDash()
+  const { starters } = useStarters(repo)
   const job = useJob<NavData>('/api/where')
   const [query, setQuery] = useState('')
   const [params, setParams] = useSearchParams()
@@ -64,7 +64,7 @@ export default function Find() {
     <div className="d-body">
       <PageHead theme="peach" kicker="Navigation" title="Find the" oblique="file" note="Describe it in plain words; get the file, the function, and how sure it is.">
         <form onSubmit={(e) => { e.preventDefault(); run() }} className="d-ask">
-          <TypedField value={query} onValue={setQuery} suggestions={FIND_EXAMPLES} aria-label="What are you looking for" maxLength={500} />
+          <TypedField value={query} onValue={setQuery} key={repo} suggestions={starters.find} aria-label="What are you looking for" maxLength={500} />
           <button className="btn" type="submit" disabled={job.running || !repo || query.trim().length < 3}><span>{job.running ? 'Searching…' : 'Find'}</span><span className="arrow">→</span></button>
         </form>
       </PageHead>
@@ -145,7 +145,7 @@ export default function Find() {
             )}
           </details>
         )}
-        {!steps.length && !job.running && !r && repo && <FindOpening repo={repo} examples={EXAMPLES} onPick={(q) => run(q)} />}
+        {!steps.length && !job.running && !r && repo && <FindOpening repo={repo} examples={starters.find.slice(0, 3)} onPick={(q) => run(q)} />}
       </div>
     </div>
   )

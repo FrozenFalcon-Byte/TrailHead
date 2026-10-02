@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'motion/react'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { q, useFetch } from './ui'
 
@@ -47,7 +47,14 @@ function Column({ repo, path, open, onOpen, onPoint, depth }: { repo: string; pa
 export function FindOpening({ repo, examples, onPick }: { repo: string; examples: string[]; onPick: (q: string) => void }) {
   const navigate = useNavigate()
   const [trail, setTrail] = useState<string[]>([])
-  const [point, setPoint] = useState<Child | null>(null)
+  const [point, setPointNow] = useState<Child | null>(null)
+  // settle on what the pointer rests on, not every row it crosses on the way
+  const timer = useRef(0)
+  const setPoint = (c: Child | null) => {
+    window.clearTimeout(timer.current)
+    timer.current = window.setTimeout(() => setPointNow(c), 70)
+  }
+  useEffect(() => () => window.clearTimeout(timer.current), [])
   const open = (depth: number) => (c: Child) => {
     if (c.kind !== 'dir') return navigate(`/app/map?file=${encodeURIComponent(c.id)}`)
     setTrail((t) => [...t.slice(0, depth), c.id])
@@ -77,11 +84,10 @@ export function FindOpening({ repo, examples, onPick }: { repo: string; examples
           </AnimatePresence>
         </div>
         <div className="fo-peek">
-          <AnimatePresence mode="popLayout" initial={false}>
-            <motion.p key={point?.id ?? 'none'} initial={{ y: 14, rotateX: -60 }} animate={{ y: 0, rotateX: 0 }} exit={{ y: -14, rotateX: 60 }} transition={{ type: 'spring', stiffness: 340, damping: 26 }}>
-              {point ? <><b className="mono">{point.id}</b> {point.summary || (point.kind === 'dir' ? 'A folder.' : 'A file.')}</> : 'Point at a folder to read what is inside; click to open it. Find asks the same question at every level, keeping only the likeliest branches.'}
-            </motion.p>
-          </AnimatePresence>
+          {/* one line, replaced in place: an exit animation per hover piles up copies when the pointer moves fast */}
+          <motion.p key={point?.id ?? 'none'} initial={{ y: 8, clipPath: 'inset(0 0 100% 0)' }} animate={{ y: 0, clipPath: 'inset(0 0 0% 0)' }} transition={{ duration: 0.22, ease: EASE }}>
+            {point ? <><b className="mono">{point.id}</b> {point.summary || (point.kind === 'dir' ? 'A folder.' : 'A file.')}</> : 'Point at a folder to read what is inside; click to open it. Find asks the same question at every level, keeping only the likeliest branches.'}
+          </motion.p>
         </div>
       </div>
       <div className="fo-tags">

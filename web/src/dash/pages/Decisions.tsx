@@ -1,139 +1,239 @@
-import { AnimatePresence, motion } from 'motion/react'
-import { useMemo, useState } from 'react'
+import { AnimatePresence, LayoutGroup, motion } from 'motion/react'
+import { useEffect, useMemo, useState } from 'react'
 import { usePrefs } from '../../lib/prefs'
-import { Select } from '../../motion/Select'
 import { useDash } from '../context'
-import { byDay, Columns, Donut, Gauge, Heat, histogram, PALETTE, weekHours } from '../viz'
-import { Card, EASE, Empty, Gate, Kpis, Loading, Note, PageHead, Prob, q, RefreshButton, Split, useFetch } from '../ui'
+import { EASE, Empty, Gate, Loading, Note, PageHead, q, RefreshButton, useFetch } from '../ui'
+
+/* The decision log as a logbook. Decisions are grouped into the engine calls they came from, so each entry
+   reads as one thing that happened ("screened 13 passages for a question") rather than a row per probability.
+   Each entry carries a strip of ticks, one per question, tall when sure and coloured by what code did with the
+   answer. Picking an entry opens it in the inspector beside the log, question by question. */
 
 type Decision = { id: number; call_id: string; ts: number; purpose: string; engine: string; model_id: string; provider: string; question_id: string; question_type: string; answer: string; probabilities: string; confidence: number | null; action: string; latency_ms: number; input_tokens: number; cached: number }
+type Call = { id: string; ts: number; purpose: string; engine: string; model: string; cached: boolean; latency: number; tokens: number; items: Decision[] }
+type Outcome = 'go' | 'stop' | 'plain'
 
-const BAR_COLORS = ['var(--violet)', 'var(--orange)', 'var(--green)', 'var(--blue)', 'var(--yellow)', 'var(--lime)']
+const VERB: [string, string, string][] = [
+  ['retrieve:filter', 'Screened passages', 'Is each passage on topic, and is any of it trying to steer the model?'],
+  ['answer:verify', 'Checked claims', 'Does the cited passage support each drafted claim, and does it answer the question?'],
+  ['answer:output_check', 'Checked the final answer', 'Does the written answer stay within what was verified?'],
+  ['navigate:expand', 'Chose branches', 'Which folders and files could hold what was described?'],
+  ['navigate:symbol', 'Picked a function', 'Which definition in the file matches the description?'],
+  ['annotate:issue', 'Graded issues', 'How approachable is each open issue for a newcomer?'],
+  ['route', 'Routed a question', 'What kind of question is this, and where should the answer come from?'],
+  ['tour', 'Planned a tour', 'Which files belong on the walk, and in what order?'],
+]
+const verb = (purpose: string) => VERB.find(([p]) => purpose.startsWith(p)) ?? [purpose, purpose.replace(/[:_]/g, ' '), '']
+const FILTERS = [['all', 'Everything'], ['retrieve', 'Screening'], ['answer', 'Checking'], ['navigate', 'Finding'], ['annotate', 'Grading']] as const
+
+function outcome(d: Decision): Outcome {
+  const a = d.action.toLowerCase()
+  if (/dropped|screened out|not relevant|background|rejected|unsupported|insufficient/.test(a)) return 'stop'
+  if (/kept|verified|answers|passed|expand|chosen|picked|supports/.test(a)) return 'go'
+  return 'plain'
+}
+
+/** How strongly the engine leaned: the yes probability for yes/no questions, the top option otherwise. */
+function lean(d: Decision): { p: number; options: [string, number][] } {
+  let probs: Record<string, number> = {}
+  try {
+    probs = JSON.parse(d.probabilities)
+  } catch {
+    /* not JSON */
+  }
+  const options = Object.entries(probs).sort((a, b) => b[1] - a[1])
+  if (d.question_type === 'noul') {
+    const yes = probs.yes ?? Number(d.answer) ?? 0
+    return { p: yes, options: [['yes', yes], ['no', 1 - yes]] }
+  }
+  return { p: d.confidence ?? options[0]?.[1] ?? 0, options }
+}
+
+function dayLabel(ts: number) {
+  const d = new Date(ts * 1000)
+  const today = new Date()
+  const diff = Math.round((new Date(today.toDateString()).getTime() - new Date(d.toDateString()).getTime()) / 86400000)
+  return diff === 0 ? 'Today' : diff === 1 ? 'Yesterday' : d.toLocaleDateString([], { weekday: 'long', month: 'short', day: 'numeric' })
+}
+
+function Strip({ items, big = false }: { items: Decision[]; big?: boolean }) {
+  return (
+    <span className={`lg-strip ${big ? 'is-big' : ''}`} aria-hidden>
+      {items.slice(0, big ? 80 : 40).map((d, i) => {
+        const { p } = lean(d)
+        const sure = Math.abs(p - 0.5) * 2
+        return <motion.i key={d.id} className={`is-${outcome(d)}`} initial={{ scaleY: 0 }} animate={{ scaleY: 0.25 + 0.75 * sure }} transition={{ type: 'spring', stiffness: 300, damping: 20, delay: Math.min(i, 30) * 0.012 }} />
+      })}
+      {items.length > (big ? 80 : 40) && <small>+{items.length - (big ? 80 : 40)}</small>}
+    </span>
+  )
+}
+
+function Inspector({ call, when }: { call: Call; when: (ts: number) => string }) {
+  const [, title, ask] = verb(call.purpose)
+  const counts = { go: 0, stop: 0, plain: 0 }
+  call.items.forEach((d) => counts[outcome(d)]++)
+  return (
+    <motion.section
+      key={call.id}
+      className="lg-insp"
+      initial={{ clipPath: 'inset(0 0 100% 0 round 24px)' }}
+      animate={{ clipPath: 'inset(0 0 0% 0 round 24px)' }}
+      transition={{ duration: 0.45, ease: EASE }}
+    >
+      <header className="lg-insp__head">
+        <span className="lg-insp__kicker mono">{call.purpose}</span>
+        <h2>{title}</h2>
+        {ask && <p>{ask}</p>}
+        <p className="lg-insp__sum">
+          {call.items.length} question{call.items.length === 1 ? '' : 's'} in one {call.cached ? 'cached ' : ''}request
+          {counts.go + counts.stop > 0 && <> · {counts.go} let through, {counts.stop} turned back</>}
+        </p>
+        <Strip items={call.items} big />
+      </header>
+      <ol className="lg-qs">
+        {call.items.map((d, i) => {
+          const { p, options } = lean(d)
+          const o = outcome(d)
+          return (
+            <motion.li key={d.id} className={`lg-q is-${o}`} initial={{ x: 16 }} animate={{ x: 0 }} transition={{ type: 'spring', stiffness: 360, damping: 28, delay: Math.min(i, 14) * 0.025 }}>
+              <span className="lg-q__id mono">{d.question_id}</span>
+              <span className="lg-q__bar" title={options.map(([k, v]) => `${k} ${Math.round(v * 100)}%`).join(', ')}>
+                {options.slice(0, 4).map(([k, v], j) => (
+                  <motion.span key={k} className={`is-${j}`} initial={{ flexGrow: 0 }} animate={{ flexGrow: Math.max(v, 0.001) }} transition={{ duration: 0.5, ease: EASE, delay: 0.1 + Math.min(i, 14) * 0.025 }}>
+                    {v >= 0.18 && <em>{k}</em>}
+                  </motion.span>
+                ))}
+              </span>
+              <b className="lg-q__p mono">{Math.round(p * 100)}</b>
+              {d.action && <span className="lg-q__act">{d.action}</span>}
+            </motion.li>
+          )
+        })}
+      </ol>
+      <footer className="lg-insp__foot mono">
+        {when(call.ts)} · {call.model} · {call.cached ? 'from the cache' : `${(call.latency / 1000).toFixed(1)}s, ${call.tokens.toLocaleString()} tokens in`}
+      </footer>
+    </motion.section>
+  )
+}
 
 export default function Decisions() {
   const { repo } = useDash()
   const prefs = usePrefs()
-  const [limit, setLimit] = useState(80)
-  const [filter, setFilter] = useState('')
-  const [purpose, setPurpose] = useState('all')
-  const [engine, setEngine] = useState('all')
-  const [open, setOpen] = useState<number | null>(null)
+  const [limit, setLimit] = useState(300)
+  const [kind, setKind] = useState<string>('all')
+  const [search, setSearch] = useState('')
+  const [picked, setPicked] = useState<string | null>(null)
   const { data, error, loading, reloading, reload } = useFetch<Decision[]>(repo ? `/api/decisions?limit=${limit}&${q(repo)}` : null)
-  const all = data ?? []
-  const rows = all.filter((d) => (purpose === 'all' || d.purpose === purpose) && (engine === 'all' || d.engine === engine) && (!filter || `${d.purpose} ${d.question_id} ${d.answer} ${d.action}`.toLowerCase().includes(filter.toLowerCase())))
-  const purposes = useMemo(() => {
-    const m = new Map<string, number>()
-    all.forEach((d) => m.set(d.purpose, (m.get(d.purpose) ?? 0) + 1))
-    return [...m.entries()].sort((a, b) => b[1] - a[1])
-  }, [all])
-  const engines = [...new Set(all.map((d) => d.engine))]
-  const withConf = rows.filter((d) => d.confidence != null)
-  const meanConf = withConf.length ? withConf.reduce((a, d) => a + (d.confidence ?? 0), 0) / withConf.length : 0
-  const fresh = rows.filter((d) => !d.cached)
-  const meanLat = fresh.length ? fresh.reduce((a, d) => a + d.latency_ms, 0) / fresh.length : 0
   const when = (ts: number) => new Date(ts * 1000).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: prefs.timeFormat === '12h' })
+  const time = (ts: number) => new Date(ts * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: prefs.timeFormat === '12h' })
 
-  const days = useMemo(() => byDay(rows.map((d) => d.ts), 14), [rows])
-  const week = useMemo(() => weekHours(rows.map((d) => d.ts)), [rows])
-  const confHist = useMemo(() => histogram(withConf.map((d) => d.confidence ?? 0), 10, 'var(--orange)'), [withConf])
-  const cacheRate = rows.length ? (rows.length - fresh.length) / rows.length : 0
+  const calls = useMemo(() => {
+    const by = new Map<string, Call>()
+    for (const d of data ?? []) {
+      const c = by.get(d.call_id) ?? { id: d.call_id, ts: d.ts, purpose: d.purpose, engine: d.engine, model: d.model_id.split(':').slice(0, 2).join(':'), cached: !!d.cached, latency: d.latency_ms, tokens: d.input_tokens, items: [] }
+      c.items.push(d)
+      c.ts = Math.max(c.ts, d.ts)
+      by.set(d.call_id, c)
+    }
+    return [...by.values()].sort((a, b) => b.ts - a.ts)
+  }, [data])
+  const shown = calls.filter((c) => (kind === 'all' || c.purpose.startsWith(kind)) && (!search || `${c.purpose} ${verb(c.purpose)[1]} ${c.items.map((d) => `${d.question_id} ${d.action}`).join(' ')}`.toLowerCase().includes(search.toLowerCase())))
+  const current = shown.find((c) => c.id === picked) ?? shown[0]
+  useEffect(() => {
+    if (picked && !shown.some((c) => c.id === picked)) setPicked(null)
+  }, [kind, search])
 
-  const aside = purposes.length > 0 && (
-    <>
-      <Card title="By purpose" delay={0.1} aside={purpose !== 'all' ? <button className="d-chip" onClick={() => setPurpose('all')}>Show all</button> : undefined}>
-        <Donut data={purposes.map(([p, n], i) => ({ label: p, value: n, color: BAR_COLORS[i % BAR_COLORS.length] ?? PALETTE[i] }))} label="decisions" picked={purpose === 'all' ? undefined : purpose} onPick={(sl) => setPurpose(purpose === sl.label ? 'all' : sl.label)} size={150} />
-      </Card>
-      <Card title="Cache" delay={0.15}>
-        <div className="d-gauges">
-          <Gauge p={cacheRate} color="var(--green)" label="answered from cache" sub={`${rows.length - fresh.length} of ${rows.length}`} />
-          <Gauge p={meanConf} color="var(--orange)" label="mean confidence" sub={`${withConf.length} with a confidence`} delay={0.15} />
-        </div>
-      </Card>
-    </>
-  )
+  // keyboard: j/k walk the log, like a mail client
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.target as HTMLElement)?.closest('input, textarea, [contenteditable]')) return
+      if (e.key !== 'j' && e.key !== 'k') return
+      const at = shown.findIndex((c) => c.id === current?.id)
+      const next = shown[Math.max(0, Math.min(shown.length - 1, at + (e.key === 'j' ? 1 : -1)))]
+      if (next) setPicked(next.id)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [shown, current])
+
+  const total = data?.length ?? 0
+  const cachedShare = total ? Math.round(((data ?? []).filter((d) => d.cached).length / total) * 100) : 0
+  let lastDay = ''
 
   return (
     <div className="d-body">
-      <PageHead theme="lilac" kicker="Audit log" title="Every" oblique="decision" note="Each judgement Jev made: its probabilities, what code did with it, and whether it came from the cache." actions={<RefreshButton busy={reloading} onClick={reload} />} />
+      <PageHead theme="lilac" kicker="Audit log" title="Every" oblique="decision" note="What the engine was asked, how sure it was, and what the code did with each answer." actions={<RefreshButton busy={reloading} onClick={reload} />} />
       <Gate />
       {error && <Note tone="error">{error}</Note>}
-      {loading && !data && <Loading label="Opening the log book" />}
+      {loading && !data && <Loading label="Opening the log book" hints={['Grouping answers by request', 'Reading what code did with each']} />}
       {data && (
         <>
-          <Kpis
-            items={[
-              { label: 'Decisions shown', value: rows.length, hint: `of the latest ${all.length}`, color: 'var(--violet)' },
-              { label: 'From cache', value: rows.length ? `${Math.round(((rows.length - fresh.length) / rows.length) * 100)}%` : '—', color: 'var(--green)' },
-              { label: 'Mean confidence', value: withConf.length ? meanConf.toFixed(2) : '—', color: 'var(--orange)' },
-              { label: 'Fresh latency', value: fresh.length ? `${(meanLat / 1000).toFixed(1)}s` : '—', hint: 'mean, uncached', color: 'var(--blue)' },
-            ]}
-          />
-          {rows.length > 0 && (
-            <div className="d-bento">
-              <Card span={8} title="When Jev decided" delay={0.05} aside={<span className="d-muted">last 14 days</span>}>
-                <Columns data={days.map((d) => ({ ...d, hint: `decisions on ${d.label}` }))} color="var(--violet)" h={150} ticks={7} />
-              </Card>
-              <Card span={4} title="How sure" delay={0.1} aside={<span className="d-muted">confidence spread</span>}>
-                <Columns data={confHist} h={150} ticks={5} />
-              </Card>
-              <Card span={12} title="Rhythm" delay={0.15} aside={<span className="d-muted">weekday × hour</span>}>
-                <Heat grid={week.grid} rows={week.rows} cols={week.cols} unit="decisions" />
-              </Card>
+          <p className="lg-lede">
+            {total ? <>The latest <b>{total.toLocaleString()}</b> decisions came from <b>{calls.length}</b> requests{cachedShare ? <>, and <b>{cachedShare}%</b> were answered from the cache without asking again</> : null}. Pick an entry to see each question it asked.</> : 'Nothing has been decided yet.'}
+          </p>
+          <div className="lg-tools">
+            <LayoutGroup id="lg-kind">
+              <div className="lg-kinds" role="tablist" aria-label="Kind of decision">
+                {FILTERS.map(([k, label]) => (
+                  <button key={k} role="tab" aria-selected={kind === k} className={kind === k ? 'is-on' : ''} onClick={() => setKind(k)}>
+                    {kind === k && <motion.span layoutId="lg-kind-ink" className="lg-kinds__ink" transition={{ type: 'spring', stiffness: 420, damping: 32 }} />}
+                    <span>{label}</span>
+                  </button>
+                ))}
+              </div>
+            </LayoutGroup>
+            <input className="field lg-search" placeholder="Search questions and actions" value={search} onChange={(e) => setSearch(e.target.value)} aria-label="Search decisions" />
+          </div>
+          {shown.length === 0 ? (
+            <Empty title={total ? 'Nothing matches' : 'No decisions yet'}>{total ? 'Try another kind or search.' : 'Ask a question, find a file or plan a tour, and every judgement lands here.'}</Empty>
+          ) : (
+            <div className="lg">
+              <ol className="lg-log" aria-label="Requests, newest first">
+                {shown.map((c, i) => {
+                  const day = dayLabel(c.ts)
+                  const head = day !== lastDay
+                  lastDay = day
+                  const on = current?.id === c.id
+                  const [, title] = verb(c.purpose)
+                  return (
+                    <li key={c.id}>
+                      {head && <span className="lg-day">{day}</span>}
+                      <motion.button
+                        className={`lg-entry ${on ? 'is-on' : ''}`}
+                        onClick={() => setPicked(c.id)}
+                        aria-pressed={on}
+                        initial={{ x: -12 }}
+                        animate={{ x: 0 }}
+                        transition={{ type: 'spring', stiffness: 360, damping: 30, delay: Math.min(i, 12) * 0.02 }}
+                        whileTap={{ scale: 0.985 }}
+                      >
+                        <span className="lg-entry__time mono">{time(c.ts)}</span>
+                        <span className="lg-entry__dot" aria-hidden>{on && <motion.i layoutId="lg-dot" transition={{ type: 'spring', stiffness: 400, damping: 30 }} />}</span>
+                        <span className="lg-entry__body">
+                          <b>{title}</b>
+                          <span className="lg-entry__meta">
+                            {c.items.length} question{c.items.length === 1 ? '' : 's'} · {c.engine}{c.cached ? ' · cached' : ''}
+                          </span>
+                          <Strip items={c.items} />
+                        </span>
+                      </motion.button>
+                    </li>
+                  )
+                })}
+                {total >= limit && (
+                  <li><button className="d-chip lg-more" onClick={() => setLimit(limit + 300)}>Load older entries</button></li>
+                )}
+              </ol>
+              <div className="lg-side">
+                <AnimatePresence mode="wait" initial={false}>
+                  {current && <Inspector key={current.id} call={current} when={when} />}
+                </AnimatePresence>
+                <p className="lg-keys"><kbd>j</kbd> <kbd>k</kbd> walk the log · <span className="lg-key is-go" /> let through · <span className="lg-key is-stop" /> turned back · taller ticks mean surer</p>
+              </div>
             </div>
           )}
-          <Split aside={aside || undefined}>
-            <div className="d-toolbar">
-              <input className="field d-toolbar__search" placeholder="Filter by question, answer or action" value={filter} onChange={(e) => setFilter(e.target.value)} aria-label="Filter decisions" />
-              <Select label="Purpose" value={purpose} onChange={setPurpose} options={[{ value: 'all', label: 'Every purpose' }, ...purposes.map(([p, n]) => ({ value: p, label: p, hint: `${n} decisions` }))]} />
-              <Select label="Engine" value={engine} onChange={setEngine} align="end" options={[{ value: 'all', label: 'Every engine' }, ...engines.map((e) => ({ value: e, label: e }))]} />
-            </div>
-            {rows.length === 0 ? (
-              <Card><Empty title={all.length ? 'Nothing matches' : 'No decisions yet'}>{all.length ? 'Try a different filter.' : 'Ask a question or plan a tour and every judgement lands here.'}</Empty></Card>
-            ) : (
-              <Card>
-                <div className="dx">
-                  {rows.map((d) => {
-                    let probs: Record<string, number> = {}
-                    try { probs = JSON.parse(d.probabilities) } catch { /* not JSON */ }
-                    const isOpen = open === d.id
-                    return (
-                      <div key={d.id} className={`dx-row ${isOpen ? 'is-open' : ''}`}>
-                        <button className="dx-head" onClick={() => setOpen(isOpen ? null : d.id)} aria-expanded={isOpen} data-cursor={isOpen ? 'Collapse' : 'Show probabilities'}>
-                          <span className="dx-stub">
-                            {d.confidence != null ? <Prob p={d.confidence} size={40} /> : <span className="dx-none">—</span>}
-                          </span>
-                          <span className="dx-body">
-                            <span className="dx-line">
-                              <b className="dx-answer">{d.answer}</b>
-                              <span className="d-tag">{d.purpose}</span>
-                              {!!d.cached && <span className="d-tag is-ok">cached</span>}
-                            </span>
-                            <span className="dx-q mono">{d.question_id}</span>
-                            {d.action && <span className="dx-act d-clamp">{d.action}</span>}
-                          </span>
-                          <span className="dx-meta">
-                            <span>{when(d.ts)}</span>
-                            <span className="mono">{d.engine}</span>
-                          </span>
-                        </button>
-                        <AnimatePresence initial={false}>
-                          {isOpen && (
-                            <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} exit={{ height: 0 }} transition={{ ease: EASE, duration: 0.3 }} style={{ overflow: 'hidden' }}>
-                              <div className="dx-more">
-                                <div className="small d-muted">{d.question_type} · {d.model_id} via {d.provider} · {Math.round(d.latency_ms)} ms · {d.input_tokens} input tokens · call <span className="mono">{d.call_id.slice(0, 12)}</span></div>
-                                <div className="d-probs">{Object.entries(probs).sort((a, b) => b[1] - a[1]).slice(0, 8).map(([k, v]) => <span key={k}><Prob p={v} size={30} /><span className="mono small">{k}</span></span>)}</div>
-                              </div>
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-                      </div>
-                    )
-                  })}
-                </div>
-                {all.length >= limit && <div className="d-card__foot"><button className="d-chip" onClick={() => setLimit(limit + 120)}>Load 120 more</button></div>}
-              </Card>
-            )}
-          </Split>
         </>
       )}
     </div>
