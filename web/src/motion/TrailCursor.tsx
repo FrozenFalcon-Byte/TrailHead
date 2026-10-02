@@ -9,6 +9,9 @@ import { getPrefs, usePref } from '../lib/prefs'
    - Over text fields it narrows into a violet I-beam.
    - Pressing squishes it; releasing sends a ripple and a burst of story shapes, and shifts the ring colour.
    - Cards with [data-tilt] tilt in 3D under it.
+   - It has weight: it swings like a pendulum from its tip as you move sideways, stretches along the way you
+     travel and jiggles back when you stop, overshoots a little when it jumps to wrap a control, and the
+     release burst is thrown out under gravity and drag.
    Fine pointers only; off under reduced motion. */
 
 type Mode = 'idle' | 'link' | 'text' | 'stick'
@@ -86,11 +89,23 @@ export function TrailCursor() {
   const px = useMotionValue(-100)
   const py = useMotionValue(-100)
   // The body sits exactly on the pointer, except when it travels to wrap a control (and back).
-  const bx = useSpring(-100, { stiffness: 420, damping: 34, mass: 0.6 })
-  const by = useSpring(-100, { stiffness: 420, damping: 34, mass: 0.6 })
-  // A touch of stretch with speed.
-  const speed = useTransform([useVelocity(px), useVelocity(py)], ([vx, vy]: number[]) => Math.min(0.22, Math.hypot(vx, vy) / 9000))
-  const stretch = useSpring(useTransform(speed, (s) => 1 + s), { stiffness: 400, damping: 30 })
+  // Underdamped, so wrapping a control (and letting go of it) overshoots and settles.
+  const bx = useSpring(-100, { stiffness: 380, damping: 21, mass: 0.6 })
+  const by = useSpring(-100, { stiffness: 380, damping: 21, mass: 0.6 })
+  const vx = useVelocity(px)
+  const vy = useVelocity(py)
+  // Stretch along the direction of travel; the angle holds while it slows so the jiggle stays on that axis.
+  const heading = useRef(0)
+  const angle = useTransform([vx, vy], ([x, y]: number[]) => {
+    if (Math.hypot(x, y) > 60) heading.current = (Math.atan2(y, x) * 180) / Math.PI
+    return heading.current
+  })
+  const unAngle = useTransform(angle, (a) => -a)
+  const pull = useSpring(useTransform([vx, vy], ([x, y]: number[]) => Math.min(0.34, Math.hypot(x, y) / 7000)), { stiffness: 320, damping: 11 })
+  const along = useTransform(pull, (s) => 1 + s)
+  const across = useTransform(pull, (s) => 1 - s * 0.45)
+  // Hung from its tip: sideways speed swings it, and it rocks a few times before it hangs still.
+  const lean = useSpring(useTransform(vx, (v) => Math.max(-24, Math.min(24, -v / 90))), { stiffness: 170, damping: 7, mass: 0.8 })
 
   useEffect(() => {
     if (choice !== 'trail' || !window.matchMedia('(pointer: fine)').matches || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
@@ -140,7 +155,8 @@ export function TrailCursor() {
       ripple.style.boxShadow = `inset 0 0 0 2.5px ${color}`
       host.appendChild(ripple)
       ripple.animate([{ transform: 'scale(0.2)', opacity: 1 }, { transform: 'scale(1.5)', opacity: 0 }], { duration: 520, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' }).onfinish = () => ripple.remove()
-      for (let i = 0; i < 6; i++) {
+      // Thrown shapes: each gets a kick, then gravity pulls it down and air drag slows it while it spins out.
+      const bits = Array.from({ length: 8 }, (_, i) => {
         const el = document.createElement('span')
         el.className = 'tc-burst'
         el.style.left = `${x}px`
@@ -148,17 +164,31 @@ export function TrailCursor() {
         el.style.background = COLORS[(i + tintRef.current) % COLORS.length]
         el.style.borderRadius = KINDS[i % KINDS.length]
         host.appendChild(el)
-        const a = (i / 6) * Math.PI * 2 + Math.random() * 0.6
-        const d = 30 + Math.random() * 22
-        el.animate(
-          [
-            { transform: 'translate(0, 0) scale(0.3) rotate(0deg)', opacity: 1 },
-            { transform: `translate(${Math.cos(a) * d}px, ${Math.sin(a) * d}px) scale(1) rotate(${a * 90}deg)`, opacity: 1, offset: 0.55 },
-            { transform: `translate(${Math.cos(a) * d * 1.3}px, ${Math.sin(a) * d * 1.3 + 12}px) scale(0) rotate(${a * 140}deg)`, opacity: 0 },
-          ],
-          { duration: 640, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' },
-        ).onfinish = () => el.remove()
+        const a = (i / 8) * Math.PI * 2 + Math.random() * 0.5
+        const v = 260 + Math.random() * 220
+        return { el, x: 0, y: 0, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 180, r: 0, vr: (Math.random() - 0.5) * 900 }
+      })
+      let last = performance.now()
+      const born = last
+      const step = (now: number) => {
+        const dt = Math.min(0.032, (now - last) / 1000)
+        last = now
+        const age = (now - born) / 900
+        const drag = Math.pow(0.04, dt)
+        for (const p of bits) {
+          p.vy += 1500 * dt
+          p.vx *= drag
+          p.vy *= drag
+          p.x += p.vx * dt
+          p.y += p.vy * dt
+          p.r += p.vr * dt
+          const sc = age < 0.12 ? 0.3 + age * 6 : Math.max(0, 1 - (age - 0.12) / 0.88)
+          p.el.style.transform = `translate(${p.x}px, ${p.y}px) rotate(${p.r}deg) scale(${sc})`
+        }
+        if (age < 1) requestAnimationFrame(step)
+        else bits.forEach((p) => p.el.remove())
       }
+      requestAnimationFrame(step)
     }
 
     const move = (e: PointerEvent) => {
@@ -279,18 +309,22 @@ export function TrailCursor() {
   return (
     <div ref={layer} className="tc-layer" style={{ opacity: away ? 0 : 1, transition: 'opacity 0.25s' }} aria-hidden>
       <motion.div className="tc-pos" style={{ x: bx, y: by }}>
-        <motion.div style={{ scale: mode === 'idle' ? stretch : 1, originX: 0, originY: 0 }}>
+        <motion.div style={{ rotate: mode === 'idle' || mode === 'link' ? lean : 0, originX: 0, originY: 0 }}>
+        <motion.div style={{ rotate: mode === 'idle' ? angle : 0, scaleX: mode === 'idle' ? along : 1, scaleY: mode === 'idle' ? across : 1, originX: 0, originY: 0 }}>
+        <motion.div style={{ rotate: mode === 'idle' ? unAngle : 0, originX: 0, originY: 0 }}>
           <motion.div
             className="tc-body"
             initial={false}
             animate={{ ...shape, scale: down ? (mode === 'stick' ? 0.94 : 0.78) : 1, rotate: down && mode === 'idle' ? -12 : 0 }}
-            transition={SPRING}
+            transition={{ ...SPRING, scale: down ? SPRING : { type: 'spring', stiffness: 600, damping: 12 }, rotate: { type: 'spring', stiffness: 500, damping: 11 } }}
             style={{ ...paint, transition: 'background-color 0.25s, box-shadow 0.25s' }}
           >
             <motion.span className="tc-text" initial={false} animate={{ opacity: showLabel ? 1 : 0, x: showLabel ? 0 : -8 }} transition={{ duration: 0.18, delay: showLabel ? 0.06 : 0 }}>
               {label}
             </motion.span>
           </motion.div>
+        </motion.div>
+        </motion.div>
         </motion.div>
       </motion.div>
     </div>

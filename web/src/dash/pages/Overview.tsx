@@ -181,7 +181,10 @@ export default function Overview() {
           ))}
         </div>
       ) : (
-        <Empty title="None ranked yet">Run <span className="mono">bin/trailhead pick --limit 30</span> to rank open issues.</Empty>
+        <Empty title="None ranked yet">
+          Open issues are sorted by how gentle a first step they make.
+          <div style={{ marginTop: 14 }}><Link to="/app/issues" className="d-chip">Rank this repository's issues</Link></div>
+        </Empty>
       )}
     </Card>
     ),
