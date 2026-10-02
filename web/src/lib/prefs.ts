@@ -58,6 +58,11 @@ export type Prefs = {
   overviewHidden: string
   hiddenNav: string
   mapScenery: boolean
+  passColor: 'yellow' | 'orange' | 'violet' | 'blue' | 'green' | 'lime'
+  passShape: 'ticket' | 'tag'
+  passEmail: boolean
+  passStats: boolean
+  passStamps: boolean
 }
 
 /** The overview's cards, in their default order. */
@@ -137,6 +142,11 @@ export const DEFAULTS: Prefs = {
   overviewHidden: '',
   hiddenNav: '',
   mapScenery: true,
+  passColor: 'yellow',
+  passShape: 'ticket',
+  passEmail: true,
+  passStats: true,
+  passStamps: true,
 }
 
 const KEY = 'th-prefs'
@@ -163,6 +173,8 @@ const CHOICES: Partial<Record<keyof Prefs, readonly string[]>> = {
   sideTone: ['ink', 'paper', 'accent'],
   headingFont: ['bricolage', 'inter', 'mono'],
   overviewLayout: ['bento', 'pairs', 'stack'],
+  passColor: ['yellow', 'orange', 'violet', 'blue', 'green', 'lime'],
+  passShape: ['ticket', 'tag'],
 }
 
 function load(): Prefs {

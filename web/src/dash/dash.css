@@ -3298,11 +3298,13 @@ html[data-morph] .d-mast__icon {
   grid-template-columns: auto minmax(0, 1fr) auto;
   gap: 0;
   border-radius: calc(32px * var(--round, 1));
-  background: var(--butter);
+  background: var(--pass-bg, var(--butter));
   overflow: hidden;
+  transition: background 0.5s, clip-path 0.5s;
+  will-change: transform;
 }
 html[data-theme='dark'] .p-pass {
-  background: color-mix(in srgb, var(--yellow) 16%, var(--surface));
+  background: color-mix(in srgb, var(--pass, var(--yellow)) 16%, var(--surface));
 }
 .p-pass__stub {
   position: relative;
@@ -3311,7 +3313,8 @@ html[data-theme='dark'] .p-pass {
   align-content: center;
   gap: 12px;
   padding: 30px 34px;
-  background: var(--yellow);
+  background: var(--pass, var(--yellow));
+  transition: background 0.5s;
 }
 /* perforation between stub and pass */
 .p-pass__stub::after {
@@ -6145,3 +6148,25 @@ html[data-side='accent'] .d-side .d-nav a.active { color: #fbf8f1; }
 .s-art-corner { width: 44px; height: 32px; background: var(--accent); }
 .s-art-side { display: flex; align-items: flex-start; width: 22px; height: 36px; border-radius: 6px; padding: 4px; }
 .s-art-side i { width: 100%; height: 5px; border-radius: 2px; background: var(--lime); }
+
+/* Trail pass customisation (PassCustom.tsx) */
+.p-pass-wrap { position: relative; }
+.p-pass.is-tag { clip-path: polygon(0 0, calc(100% - 54px) 0, 100% 50%, calc(100% - 54px) 100%, 0 100%); padding-right: 40px; }
+.p-pass__stub .p-pass__remove { color: var(--pass-ink, var(--solid)); }
+.p-pass__fact { display: inline-flex; }
+.p-pass__fact > * { flex: 1; }
+.p-cust { position: absolute; top: 14px; right: 18px; z-index: 5; }
+.p-pass-wrap:has(.p-pass.is-tag) .p-cust { right: 70px; }
+.p-cust__btn { display: inline-flex; align-items: center; gap: 7px; border: 0; padding: 7px 12px; border-radius: 12px; background: var(--surface); color: var(--ink); font: 800 12.5px var(--chunk); cursor: pointer; }
+.p-cust__tray { position: absolute; right: 0; top: calc(100% + 8px); width: 260px; display: grid; gap: 8px; padding: 14px; border-radius: calc(20px * var(--round, 1)); background: var(--solid); color: var(--on-solid); box-shadow: 0 18px 40px rgba(0, 0, 0, 0.18); }
+.p-cust__label { font: 800 10.5px var(--chunk); letter-spacing: 0.08em; text-transform: uppercase; color: color-mix(in srgb, var(--on-solid) 50%, transparent); }
+.p-cust__swatches { display: flex; gap: 8px; }
+.p-cust__swatches button { position: relative; width: 30px; height: 30px; border: 0; border-radius: 10px; cursor: pointer; }
+.p-cust__ring { position: absolute; inset: -4px; border-radius: 13px; box-shadow: 0 0 0 2.5px var(--on-solid); }
+.p-cust__shapes { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.p-cust__shapes button { position: relative; display: grid; justify-items: center; gap: 4px; border: 0; padding: 8px 6px; border-radius: 12px; background: color-mix(in srgb, var(--on-solid) 8%, transparent); color: var(--on-solid); font: 700 12px var(--chunk); cursor: pointer; }
+.p-cust__shapes button.is-on { color: var(--solid); }
+.p-cust__shapes button > *:not(.p-cust__pill) { position: relative; }
+.p-cust__pill { position: absolute; inset: 0; border-radius: 12px; background: var(--lime); }
+.p-cust__toggles { display: grid; gap: 6px; margin-top: 4px; }
+.p-cust__toggles label { display: flex; align-items: center; justify-content: space-between; font: 700 13px var(--chunk); }

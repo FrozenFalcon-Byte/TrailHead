@@ -14,6 +14,9 @@ import { EmailCard, KeyRing, PasswordCard } from '../ProfileSecurity'
 import { useSignOut } from '../Dashboard'
 import { EASE, Note, PageHead } from '../ui'
 import { Shape } from '../../motion/Shapes'
+import { SplitReveal } from '../../motion/SplitReveal'
+import { usePrefs } from '../../lib/prefs'
+import { PassTilt } from '../PassCustom'
 import { CountUp, Donut } from '../viz'
 import { GitHubLogo, GoogleLogo, MailLogo } from '../../motion/Logos'
 
@@ -179,6 +182,7 @@ export default function Profile() {
     { label: 'Passkey', ok: (keys?.length ?? 0) > 0, kind: 'square' as const, color: 'var(--green)', glyph: 'check' as const },
     { label: 'Full profile', ok: Boolean(form.display_name && photo && form.headline), kind: 'circle' as const, color: 'var(--violet)', glyph: 'pine' as const },
   ]
+  const prefs = usePrefs()
   const tabs = TABS.filter((t) => !(bypass && t.id === 'security'))
   const tabIdx = Math.max(0, tabs.findIndex((t) => t.id === tab))
 
@@ -192,41 +196,55 @@ export default function Profile() {
         </Note>
       )}
 
-      <motion.section className="p-pass" initial={{ opacity: 0, y: 24, rotate: -0.6 }} animate={{ opacity: 1, y: 0, rotate: 0 }} transition={{ duration: 0.7, ease: EASE }}>
-        <div className="p-pass__stub">
+      <PassTilt shape={prefs.passShape} color={prefs.passColor}>
+        <motion.div className="p-pass__stub" key={prefs.passColor} initial={{ rotateY: -70, scaleY: 0.92 }} animate={{ rotateY: 0, scaleY: 1 }} transition={{ type: 'spring', stiffness: 160, damping: 16 }} style={{ transformOrigin: 'right center' }}>
           <PhotoDial size={132} onEdit={() => setEditing(true)} />
           {photo && <button className="p-pass__remove" onClick={() => run('photo', removeAvatar, 'Photo removed')} disabled={busy === 'photo'}>Remove photo</button>}
-        </div>
+        </motion.div>
         <div className="p-pass__main">
           <span className="p-pass__kind">Trail pass · {bypass ? 'local' : `No. ${(user?.id ?? '').slice(0, 8).toUpperCase()}`}</span>
-          <h2 className="chunk p-pass__name">{form.display_name || displayName || 'Hiker'}</h2>
+          <SplitReveal as="h2" className="chunk p-pass__name" text={form.display_name || displayName || 'Hiker'} immediate delay={0.25} stagger={0.05} />
           <p className="p-pass__head">{form.headline || (bypass ? 'Exploring in local mode' : 'Add a headline in Details')}</p>
           <div className="p-pass__facts">
-            {user?.email && <span><i>✉</i>{user.email}</span>}
-            {form.location && <span><i>⌖</i>{form.location}</span>}
-            {form.website && <a href={form.website} target="_blank" rel="noreferrer noopener"><i>↗</i>{form.website.replace(/^https?:\/\//, '')}</a>}
-            <span><i>◷</i>member {since(user?.created_at)}</span>
+            {[
+              prefs.passEmail && user?.email ? <span key="mail"><i>✉</i>{user.email}</span> : null,
+              form.location ? <span key="loc"><i>⌖</i>{form.location}</span> : null,
+              form.website ? <a key="web" href={form.website} target="_blank" rel="noreferrer noopener"><i>↗</i>{form.website.replace(/^https?:\/\//, '')}</a> : null,
+              <span key="since"><i>◷</i>member {since(user?.created_at)}</span>,
+            ].filter(Boolean).map((el, i) => (
+              <motion.span key={i} className="p-pass__fact" initial={{ scale: 0.6, rotate: -8, y: 10 }} animate={{ scale: 1, rotate: 0, y: 0 }} transition={{ type: 'spring', stiffness: 320, damping: 16, delay: 0.4 + i * 0.07 }} whileHover={{ y: -3, rotate: -1.5 }}>
+                {el}
+              </motion.span>
+            ))}
           </div>
-          <div className="p-pass__counts">
-            <div><b><CountUp to={counts?.asks ?? 0} /></b><span>asks</span></div>
-            <div><b><CountUp to={counts?.tours ?? 0} /></b><span>tours</span></div>
-            <div><b><CountUp to={keys?.length ?? 0} /></b><span>passkeys</span></div>
-          </div>
+          <AnimatePresence initial={false}>
+            {prefs.passStats && (
+              <motion.div className="p-pass__counts" initial={{ rotateX: -90, scaleY: 0.6 }} animate={{ rotateX: 0, scaleY: 1 }} exit={{ rotateX: -90, scaleY: 0.6 }} transition={{ type: 'spring', stiffness: 240, damping: 20 }} style={{ transformOrigin: 'top' }}>
+                <div><b><CountUp to={counts?.asks ?? 0} /></b><span>asks</span></div>
+                <div><b><CountUp to={counts?.tours ?? 0} /></b><span>tours</span></div>
+                <div><b><CountUp to={keys?.length ?? 0} /></b><span>passkeys</span></div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
-        <div className="p-pass__stamps" aria-label="Stamps">
-          {stamps.map((st, i) => (
-            <motion.div key={st.label} className={`p-stamp ${st.ok ? 'is-ok' : ''}`} initial={{ scale: 1.8, opacity: 0, rotate: -30 }} animate={{ scale: 1, opacity: 1, rotate: st.ok ? [-12, 8, -6, 10][i] : 0 }} transition={{ type: 'spring', stiffness: 260, damping: 14, delay: 0.35 + i * 0.12 }} title={st.ok ? `${st.label}: earned` : `${st.label}: not yet`}>
-              <span className="p-stamp__shape">
-                <Shape kind={st.kind} color={st.ok ? st.color : 'var(--dim)'} glyph={st.glyph} size={0} style={{ width: '100%', height: 'auto' }} play={st.ok} />
-              </span>
-              <span className="p-stamp__label">{st.label}</span>
+        <AnimatePresence initial={false}>
+          {prefs.passStamps && (
+            <motion.div className="p-pass__stamps" aria-label="Stamps" exit={{ scale: 0.6, rotate: 8 }} transition={{ type: 'spring', stiffness: 260, damping: 20 }}>
+              {stamps.map((st, i) => (
+                <motion.div key={st.label} className={`p-stamp ${st.ok ? 'is-ok' : ''}`} initial={{ scale: 1.8, opacity: 0, rotate: -30 }} animate={{ scale: 1, opacity: 1, rotate: st.ok ? [-12, 8, -6, 10][i] : 0 }} whileHover={{ rotate: [null, -4, 6, 0], scale: 1.06, transition: { duration: 0.5 } }} transition={{ type: 'spring', stiffness: 260, damping: 14, delay: 0.35 + i * 0.12 }} title={st.ok ? `${st.label}: earned` : `${st.label}: not yet`}>
+                  <span className="p-stamp__shape">
+                    <Shape kind={st.kind} color={st.ok ? st.color : 'var(--dim)'} glyph={st.glyph} size={0} style={{ width: '100%', height: 'auto' }} play={st.ok} />
+                  </span>
+                  <span className="p-stamp__label">{st.label}</span>
+                </motion.div>
+              ))}
             </motion.div>
-          ))}
-        </div>
+          )}
+        </AnimatePresence>
         <svg className="p-pass__trail" viewBox="0 0 600 24" preserveAspectRatio="none" aria-hidden>
           <motion.path d="M0 12 C 60 2, 110 22, 170 12 S 280 2, 340 12 S 450 22, 510 12 S 580 4, 600 10" fill="none" stroke="var(--ink)" strokeOpacity={0.25} strokeWidth={2.5} strokeDasharray="2 8" strokeLinecap="round" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 1.6, ease: EASE, delay: 0.3 }} />
         </svg>
-      </motion.section>
+      </PassTilt>
 
       <nav className="p-tabs" aria-label="Profile sections">
         {tabs.map((t) => (
