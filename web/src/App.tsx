@@ -21,6 +21,7 @@ import { DashIntro } from './motion/DashIntro'
 import { usePref } from './lib/prefs'
 import { ArrivingSheet, takeArrival } from './motion/UpdateSheet'
 import { UpdateSplash } from './motion/UpdateSplash'
+import { PairHost } from './motion/PairHost'
 
 // Read once per page load: set when the previous page reloaded itself into a new build.
 const ARRIVAL = takeArrival()
@@ -28,6 +29,7 @@ const ARRIVAL = takeArrival()
 // The dashboard is its own bundle, so the landing page loads light.
 const Dashboard = lazy(() => import('./dash/Dashboard'))
 const Guide = lazy(() => import('./guide/Guide'))
+const Pair = lazy(() => import('./pages/Pair'))
 
 /** Redirect exactly once. <Navigate> would fire again every time the page re-renders while the curtain plays its
  *  exit, and that loops. */
@@ -91,6 +93,7 @@ export default function App() {
         <Routes location={location} key={area === 'login' || area === 'signup' ? 'auth' : area}>
           <Route path="/" element={<Curtain><Landing ready={revealed} settled={!loading} /></Curtain>} />
           <Route path="/guide" element={<Curtain><Suspense fallback={<div className="t-cream" style={{ minHeight: '100vh', display: 'grid', placeItems: 'center' }}><TrailSpinner label="Unfolding the guide" /></div>}><Guide /></Suspense></Curtain>} />
+          <Route path="/pair" element={<Curtain><Suspense fallback={<div className="t-cream" style={{ minHeight: '100vh', display: 'grid', placeItems: 'center' }}><TrailSpinner label="Clearing the trail" /></div>}><Pair /></Suspense></Curtain>} />
           <Route path="/login" element={<Curtain><AuthPage /></Curtain>} />
           <Route path="/signup" element={<Curtain><AuthPage /></Curtain>} />
           <Route path="/auth/callback" element={<AuthCallback />} />
@@ -100,6 +103,7 @@ export default function App() {
         </Routes>
       </AnimatePresence>
       <QrSheet />
+      <PairHost />
       <ContextMenu />
       <Toaster />
       <WakeSheet />

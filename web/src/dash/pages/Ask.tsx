@@ -56,7 +56,7 @@ export default function Ask() {
   const [history, setHistory] = useState<Saved<AskResult>[]>([])
   const [params, setParams] = useSearchParams()
   const [tab, setTab] = useState<'answer' | 'beam' | 'evidence'>('answer')
-  const auto = useRef(false)
+  const auto = useRef('')
 
   useEffect(() => {
     if (!repo) return
@@ -70,13 +70,16 @@ export default function Ask() {
         }
       })
       .catch(() => undefined) // a failed read keeps what was listed; saved items are never cleared by a refresh or an update
-    const pre = params.get('q')
-    if (pre && !auto.current) {
-      auto.current = true
-      setQuestion(pre)
-      if (params.get('run') === '1') run(pre)
-    }
   }, [repo])
+
+  // A question handed over in the address (a link, or a paired phone while this page is already open).
+  const pre = params.get('q')
+  useEffect(() => {
+    if (!repo || !pre || auto.current === `${pre}|${params.get('n') ?? ''}`) return
+    auto.current = `${pre}|${params.get('n') ?? ''}`
+    setQuestion(pre)
+    if (params.get('run') === '1') run(pre)
+  }, [repo, pre, params])
 
   const run = async (text = question) => {
     if (text.trim().length < 3 || !repo) return

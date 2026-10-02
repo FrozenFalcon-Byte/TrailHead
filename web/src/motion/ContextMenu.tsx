@@ -117,6 +117,7 @@ function useBuild() {
           { label: 'Back', icon: '←', run: () => navigate(-1) },
           { label: theme === 'dark' ? 'Switch to light' : 'Switch to dark', icon: theme === 'dark' ? '☀' : '☾', run: () => setTheme(theme === 'dark' ? 'light' : 'dark') },
           { label: 'Copy page link', icon: '⛓', run: () => copy(window.location.href, 'Page link') },
+          { label: 'Pair your phone', icon: '⇄', run: go('/pair') },
           { label: 'QR code for this page', icon: '▦', run: () => openQr({ title: document.title.split('—')[0].trim() || 'This page', url: window.location.href }) },
           { label: 'Reload', icon: '⟳', hint: '⌘R', run: () => window.location.reload() },
         ],

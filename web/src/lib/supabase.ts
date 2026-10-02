@@ -8,5 +8,5 @@ export const authBypass = import.meta.env.VITE_AUTH_BYPASS === '1'
 export const supabaseConfigured = Boolean(url && anon)
 
 export const supabase: SupabaseClient | null = supabaseConfigured
-  ? createClient(url!, anon!, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, flowType: 'pkce' } })
+  ? createClient(url!, anon!, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, flowType: 'pkce' }, realtime: { params: { eventsPerSecond: 40 } } })
   : null

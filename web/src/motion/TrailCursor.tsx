@@ -24,7 +24,7 @@ const COLORS = ['var(--orange)', 'var(--violet)', 'var(--green)', 'var(--blue)',
 const KINDS = ['50%', '6px', '50% 50% 50% 6px'] as const
 const SPRING = { type: 'spring', stiffness: 520, damping: 32, mass: 0.7 } as const
 
-const ROUTES: Record<string, string> = { '/': 'Home', '/login': 'Log in', '/signup': 'Sign up', '/app': 'Overview', '/app/ask': 'Ask', '/app/tour': 'Tour', '/app/find': 'Find', '/app/issues': 'First issues', '/app/map': 'Map', '/app/decisions': 'Decisions', '/app/evals': 'Evals', '/app/repos': 'Repositories', '/app/profile': 'Profile', '/app/settings': 'Settings' }
+const ROUTES: Record<string, string> = { '/': 'Home', '/login': 'Log in', '/signup': 'Sign up', '/pair': 'Pair a phone', '/guide': 'Guide', '/app': 'Overview', '/app/ask': 'Ask', '/app/tour': 'Tour', '/app/find': 'Find', '/app/issues': 'First issues', '/app/map': 'Map', '/app/decisions': 'Decisions', '/app/evals': 'Evals', '/app/repos': 'Repositories', '/app/profile': 'Profile', '/app/settings': 'Settings' }
 const clip = (s: string, n = 26) => {
   if (s.length <= n) return s
   const words = s.split(' ')
