@@ -55,3 +55,11 @@ export function useRelease(): Release | null {
 }
 
 export const checkNow = check
+
+// Dev only: window.__thFakeRelease() pretends a new build just shipped, to preview the update splash.
+if (import.meta.env.DEV) {
+  ;(window as unknown as { __thFakeRelease: () => void }).__thFakeRelease = () => {
+    latest = { id: `dev-${Date.now()}`, built: new Date().toISOString(), changes: ['Customise the dashboard from Settings', 'The field guide tells its story on scroll', 'Updates now show up on every page'] }
+    listeners.forEach((l) => l(latest))
+  }
+}

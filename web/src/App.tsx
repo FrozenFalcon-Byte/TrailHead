@@ -20,6 +20,7 @@ import { MomentLayer } from './motion/Moment'
 import { DashIntro } from './motion/DashIntro'
 import { usePref } from './lib/prefs'
 import { ArrivingSheet, takeArrival } from './motion/UpdateSheet'
+import { UpdateSplash } from './motion/UpdateSplash'
 
 // Read once per page load: set when the previous page reloaded itself into a new build.
 const ARRIVAL = takeArrival()
@@ -103,6 +104,7 @@ export default function App() {
       <Toaster />
       {(area === 'app' || area === 'welcome') && <WakeSheet />}
       <MomentLayer />
+      <UpdateSplash />
     </MotionConfig>
   )
 }

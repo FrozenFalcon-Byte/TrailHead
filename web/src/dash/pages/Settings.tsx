@@ -624,8 +624,8 @@ export default function Settings() {
         {
           label: 'New versions', hint: 'When the dashboard itself has been updated.', keys: 'update version new release reload', wide: true, control: (
             <Choice name="updatenotice" value={p.updateNotice} onChange={(v) => set({ updateNotice: v })} options={[
-              { value: 'toast', label: 'Tell me', hint: 'A toast and a chip', art: <span className="s-art-dir">↻</span> },
-              { value: 'quiet', label: 'Just the chip', hint: 'In the top bar', art: <span className="s-art-dir">·</span> },
+              { value: 'toast', label: 'Show me', hint: 'A splash on any page', art: <span className="s-art-dir">↻</span> },
+              { value: 'quiet', label: 'Just the flag', hint: 'In the corner', art: <span className="s-art-dir">·</span> },
               { value: 'auto', label: 'Update for me', hint: 'While the tab is hidden', art: <span className="s-art-dir">⇪</span> },
             ]} />
           ),

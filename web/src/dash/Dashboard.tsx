@@ -1,5 +1,4 @@
 import { animate, AnimatePresence, motion } from 'motion/react'
-import { UpdateChip } from './UpdateChip'
 import { scrollTop, useSmoothScroll } from '../motion/SmoothScroll'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { NavLink, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
@@ -156,7 +155,6 @@ function TopBar({ onMenu }: { onMenu: () => void }) {
         options={engines.map((e) => ({ value: e, label: e === 'jev' ? 'Jev' : e === 'llm' ? 'LLM fallback' : 'Local (Ollama)', hint: e === 'jev' ? 'Calibrated decisions, the default' : e === 'llm' ? 'Hosted model, the comparison baseline' : 'Runs on this machine' }))}
       />
       <span className="d-top__fill" />
-      <UpdateChip />
       <UserMenu />
     </div>
   )

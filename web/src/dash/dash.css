@@ -5314,32 +5314,6 @@ html[data-motion='calm'] .d-page :is(.d-card, .p-card, .h-card, .pd-sec, .e-pane
 .s-art-toast.is-paper, .s-screen__toast.is-paper { background: var(--paper); color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--line), inset 26px 0 0 var(--mint); }
 
 /* ---------- New version chip ---------- */
-.up { position: relative; }
-.up__chip {
-  display: inline-flex; align-items: center; gap: 7px;
-  border: 0; font: inherit; font-weight: 800; font-size: 13px;
-  padding: 8px 12px; border-radius: 999px; cursor: pointer;
-  background: var(--accent, var(--lime)); color: var(--solid);
-  box-shadow: inset 0 0 0 2px var(--solid), 0 3px 0 var(--solid);
-  transition: translate 0.2s, box-shadow 0.2s;
-}
-.up__chip:hover { translate: 0 -1px; box-shadow: inset 0 0 0 2px var(--solid), 0 4px 0 var(--solid); }
-.up__chip:active { translate: 0 2px; box-shadow: inset 0 0 0 2px var(--solid), 0 1px 0 var(--solid); }
-.up__pop {
-  position: absolute; right: 0; top: calc(100% + 10px); z-index: 60;
-  width: min(360px, 86vw); padding: 16px; border-radius: calc(22px * var(--round, 1));
-  background: var(--solid); color: var(--on-solid);
-  box-shadow: 0 24px 40px -18px rgba(0, 0, 0, 0.5);
-  display: grid; gap: 12px; transform-origin: 90% 0;
-}
-.up__head { display: grid; gap: 6px; }
-.up__tag { justify-self: start; font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 7px; background: var(--accent, var(--lime)); color: var(--solid); }
-.up__head b { font-size: 16px; line-height: 1.25; }
-.up__list { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; counter-reset: up; }
-.up__list li { counter-increment: up; display: grid; grid-template-columns: 22px 1fr; gap: 8px; font-size: 13px; font-weight: 600; line-height: 1.35; opacity: 0.9; }
-.up__list li::before { content: counter(up); display: grid; place-items: center; width: 20px; height: 20px; border-radius: 6px; background: color-mix(in srgb, var(--on-solid) 14%, transparent); font-size: 11px; font-weight: 800; }
-.up__go { display: flex; gap: 8px; align-items: center; }
-.up__go .d-chip { background: color-mix(in srgb, var(--on-solid) 14%, transparent); color: var(--on-solid); }
 
 
 /* ---------- Answer sheet ---------- */
