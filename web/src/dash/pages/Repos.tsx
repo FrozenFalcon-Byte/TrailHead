@@ -61,17 +61,49 @@ function RepoTicket({ r, active, onPick, i }: { r: RepoInfo; active: boolean; on
             <i>{n(r.files)} files</i><i>{n(r.symbols)} symbols</i><i>{n(r.commits)} commits</i><i>{n(r.pull_requests)} PRs</i><i>{n(r.issues)} issues</i>
           </span>
         )}
+        {ready && r.github_note && <span className="rp-t__note small">Pull requests and issues were skipped: {r.github_note} Onboard it again later to fetch them.</span>}
       </span>
       <span className="rp-t__end">
         {active ? (
           <span className="rp-t__here">Current</span>
         ) : ready ? (
           <button className="d-chip" onClick={onPick} data-cursor="Switch to it">Use →</button>
+        ) : running ? (
+          <StopButton repo={r.repo} stopping={r.step === 'Stopping'} />
         ) : (
           <span className={`d-tag ${failed ? 'is-bad' : 'is-warn'}`}>{r.status}</span>
         )}
       </span>
     </motion.div>
+  )
+}
+
+/** Stops a running ingest at its next step. A first onboarding that is stopped leaves nothing on the shelf. */
+function StopButton({ repo, stopping }: { repo: string; stopping: boolean }) {
+  const { refreshRepos } = useDash()
+  const [asked, setAsked] = useState(false)
+  const busy = asked || stopping
+  return (
+    <motion.button
+      className="rp-stop"
+      disabled={busy}
+      onClick={async () => {
+        setAsked(true)
+        try {
+          await api('/api/repos/stop', { method: 'POST', body: JSON.stringify({ repo }) })
+          toast({ key: `stop:${repo}`, tone: 'info', title: `Stopping ${repo}`, body: 'It stops at the next step; a first onboarding leaves nothing behind.' })
+          await refreshRepos()
+        } catch (e) {
+          setAsked(false)
+          notify.error('Could not stop it', errorText(e))
+        }
+      }}
+      whileTap={{ scale: 0.92 }}
+      data-cursor="Stop reading"
+    >
+      <motion.i aria-hidden animate={busy ? { rotate: 90, borderRadius: '50%' } : { rotate: 0, borderRadius: '3px' }} transition={{ type: 'spring', stiffness: 300, damping: 16 }} />
+      <span>{busy ? 'Stopping…' : 'Stop'}</span>
+    </motion.button>
   )
 }
 
@@ -138,7 +170,14 @@ export default function Repos() {
       return
     }
     try {
-      await api('/api/repos', { method: 'POST', body: JSON.stringify({ repo: full }) })
+      // the GitHub sign-in token, when there is one, lifts this run's GitHub quota; the server uses it once and drops it
+      let github_token = ''
+      try {
+        github_token = sessionStorage.getItem(GH_TOKEN_KEY) || ''
+      } catch {
+        /* private mode */
+      }
+      await api('/api/repos', { method: 'POST', body: JSON.stringify({ repo: full, github_token }) })
       toast({ tone: 'info', title: `Onboarding ${full}`, body: 'Code, commits, pull requests and issues are read; nothing is executed. You will hear when it is ready.' })
       setName('')
       await refreshRepos()

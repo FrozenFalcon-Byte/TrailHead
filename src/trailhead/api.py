@@ -62,6 +62,12 @@ class RankBody(BaseModel):
 
 class IngestBody(BaseModel):
     repo: str = Field(pattern=r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$")
+    # the signed-in person's own GitHub token, for this run's API quota only; never stored or logged
+    github_token: str = Field("", max_length=400, repr=False)
+
+
+class RepoBody(BaseModel):
+    repo: str = Field(pattern=r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$")
 
 
 def _sse(kind: str, payload: Any) -> bytes:
@@ -188,7 +194,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     @app.post("/api/repos")
     async def add_repo(body: IngestBody, _: User = Depends(user)) -> dict[str, Any]:
-        return repos.start_ingest(settings, body.repo)
+        return repos.start_ingest(settings, body.repo, github_token=body.github_token)
+
+    @app.post("/api/repos/stop")
+    async def stop_repo(body: RepoBody, _: User = Depends(user)) -> dict[str, Any]:
+        return repos.stop_ingest(body.repo)
 
     @app.get("/api/overview")
     async def overview(repo: str | None = None, _: User = Depends(user)) -> dict[str, Any]:

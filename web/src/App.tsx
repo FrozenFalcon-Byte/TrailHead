@@ -13,6 +13,7 @@ import Welcome from './pages/Welcome'
 import { isOnboarded } from './lib/onboard'
 import { TrailSpinner } from './motion/TrailSpinner'
 import { Toaster } from './motion/Toaster'
+import { WakeSheet } from './motion/WakeSheet'
 import { ContextMenu } from './motion/ContextMenu'
 import { QrSheet } from './motion/QrSheet'
 import { MomentLayer } from './motion/Moment'
@@ -98,6 +99,7 @@ export default function App() {
       <QrSheet />
       <ContextMenu />
       <Toaster />
+      {(area === 'app' || area === 'welcome') && <WakeSheet />}
       <MomentLayer />
     </MotionConfig>
   )

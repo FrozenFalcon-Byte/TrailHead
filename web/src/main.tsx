@@ -8,8 +8,11 @@ import App from './App'
 import { AuthProvider } from './lib/auth'
 import { initTheme } from './lib/theme'
 import { applyPrefs } from './lib/prefs'
+import { watchWake } from './lib/wake'
 
 initTheme()
+// ping the API straight away, so a sleeping host is already booting while the visitor reads or signs in
+watchWake()
 applyPrefs()
 
 createRoot(document.getElementById('root')!).render(

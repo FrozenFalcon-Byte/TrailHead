@@ -23,6 +23,14 @@ class GitHubError(Exception):
     pass
 
 
+class GitHubRateLimited(GitHubError):
+    """The quota is spent and resets too far off to wait for inside an ingest."""
+
+
+# Longest rate-limit pause worth sitting through; anything longer skips GitHub instead of hanging the ingest.
+MAX_WAIT_S = 90
+
+
 def resolve_token(configured: str = "") -> str:
     if configured:
         return configured
@@ -34,7 +42,8 @@ def resolve_token(configured: str = "") -> str:
 
 
 class GitHub:
-    def __init__(self, token: str, *, transport: httpx.BaseTransport | None = None) -> None:
+    def __init__(self, token: str, *, transport: httpx.BaseTransport | None = None, tick: Any = None) -> None:
+        self.tick = tick or (lambda note: None)
         headers = {"Accept": "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28"}
         if token:
             headers["Authorization"] = f"Bearer {token}"
@@ -59,8 +68,11 @@ class GitHub:
             if response.status_code in (403, 429) and (remaining == "0" or "retry-after" in response.headers):
                 reset = float(response.headers.get("x-ratelimit-reset") or 0)
                 wait = float(response.headers.get("retry-after") or max(5.0, reset - time.time() + 2))
+                if wait > MAX_WAIT_S:
+                    raise GitHubRateLimited(f"GitHub rate limit reached; it resets in {wait / 60:.0f} min. Add a GitHub token for more.")
                 logger.warning("github: rate limited, sleeping %.0fs", wait)
-                time.sleep(min(wait, 3700))
+                self.tick(f"GitHub asked to slow down; waiting {wait:.0f}s")
+                time.sleep(wait)
                 continue
             if response.status_code >= 500:
                 time.sleep(2**attempt)
@@ -73,6 +85,7 @@ class GitHub:
         page_params: dict[str, Any] | None = {**params, "per_page": 100}
         pages = 0
         while url and (max_pages is None or pages < max_pages):
+            self.tick(f"Fetching {path.rsplit('/', 1)[-1].replace('_', ' ')} from GitHub, page {pages + 1}")
             response = self._get(url, page_params)
             yield response.json()
             pages += 1

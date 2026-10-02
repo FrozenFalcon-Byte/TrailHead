@@ -4,7 +4,8 @@ import { FIND_EXAMPLES } from '../examples'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { motion } from 'motion/react'
 import { Shape } from '../../motion/Shapes'
-import { JourneyBar, Signposts, type Station } from '../Trailside'
+import { JourneyBar, type Station } from '../Trailside'
+import { FindOpening } from '../FindOpening'
 import { toast } from '../../lib/toast'
 import { BeamColumns } from '../../motion/BeamColumns'
 import { useDash } from '../context'
@@ -144,7 +145,7 @@ export default function Find() {
             )}
           </details>
         )}
-        {!steps.length && !job.running && !r && repo && <Signposts title="Looking for something? Pick a sign." items={EXAMPLES} onPick={(q) => run(q)} color="var(--orange)" />}
+        {!steps.length && !job.running && !r && repo && <FindOpening repo={repo} examples={EXAMPLES} onPick={(q) => run(q)} />}
       </div>
     </div>
   )

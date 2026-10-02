@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { api } from '../lib/api'
 import { toast } from '../lib/toast'
+import { isHosted, suspectSleep, useWake } from '../lib/wake'
 
 export type RepoInfo = {
   repo: string
@@ -16,6 +17,7 @@ export type RepoInfo = {
   links?: number
   annotated_files?: number
   step?: string
+  github_note?: string
   error?: string
 }
 export type Health = { ok: boolean; auth: string; engines: string[]; default_engine: string; next_slot_s: number }
@@ -100,9 +102,12 @@ export function DashProvider({ children }: { children: ReactNode }) {
     }
     setOffline(!up)
     setLastCheck(Date.now())
-    // Say so when the connection changes, not on every poll.
-    if (was.current !== null && was.current !== up)
-      if (!up) toast({ tone: 'error', title: 'Lost the API', body: 'Start it again with bin/trailhead serve. Checking every few seconds.' })
+    // Say so when the connection changes, not on every poll. A hosted API that stops answering has most likely
+    // gone to sleep, which the wake sheet tells better than a toast.
+    if (was.current !== null && was.current !== up && !up) {
+      suspectSleep()
+      if (!isHosted) toast({ key: 'api-lost', tone: 'error', title: 'Lost the API', body: 'Start it again with bin/trailhead serve. Checking every few seconds.' })
+    }
     if (up && was.current !== true) api<ServerConfig>('/api/config').then(setConfig, () => undefined)
     was.current = up
     return up
@@ -133,6 +138,13 @@ export function DashProvider({ children }: { children: ReactNode }) {
     return () => clearInterval(id)
   }, [])
 
+  // When the host finishes waking, fetch everything at once rather than waiting for the next tick.
+  const wake = useWake()
+  useEffect(() => {
+    if (wake.phase === 'awake' || wake.phase === 'up') recheck().catch(() => undefined)
+  }, [wake.phase === 'awake' || wake.phase === 'up'])
+  const sleeping = wake.phase === 'checking' || wake.phase === 'waking'
+
   const value = useMemo<DashState>(
     () => ({
       repos,
@@ -147,7 +159,7 @@ export function DashProvider({ children }: { children: ReactNode }) {
         write('th-engine', e)
       },
       health,
-      offline,
+      offline: offline && !sleeping,
       nextSlot: Math.max(0, (slotAt - now) / 1000),
       noteSlot: (s) => setSlotAt(Date.now() + s * 1000),
       refreshRepos,
@@ -156,7 +168,7 @@ export function DashProvider({ children }: { children: ReactNode }) {
       lastCheck,
       config,
     }),
-    [repos, repo, engine, health, offline, slotAt, now, refreshRepos, recheck, checking, lastCheck, config],
+    [repos, repo, engine, health, offline, sleeping, slotAt, now, refreshRepos, recheck, checking, lastCheck, config],
   )
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>
 }

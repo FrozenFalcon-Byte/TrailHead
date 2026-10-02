@@ -7,7 +7,7 @@ import '@fontsource-variable/bricolage-grotesque'
 import '@fontsource-variable/inter'
 import './dash.css'
 import { useAuth } from '../lib/auth'
-import { playMoment } from '../lib/moment'
+import { momentTo } from '../lib/moment'
 import { setPrefs, usePrefs } from '../lib/prefs'
 import { startSettingsSync, useAvatar, useProfile } from '../lib/profile'
 import { notify } from '../lib/toast'
@@ -55,14 +55,14 @@ export function useSignOut() {
   const navigate = useNavigate()
   return async (scope: 'local' | 'global' = 'local') => {
     if (confirmSignOut && !window.confirm(scope === 'global' ? 'Sign out on every device?' : 'Sign out of Trailhead?')) return
-    const { covered, done } = playMoment({ kind: 'signout', name: bypass ? '' : displayName })
-    await covered
-    try {
-      await signOut(scope)
-    } catch {
-      /* the local session is cleared either way */
-    }
-    navigate('/')
+    const { done } = momentTo({ kind: 'signout', name: bypass ? '' : displayName }, async () => {
+      try {
+        await signOut(scope)
+      } catch {
+        /* the local session is cleared either way */
+      }
+      navigate('/', { replace: true })
+    })
     await done
     notify.info(scope === 'global' ? 'Signed out everywhere' : 'Signed out', 'Your saved trails will be here when you come back.')
   }

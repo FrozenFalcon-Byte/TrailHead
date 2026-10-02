@@ -33,6 +33,30 @@ export function playMoment(spec: MomentSpec, hold: Promise<unknown> = Promise.re
   return { covered: c, done: d }
 }
 
+/** Play a scene and change the page underneath it. The scene only lifts once `go` has run, whatever `ready` waits
+ *  for (a lazy bundle, a session) has arrived, and the new page has had a moment to paint, so nothing half-loaded
+ *  or mid-transition ever shows through. */
+export function momentTo(spec: MomentSpec, go: () => unknown, ready: () => Promise<unknown> = () => Promise.resolve()) {
+  let release!: () => void
+  const hold = new Promise<void>((r) => (release = r))
+  const m = playMoment(spec, hold)
+  m.covered
+    .then(async () => {
+      await go()
+      await Promise.race([ready().catch(() => undefined), new Promise((r) => window.setTimeout(r, 8000))])
+      await settle()
+    })
+    .finally(release)
+  return m
+}
+
+/** Two frames plus a beat: long enough for the page underneath to render and its own entrance to finish. */
+export function settle(ms = 450) {
+  return new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => window.setTimeout(r, ms))))
+}
+
+export const isCovered = () => active !== null
+
 const subscribe = (l: () => void) => {
   listeners.add(l)
   return () => {

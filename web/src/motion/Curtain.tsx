@@ -1,6 +1,7 @@
 import { motion } from 'motion/react'
 import type { ReactNode } from 'react'
 import { Mark } from './Mark'
+import { useMoment } from '../lib/moment'
 
 const BANDS = ['var(--violet)', 'var(--lime)', 'var(--orange)', 'var(--sky)', 'var(--yellow)']
 const EASE = [0.76, 0, 0.24, 1] as const
@@ -8,6 +9,10 @@ const TIP = 'polygon(0 0, calc(100% - 10vh) 0, 100% 50%, calc(100% - 10vh) 100%,
 
 /** Page switch: trail-sign bands sweep in from the left to cover the old page, then carry on off to the right. */
 export function Curtain({ children }: { children: ReactNode }) {
+  // A full-screen moment already hides the switch; sweeping bands underneath it only delay the swap and can
+  // show through as it lifts.
+  const covered = useMoment() !== null
+  if (covered) return <>{children}</>
   return (
     <>
       {children}

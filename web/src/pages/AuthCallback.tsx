@@ -4,7 +4,8 @@ import { supabase } from '../lib/supabase'
 import { motion } from 'motion/react'
 import { Shape, STORY } from '../motion/Shapes'
 import { TrailSpinner } from '../motion/TrailSpinner'
-import { firstName, playMoment, takeMethod, type MomentMethod } from '../lib/moment'
+import { firstName, momentTo, takeMethod, type MomentMethod } from '../lib/moment'
+import { isOnboarded } from '../lib/onboard'
 
 export const GH_TOKEN_KEY = 'th-gh-provider-token'
 
@@ -38,7 +39,11 @@ export default function AuthCallback() {
       // Play the scene for the way they came in, and swap the dashboard in once it covers the screen.
       const provider = session.user?.app_metadata?.provider
       const method: MomentMethod = takeMethod() ?? (provider === 'github' || provider === 'google' ? provider : 'email')
-      playMoment({ kind: 'signin', method, name: firstName(session.user) }).covered.then(() => navigate(next, { replace: true }))
+      // go straight to where they will end up (a first visit goes to the welcome walk), with the dashboard bundle
+      // already loaded, so the scene lifts onto a finished page instead of a spinner and a second redirect
+      const to = isOnboarded(session.user as Parameters<typeof isOnboarded>[0]) ? next : '/welcome'
+      const bundle = import('../dash/Dashboard')
+      momentTo({ kind: 'signin', method, name: firstName(session.user) }, () => navigate(to, { replace: true }), () => bundle)
     }
     supabase.auth.getSession().then(({ data }) => finish(data.session))
     const { data } = supabase.auth.onAuthStateChange((_e, session) => finish(session))

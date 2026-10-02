@@ -1,7 +1,7 @@
 import { supabase } from './supabase'
 
 /** Where the API lives. Empty in development (Vite proxies /api); set VITE_API_URL when the API is hosted elsewhere. */
-const BASE = ((import.meta.env.VITE_API_URL as string | undefined) ?? '').replace(/\/$/, '')
+export const BASE = ((import.meta.env.VITE_API_URL as string | undefined) ?? '').replace(/\/$/, '')
 const url = (path: string) => (path.startsWith('/api') ? BASE + path : path)
 
 export class ApiError extends Error {

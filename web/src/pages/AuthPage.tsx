@@ -4,7 +4,8 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import './auth.css'
 import { useAuth, useSignedIn } from '../lib/auth'
 import { authBypass, supabase, supabaseConfigured } from '../lib/supabase'
-import { firstName, playMoment, type MomentMethod } from '../lib/moment'
+import { firstName, momentTo, type MomentMethod } from '../lib/moment'
+import { isOnboarded } from '../lib/onboard'
 import { Shape, STORY } from '../motion/Shapes'
 import { Wordmark } from '../motion/Mark'
 import { SplitReveal } from '../motion/SplitReveal'
@@ -72,9 +73,9 @@ export default function AuthPage() {
   // The welcome scene covers the screen first, and the dashboard swaps in underneath it.
   const greet = async (method: MomentMethod, to: string) => {
     const { data } = (await supabase?.auth.getSession()) ?? { data: { session: null } }
-    const { covered } = playMoment({ kind: 'signin', method, name: firstName(data.session?.user) || auth.displayName })
-    await covered
-    navigate(to)
+    const bundle = import('../dash/Dashboard')
+    const dest = isOnboarded(data.session?.user ?? null) ? to : '/welcome'
+    await momentTo({ kind: 'signin', method, name: firstName(data.session?.user) || auth.displayName }, () => navigate(dest, { replace: true }), () => bundle).covered
   }
 
   const submit = (e: React.FormEvent) => {

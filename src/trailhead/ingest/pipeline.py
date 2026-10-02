@@ -6,11 +6,12 @@ import logging
 import re
 import subprocess
 from pathlib import Path
+from typing import Callable
 
 from ..config import Settings
 from ..store import Store
 from .files import DOC_LANGS, list_repo_files, read_text
-from .github import GitHub, ingest_github, resolve_token
+from .github import GitHub, GitHubError, ingest_github, resolve_token
 from .history import head_sha, ingest_commits
 from .links import build_links
 from .symbols import first_paragraph, parse_file, resolve_import
@@ -150,25 +151,41 @@ def rebuild_evidence_index(store: Store) -> int:
     return int(store.scalar("SELECT COUNT(*) FROM evidence_fts"))
 
 
-def ingest(settings: Settings, repo: str, *, github: bool = True, max_pages: int | None = None) -> dict[str, object]:
+def ingest(
+    settings: Settings, repo: str, *, github: bool = True, max_pages: int | None = None,
+    progress: Callable[[str], None] | None = None, github_token: str = "",
+) -> dict[str, object]:
+    """`progress` hears each step as it starts; it may raise to stop the ingest between steps."""
+    step = progress or (lambda note: None)
     store = Store(settings.db_path)
     previous = store.get_meta("repo")
     if previous and previous != repo:
         raise ValueError(f"{settings.db_path} already holds {previous}; use another TRAILHEAD_DATA_DIR for {repo}")
+    step("Cloning the repository")
     repo_dir = clone_or_update(settings, repo)
     store.set_meta("repo", repo)
     store.set_meta("repo_dir", str(repo_dir))
     report: dict[str, object] = {"repo": repo, "head": head_sha(repo_dir)}
+    step("Reading the code tree")
     report["tree"] = ingest_tree(store, repo_dir)
+    step("Reading the commit history")
     report["new_commits"] = ingest_commits(store, repo_dir)
     if github:
-        gh = GitHub(resolve_token(settings.github_token))
+        gh = GitHub(github_token or resolve_token(settings.github_token), tick=step)
         try:
             report["github"] = ingest_github(store, repo, gh, max_pages=max_pages)
             report["github_requests"] = gh.requests
+            store.set_meta("github_note", "")
+        except GitHubError as exc:
+            # code and commits are still worth having; pull requests and issues can be fetched on a later run
+            logger.warning("github skipped: %s", exc)
+            report["github_skipped"] = str(exc)
+            store.set_meta("github_note", str(exc))
         finally:
             gh.close()
+    step("Linking commits, pull requests and files")
     report["links"] = build_links(store, repo_dir)
+    step("Building the search index")
     report["evidence_rows"] = rebuild_evidence_index(store)
     store.set_meta("head", str(report["head"]))
     store.close()

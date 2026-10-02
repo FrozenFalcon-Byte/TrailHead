@@ -4,6 +4,7 @@ database under data/dbs/, so repositories never mix and each can be re-ingested 
 from __future__ import annotations
 
 import json
+import shutil
 import re
 import threading
 import time
@@ -44,7 +45,7 @@ def settings_for(settings: Settings, repo: str) -> Settings:
 def summary(store: Store) -> dict[str, Any]:
     q = store.scalar
     return {
-        "repo": store.get_meta("repo"), "head": store.get_meta("head"),
+        "repo": store.get_meta("repo"), "head": store.get_meta("head"), "github_note": store.get_meta("github_note") or "",
         "files": q("SELECT COUNT(*) FROM files WHERE is_test = 0"), "tests": q("SELECT COUNT(*) FROM files WHERE is_test = 1"),
         "symbols": q("SELECT COUNT(*) FROM symbols"), "commits": q("SELECT COUNT(*) FROM commits"),
         "pull_requests": q("SELECT COUNT(*) FROM issues WHERE is_pr = 1"), "issues": q("SELECT COUNT(*) FROM issues WHERE is_pr = 0"),
@@ -68,29 +69,67 @@ def list_repos(settings: Settings) -> list[dict[str, Any]]:
             out.append({**summary(store), "status": "ready"})
         store.close()
     known = {r["repo"] for r in out}
-    out += [{"repo": repo, **job} for repo, job in jobs.items() if repo not in known and job["status"] != "done"]
+    out += [{"repo": repo, **{k: v for k, v in job.items() if k != "trace"}} for repo, job in jobs.items() if repo not in known and job["status"] in ("running", "failed")]
     return out
 
 
-def start_ingest(settings: Settings, repo: str, *, github: bool = True) -> dict[str, Any]:
-    """Clone (no repository code is ever run) and ingest in a background thread. One job per repository."""
+class Cancelled(Exception):
+    pass
+
+
+_stops: dict[str, threading.Event] = {}
+
+
+def _public(repo: str) -> dict[str, Any]:
+    return {"repo": repo, **{k: v for k, v in _jobs[repo].items() if k != "trace"}}
+
+
+def start_ingest(settings: Settings, repo: str, *, github: bool = True, github_token: str = "") -> dict[str, Any]:
+    """Clone (no repository code is ever run) and ingest in a background thread. One job per repository.
+    `github_token` is used for this run only and never stored."""
     target = settings_for(settings, repo)
     with _lock:
         if _jobs.get(repo, {}).get("status") == "running":
-            return {"repo": repo, **_jobs[repo]}
-        _jobs[repo] = {"status": "running", "started": time.time(), "error": ""}
+            return _public(repo)
+        _jobs[repo] = {"status": "running", "started": time.time(), "error": "", "step": "Starting"}
+        stop = _stops[repo] = threading.Event()
+    fresh = not target.db_path.exists()
+
+    def progress(note: str) -> None:
+        if stop.is_set():
+            raise Cancelled()
+        with _lock:
+            _jobs[repo]["step"] = note
 
     def work() -> None:
-        from .ingest.pipeline import ingest
+        from .ingest.pipeline import ingest, repo_dir_for
 
         try:
             target.db_path.parent.mkdir(parents=True, exist_ok=True)
-            report = ingest(target, repo, github=github)
+            report = ingest(target, repo, github=github, progress=progress, github_token=github_token)
             with _lock:
-                _jobs[repo].update(status="done", finished=time.time(), report=json.loads(json.dumps(report, default=str)))
+                _jobs[repo].update(status="done", finished=time.time(), step="", report=json.loads(json.dumps(report, default=str)))
+        except Cancelled:
+            # a first ingest that was stopped leaves nothing behind; a refresh keeps what it had
+            if fresh:
+                for path in (target.db_path, target.db_path.with_name(target.db_path.name + "-wal"), target.db_path.with_name(target.db_path.name + "-shm")):
+                    path.unlink(missing_ok=True)
+                shutil.rmtree(repo_dir_for(settings, repo), ignore_errors=True)
+            with _lock:
+                _jobs[repo].update(status="cancelled", finished=time.time(), step="")
         except Exception as exc:  # reported to the dashboard, never raised into the server
             with _lock:
                 _jobs[repo].update(status="failed", finished=time.time(), error=f"{type(exc).__name__}: {exc}", trace=traceback.format_exc()[-2000:])
 
     threading.Thread(target=work, name=f"ingest-{repo}", daemon=True).start()
-    return {"repo": repo, **_jobs[repo]}
+    return _public(repo)
+
+
+def stop_ingest(repo: str) -> dict[str, Any]:
+    """Ask a running ingest to stop; it stops at the next step or GitHub page."""
+    with _lock:
+        if _jobs.get(repo, {}).get("status") != "running":
+            return {"repo": repo, "status": _jobs.get(repo, {}).get("status", "unknown")}
+        _stops[repo].set()
+        _jobs[repo]["step"] = "Stopping"
+        return _public(repo)
