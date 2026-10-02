@@ -8,7 +8,6 @@ export const SECTIONS = [
   { id: 'story', label: 'Story' },
   { id: 'how', label: 'How it works' },
   { id: 'receipts', label: 'Receipts' },
-  { id: 'play', label: 'Play' },
   { id: 'faq', label: 'FAQ' },
 ]
 

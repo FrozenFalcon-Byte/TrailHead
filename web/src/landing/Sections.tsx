@@ -10,7 +10,6 @@ import { SplitReveal } from '../motion/SplitReveal'
 import { TrailPath } from '../motion/TrailPath'
 import { useSignedIn } from '../lib/auth'
 import { EVIDENCE_DEMO, NAV_DEMO, TOUR_DEMO } from './demo'
-import { Board, useDemo } from '../play/Board'
 
 const EASE = [0.22, 1, 0.36, 1] as const
 const clamp01 = (v: number) => Math.min(1, Math.max(0, v))
@@ -218,31 +217,6 @@ export function Rules() {
             </motion.li>
           ))}
         </ol>
-      </div>
-    </section>
-  )
-}
-
-/* ---------- Side trail: the party game ---------- */
-export function PlayPromo() {
-  const demo = useDemo()
-  return (
-    <section id="play" className="l-section t-sky">
-      <div className="l-play">
-        <div className="l-play__copy">
-          <Heading n="Side trail" label="Party game">Trail Blazers</Heading>
-          <p className="body l-play__lede">A live arena for two to four people. Every marker keeps moving and blazes a trail; box your friends in, grab fast-forward, stash or revert, and be the last one still moving. Friends join by scanning a QR code, bots fill the empty seats, and nobody needs an account.</p>
-          <div className="l-play__go">
-            <Link className="btn" to="/play">
-              <span>Play now</span>
-              <span className="arrow">→</span>
-            </Link>
-            <span className="small" style={{ color: 'var(--fg-soft)' }}>Phones and laptops · 2 to 4 players</span>
-          </div>
-        </div>
-        <Link to="/play" className="l-play__art" aria-label="Open Trail Blazers">
-          <Board game={demo} />
-        </Link>
       </div>
     </section>
   )
