@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import re
 import time
 from dataclasses import dataclass
 from typing import Protocol
@@ -40,6 +41,9 @@ class LLMClient(Protocol):
     async def aclose(self) -> None: ...
 
 
+GROQ_BACKUPS = ["openai/gpt-oss-20b", "qwen/qwen3.8-27b"]
+
+
 class OpenAICompatClient:
     def __init__(
         self,
@@ -64,8 +68,13 @@ class OpenAICompatClient:
         self._limiter = SlotLimiter(requests_per_minute)
         self._max_attempts = max_attempts
         self._reasoning_effort = reasoning_effort
-        self._fallback_model = fallback_model
-        self._active_model = model  # switches to the fallback once the primary model's daily quota is spent
+        # When a model's daily quota is spent the client moves down this list. On Groq each model has its own daily
+        # token allowance, so the free tier's other text models are the default backups.
+        chain = [m.strip() for m in fallback_model.split(",") if m.strip()]
+        if "groq.com" in base_url:
+            chain += GROQ_BACKUPS
+        self._fallbacks = [m for i, m in enumerate(chain) if m != model and m not in chain[:i]]
+        self._active_model = model
         self._clock = clock
         self._sleep = sleep
         self._http = httpx.AsyncClient(timeout=timeout, transport=transport)
@@ -134,11 +143,14 @@ class OpenAICompatClient:
                 del body["response_format"]  # strict JSON mode rejected an empty completion; ask again and parse leniently
                 continue
             if response.status_code == 429 and "per day" in response.text:
-                if self._fallback_model and self._active_model != self._fallback_model:
-                    logger.warning("daily quota for %s is spent; using %s for the rest of this run", self._active_model, self._fallback_model)
-                    self._active_model = body["model"] = self._fallback_model
+                if self._fallbacks:
+                    spent, self._active_model = self._active_model, self._fallbacks.pop(0)
+                    logger.warning("daily quota for %s is spent; using %s from now on", spent, self._active_model)
+                    body["model"] = self._active_model
+                    body.pop("reasoning_effort", None)
                     continue
-                raise LLMError(f"daily LLM quota is spent: {last_error}")
+                wait = re.search(r"try again in ([0-9hms.]+)", response.text)
+                raise LLMError(f"The LLM's daily token allowance is used up{f' (frees up in about {wait.group(1).split(chr(46))[0]}s)' if wait else ''}. Switch the engine to Jev, or try again later.")
             if response.status_code not in _RETRYABLE:
                 raise LLMError(last_error)
             wait = _retry_after(response) or min(60.0, 2.0**attempt)
