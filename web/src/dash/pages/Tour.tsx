@@ -16,7 +16,7 @@ import { useDash } from '../context'
 import { Shape } from '../../motion/Shapes'
 import { Scouting, ScoutStops } from '../Scouting'
 import { AnswerSheet, type AnswerLike } from '../AnswerSheet'
-import { ago, Card, EASE, Empty, Gate, JobStatus, Note, PageHead, Prob, Row, Split, useJob } from '../ui'
+import { ago, Card, EASE, Empty, Gate, JobStatus, Note, PageHead, Prob, Row, Split, useJob, useDecider } from '../ui'
 
 type Stop = { path: string; need: number; entry: number; tentative: boolean; summary: string; why: string; look_at: string[]; sources: string[]; history: { ref: string; title: string; url: string }[]; url: string }
 type Candidate = { path: string; sources: string[]; need: number | null; entry: number | null; nav_score: number; history_score: number }
@@ -33,6 +33,7 @@ const TOUR_STEPS = [
 
 export default function TourPage() {
   const { repo, engine } = useDash()
+  const { Name, name } = useDecider()
   const { starters } = useStarters(repo)
   const prefs = usePrefs()
   const job = useJob<TourData>('/api/tour')
@@ -141,7 +142,7 @@ export default function TourPage() {
   const candidates: Candidate[] = tour?.candidates ?? job.events.find((e) => e.kind === 'candidates')?.data.candidates ?? []
   const scouting = job.running || (!!job.result && !tour && !job.error)
   const scoutStage = job.events.some((e) => e.kind === 'tour') ? 3 : candidates.length ? 2 : job.events.some((e) => e.kind === 'navigation') ? 1 : 0
-  const stage = !job.events.some((e) => e.kind === 'navigation') ? 'Navigating toward the goal' : !candidates.length ? 'Collecting files from similar past changes' : 'Jev is judging which files you need, then the notes are written'
+  const stage = !job.events.some((e) => e.kind === 'navigation') ? 'Navigating toward the goal' : !candidates.length ? 'Collecting files from similar past changes' : `${Name} is judging which files you need, then the notes are written`
   const sorted = [...candidates].sort((a, b) => (b.need ?? 0) - (a.need ?? 0))
 
   const aside = (
@@ -149,9 +150,9 @@ export default function TourPage() {
       {tour && (
         <Card title="The trail" theme="mint" delay={0.05} aside={<span className="d-muted">{tour.stops.length} stops</span>}>
           <TrailPath key={tour.stops.map((s) => s.path).join('|')} stops={tour.stops.map((s) => ({ label: s.path.split('/').pop() ?? s.path, tentative: s.tentative }))} height={220} color="var(--green)" />
-          <p className="d-muted small">Solid: Jev is confident you need it. Dashed: worth a look.</p>
+          <p className="d-muted small">Solid: {Name} is confident you need it. Dashed: worth a look.</p>
           <div className="d-meta">
-            <span><b>{tour.requests}</b> Jev requests</span>
+            <span><b>{tour.requests}</b> {name} requests</span>
             <span><b>{tour.input_tokens.toLocaleString()}</b> tokens</span>
           </div>
         </Card>
@@ -211,7 +212,7 @@ export default function TourPage() {
               <span className="tg-mark" aria-hidden><Shape kind="circle" color="var(--blue)" glyph="flag" size={44} /></span>
               <div className="tg-copy">
                 <b>Trail guide</b>
-                <span>Want it in words first? Jev reads the stops and writes a short explanation of “{tour.goal.slice(0, 70)}{tour.goal.length > 70 ? '…' : ''}”, keeping only what the files support.</span>
+                <span>Want it in words first? {Name} reads the stops and writes a short explanation of “{tour.goal.slice(0, 70)}{tour.goal.length > 70 ? '…' : ''}”, keeping only what the files support.</span>
               </div>
               <button className="btn" disabled={guide.running} onClick={() => { setGuideFor(tour.goal + tour.stops.map((s) => s.path).join('|')); guide.start({ tour, repo, engine }) }}>
                 <span>{guide.running ? 'Reading the stops…' : guideFor === tour.goal + tour.stops.map((s) => s.path).join('|') && guide.result ? 'Explain again' : 'Explain it to me'}</span><span className="arrow">→</span>
@@ -279,7 +280,7 @@ export default function TourPage() {
             <AnimatePresence>
               {Object.keys(feedback).length > 0 && (
                 <motion.div className="d-dock t-peach" initial={{ y: 80, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 80, opacity: 0 }} transition={{ ease: EASE, duration: 0.5 }}>
-                  <span style={{ fontWeight: 700 }}>{Object.keys(feedback).length} stop{Object.keys(feedback).length > 1 ? 's' : ''} marked. Re-planning reuses Jev's earlier judgements, so it costs no new requests.</span>
+                  <span style={{ fontWeight: 700 }}>{Object.keys(feedback).length} stop{Object.keys(feedback).length > 1 ? 's' : ''} marked. Re-planning reuses {name}'s earlier judgements, so it costs no new requests.</span>
                   <button className="btn small" onClick={replan} disabled={replanning}><span>{replanning ? <TrailSpinner /> : 'Re-plan'}</span><span className="arrow">→</span></button>
                 </motion.div>
               )}
@@ -290,7 +291,7 @@ export default function TourPage() {
         )}
 
         {candidates.length > 0 && (
-          <Card title="Every file Jev considered" aside={<span className="d-muted">judged in one request</span>}>
+          <Card title={`Every file ${name} considered`} aside={<span className="d-muted">judged in one request</span>}>
             <div className="d-viz2 is-wide">
               <Scatter h={190} x="navigation score" y="past-change score" points={candidates.map((c) => {
                 const stop = tour?.stops.some((st) => st.path === c.path)
@@ -317,7 +318,7 @@ export default function TourPage() {
           </Card>
         )}
 
-        {!tour && !job.running && repo && <Card><div className="d-empty-art"><TrailLoop color="var(--green)" /></div><Empty title="Where do you want to go?">A tour is 3 to 7 files. Stops Jev is confident about come first, in import order; the rest are marked tentative.</Empty></Card>}
+        {!tour && !job.running && repo && <Card><div className="d-empty-art"><TrailLoop color="var(--green)" /></div><Empty title="Where do you want to go?">A tour is 3 to 7 files. Stops {name} is confident about come first, in import order; the rest are marked tentative.</Empty></Card>}
       </Split>
     </div>
   )

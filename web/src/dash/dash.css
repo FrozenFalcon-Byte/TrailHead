@@ -5347,7 +5347,6 @@ html[data-motion='calm'] .d-page :is(.d-card, .p-card, .h-card, .pd-sec, .e-pane
 .as-conf span:last-child { font-size: 11px; font-weight: 750; color: var(--ink-soft); }
 .as-body { padding: 18px 22px 8px; }
 .as-body .d-md p { font-size: 16px; line-height: 1.6; }
-.as-body .d-md code { padding: 2px 6px; border-radius: 6px; background: var(--chip); font-size: 0.88em; overflow-wrap: anywhere; }
 .as-claims { padding: 8px 22px 16px; display: grid; gap: 8px; }
 .as-label { font-size: 12px; font-weight: 800; color: var(--ink-soft); }
 /* claims read as stops on one trail: ink-ringed pins joined by a dotted path, no boxes around them */
@@ -6154,7 +6153,9 @@ html[data-side='accent'] .d-side .d-nav a.active { color: #fbf8f1; }
 .p-pass.is-tag { clip-path: polygon(0 0, calc(100% - 54px) 0, 100% 50%, calc(100% - 54px) 100%, 0 100%); padding-right: 40px; }
 .p-pass__stub .p-pass__remove { color: var(--pass-ink, var(--solid)); }
 .p-pass__fact { display: inline-flex; }
-.p-pass__fact > * { flex: 1; }
+.p-pass__fact > * { display: inline-flex; align-items: center; gap: 9px; min-width: 0; color: inherit; text-decoration: none; }
+.p-pass__facts > .p-pass__fact { padding: 8px 15px 8px 12px; gap: 0; }
+.p-pass__icon { flex: none; color: var(--ink-soft); }
 /* "Your pass" tab */
 .p-cust__card { display: grid; gap: 10px; align-content: start; }
 .p-cust__card > .d-muted { margin-top: -4px; }
@@ -6210,3 +6211,24 @@ html[data-side='accent'] .d-side .d-nav a.active { color: #fbf8f1; }
 @media (max-width: 680px) {
   .p-pass.is-flip { grid-template-columns: 1fr; }
 }
+
+/* Code named inside answers */
+.d-md code.d-code, .d-code {
+  display: inline-block;
+  margin: 1px 1px;
+  padding: 1px 7px 2px;
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--ink) 12%, transparent);
+  color: var(--ink);
+  font: 600 0.84em/1.5 ui-monospace, 'SF Mono', Menlo, monospace;
+  letter-spacing: -0.01em;
+  vertical-align: 1px;
+  overflow-wrap: anywhere;
+  text-decoration: none;
+}
+.d-md .d-code.is-path, .d-code.is-path { background: var(--solid); color: var(--on-solid); box-shadow: none; }
+.d-md .d-code.is-path::before, .d-code.is-path::before { content: ''; display: inline-block; width: 6px; height: 6px; margin: 0 6px 1px 0; border-radius: 2px; background: var(--lime); vertical-align: middle; }
+a.d-code.is-path { transition: translate 0.2s var(--ease-out), background 0.2s; }
+a.d-code.is-path:hover { translate: 0 -1px; background: color-mix(in srgb, var(--solid) 85%, var(--blue)); }
+.as-claim__text .d-code { font-size: 0.86em; }

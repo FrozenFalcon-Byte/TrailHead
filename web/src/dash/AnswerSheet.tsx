@@ -1,10 +1,10 @@
 import { motion } from 'motion/react'
 import type { ReactNode } from 'react'
 import { Shape } from '../motion/Shapes'
-import { EASE, Prob, Prose } from './ui'
+import { CodeText, EASE, Prob, Prose, useDecider } from './ui'
 
 /* An answer as a field note: a stub on the left carries the verdict, the prose sits on paper beside it, and the
-   claims Jev checked hang below as waypoints, each with its support and directness dials. The sources used are
+   claims the engine checked hang below as waypoints, each with its support and directness dials. The sources used are
    chips at the foot. Ask and the tour's explanation both use it. */
 
 type Ev = { ref: string; kind: string; title: string; url: string; label: string; kept?: boolean }
@@ -18,6 +18,7 @@ const RENDER: Record<string, string> = {
 const BADGE: Record<string, string> = { high: 'var(--green)', medium: 'var(--blue)', low: 'var(--orange)' }
 
 export function AnswerSheet({ answer, title, kicker }: { answer: AnswerLike; title?: ReactNode; kicker?: string }) {
+  const { Name } = useDecider()
   const ok = answer.status === 'answered'
   const part = answer.status === 'partial'
   const tone = ok ? 'var(--green)' : part ? 'var(--blue)' : 'var(--orange)'
@@ -51,13 +52,13 @@ export function AnswerSheet({ answer, title, kicker }: { answer: AnswerLike; tit
 
       {answer.claims?.length > 0 && (
         <div className="as-claims">
-          <span className="as-label">What Jev checked</span>
+          <span className="as-label">What {Name} checked</span>
           <ol>
             {answer.claims.map((c, i) => (
               <motion.li key={c.id} className={`as-claim is-${c.status}`} style={{ ['--badge' as string]: c.status === 'dropped' ? 'var(--dim)' : BADGE[c.badge] ?? 'var(--orange)' }} initial={{ x: -10, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: 0.15 + i * 0.06, ease: EASE }}>
                 <span className="as-claim__pin">{c.status === 'dropped' ? '×' : i + 1}</span>
                 <span className="as-claim__text">
-                  <span>{c.text}</span>
+                  <span><CodeText text={c.text} evidence={answer.evidence} /></span>
                   <small>{c.status === 'dropped' ? 'dropped' : `${c.badge} support`} · cites {c.evidence.join(', ') || 'nothing'}{c.reason ? ` · ${c.reason}` : ''}</small>
                 </span>
                 <span className="as-claim__dials">

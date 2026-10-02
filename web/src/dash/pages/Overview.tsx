@@ -110,7 +110,7 @@ export default function Overview() {
   // Each overview card by id, so Settings can hide and reorder them.
   const CARDS: Record<OverviewCard, () => React.ReactNode> = data ? {
     activity: () => (
-    <Card key="activity" span={8} title="Activity" aside={<span className="d-muted">Jev decisions · last 14 days</span>}>
+    <Card key="activity" span={8} title="Activity" aside={<span className="d-muted">Decisions · last 14 days</span>}>
       {decisions.data?.length ? (
         <Columns data={days.map((d) => ({ ...d, hint: `decisions on ${d.label}` }))} color="var(--violet)" h={170} ticks={7} onPick={() => navigate('/app/decisions')} />
       ) : (
@@ -123,7 +123,7 @@ export default function Overview() {
       <ul className="d-sys__list">
         <li><span>Engine</span><b>{engine === 'jev' ? 'Jev' : engine === 'llm' ? 'LLM fallback' : 'Local'}</b></li>
         <li><span>Model</span><b className="mono" title={model}>{model || '—'}</b></li>
-        <li><span>Jev slot</span><b>{offline ? '—' : nextSlot < 0.5 ? 'ready now' : `in ${Math.ceil(nextSlot)}s`}</b></li>
+        {engine === 'jev' && <li><span>Jev slot</span><b>{offline ? '—' : nextSlot < 0.5 ? 'ready now' : `in ${Math.ceil(nextSlot)}s`}</b></li>}
         <li><span>Sign-in</span><b>{health?.auth === 'supabase' ? 'Supabase' : health?.auth ?? '—'}</b></li>
         <li><span>Last check</span><b>{lastCheck ? ago(new Date(lastCheck).toISOString()) : '—'}</b></li>
       </ul>
@@ -196,7 +196,7 @@ export default function Overview() {
           ))}
         </div>
       ) : (
-        <Empty title="No decisions yet">Every judgement Jev makes is logged here.</Empty>
+        <Empty title="No decisions yet">Every judgement made while answering is logged here.</Empty>
       )}
     </Card>
     ),

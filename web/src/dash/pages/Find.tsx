@@ -9,13 +9,14 @@ import { FindOpening } from '../FindOpening'
 import { toast } from '../../lib/toast'
 import { BeamColumns } from '../../motion/BeamColumns'
 import { useDash } from '../context'
-import { Gate, JobStatus, Note, PageHead, Prob, toBeamSteps, useJob } from '../ui'
+import { Gate, JobStatus, Note, PageHead, Prob, toBeamSteps, useJob, useDecider } from '../ui'
 
 type NavData = { query: string; paths: { nodes: string[]; score: number; file: string; edge_probabilities: number[] }[]; steps: any[]; symbols: Record<string, { name: string; line: number }>; separation_ratio: number | null; requests: number; cached_requests: number; input_tokens: number; latency_ms: number }
 
 
 export default function Find() {
   const { repo, engine } = useDash()
+  const { name } = useDecider()
   const { starters } = useStarters(repo)
   const job = useJob<NavData>('/api/where')
   const [query, setQuery] = useState('')
@@ -91,7 +92,7 @@ export default function Find() {
                   )
                 })}
               </ol>
-              <p className="fd-note">Each dial is how sure Jev was at that fork.</p>
+              <p className="fd-note">Each dial is how sure {name} was at that fork.</p>
             </section>
 
             <div className="fd-right">
@@ -127,7 +128,7 @@ export default function Find() {
                   ))}
                 </section>
               )}
-              <p className="fd-foot">{r.requests} Jev requests{r.cached_requests ? ` (${r.cached_requests} cached)` : ''} · {(r.latency_ms / 1000).toFixed(1)}s{r.separation_ratio ? ` · the top path leads the next by ${r.separation_ratio.toFixed(2)}×` : ''}</p>
+              <p className="fd-foot">{r.requests} {name} requests{r.cached_requests ? ` (${r.cached_requests} cached)` : ''} · {(r.latency_ms / 1000).toFixed(1)}s{r.separation_ratio ? ` · the top path leads the next by ${r.separation_ratio.toFixed(2)}×` : ''}</p>
             </div>
           </div>
         )}
@@ -135,7 +136,7 @@ export default function Find() {
 
         {steps.length > 0 && (
           <details className="fd-notes" open={!r}>
-            <summary><b>Field notes</b><span>Every question Jev answered on the way down</span></summary>
+            <summary><b>Field notes</b><span>Every question {name} answered on the way down</span></summary>
             <BeamColumns steps={toBeamSteps(steps)} />
             {!r && beam.length > 0 && (
               <div className="d-row small" style={{ marginTop: 12 }}>

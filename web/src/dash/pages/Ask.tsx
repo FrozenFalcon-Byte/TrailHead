@@ -13,7 +13,7 @@ import { useDash } from '../context'
 import { useStarters } from '../examples'
 import { AnswerSheet } from '../AnswerSheet'
 import { JourneyBar, Logbook, Signposts, type LogEntry, type Station } from '../Trailside'
-import { ago, Card, Gate, JobStatus, Note, PageHead, Prob, Row, toBeamSteps, useJob } from '../ui'
+import { ago, Card, Gate, JobStatus, Note, PageHead, Prob, Row, toBeamSteps, useJob, useDecider } from '../ui'
 
 type Evidence = { ref: string; kind: string; title: string; url: string; label: string; relevance: number | null; directness: number | null; injection: number | null; kept: boolean; reason: string; source: string }
 type Claim = { id: string; text: string; evidence: string[]; p_support: number; directness: number; addresses: number; status: string; badge: string; reason: string }
@@ -46,6 +46,7 @@ function view(result: AskResult | null, events: { kind: string; data: any }[]): 
 
 export default function Ask() {
   const { repo, engine } = useDash()
+  const { name } = useDecider()
   const { starters, ready } = useStarters(repo)
   const prefs = usePrefs()
   const job = useJob<AskResult>('/api/ask')
@@ -139,7 +140,7 @@ export default function Ask() {
   const routeName = v.route ? ROUTE_NAMES[v.route.route] ?? v.route.route : ''
   const stations: Station[] = [
     { key: 'route', label: 'Route', value: routeName || 'what kind of answer', state: state(0) },
-    { key: 'walk', label: 'Walk', value: v.nav?.requests ? `${v.nav.requests} Jev requests` : v.steps.length ? `${v.steps.length} decisions` : at > 1 ? 'not needed' : 'the tree to the files', state: state(1), onClick: v.steps.length || v.nav ? () => setTab('beam') : undefined, active: tab === 'beam' },
+    { key: 'walk', label: 'Walk', value: v.nav?.requests ? `${v.nav.requests} ${name} requests` : v.steps.length ? `${v.steps.length} decisions` : at > 1 ? 'not needed' : 'the tree to the files', state: state(1), onClick: v.steps.length || v.nav ? () => setTab('beam') : undefined, active: tab === 'beam' },
     { key: 'screen', label: 'Screen', value: v.evidence.length ? `${kept.length} of ${v.evidence.length} kept` : at > 2 ? 'not needed' : 'commits, PRs, code', state: state(2), onClick: v.evidence.length ? () => setTab('evidence') : undefined, active: tab === 'evidence' },
     { key: 'check', label: 'Check', value: answer ? (answer.status === 'answered' ? `${Math.round((answer.confidence ?? 0) * 100)}% sure` : answer.status === 'partial' ? 'background only' : 'not sure') : 'every claim', state: state(3), onClick: answer ? () => setTab('answer') : undefined, active: tab === 'answer' },
   ]
@@ -196,7 +197,7 @@ export default function Ask() {
             )}
             {tab === 'beam' && (
               <motion.div key="beam" initial={{ x: 24 }} animate={{ x: 0 }} exit={{ x: -24, opacity: 0 }} transition={{ type: 'spring', stiffness: 260, damping: 26 }}>
-                <Card title="The beam, depth by depth" aside={v.nav && <span className="d-muted">{v.nav.requests} Jev request{v.nav.requests === 1 ? '' : 's'}{v.nav.separation_ratio ? ` · separation ${v.nav.separation_ratio.toFixed(2)}` : ''}</span>}>
+                <Card title="The beam, depth by depth" aside={v.nav && <span className="d-muted">{v.nav.requests} {name} request{v.nav.requests === 1 ? '' : 's'}{v.nav.separation_ratio ? ` · separation ${v.nav.separation_ratio.toFixed(2)}` : ''}</span>}>
                   {v.steps.length ? <BeamColumns steps={toBeamSteps(v.steps)} compact /> : <p className="d-muted">This route did not need to walk the tree.</p>}
                   {v.nav?.paths?.length > 0 && (
                     <div className="d-list" style={{ marginTop: 14 }}>
@@ -210,7 +211,7 @@ export default function Ask() {
             )}
             {tab === 'evidence' && (
               <motion.div key="evidence" initial={{ x: 24 }} animate={{ x: 0 }} exit={{ x: -24, opacity: 0 }} transition={{ type: 'spring', stiffness: 260, damping: 26 }}>
-                <Card title={`${kept.length} kept of ${v.evidence.length}`} aside={<span className="d-muted">one Jev request screened them all</span>}>
+                <Card title={`${kept.length} kept of ${v.evidence.length}`} aside={<span className="d-muted">one {name} request screened them all</span>}>
                   {v.evidence.length > 1 && (
                     <div className="d-viz2">
                       <Donut size={140} thick={16} label="sources" data={kinds.map((k, i) => ({ label: k, value: v.evidence.filter((e: Evidence) => e.kind === k).length, color: PALETTE[i % PALETTE.length] }))} />

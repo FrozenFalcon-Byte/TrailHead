@@ -6,7 +6,7 @@ import { Shape } from '../../motion/Shapes'
 import { useDash } from '../context'
 import { Donut, Gauge, PALETTE } from '../viz'
 import { layoutPlaces, TrailMap } from '../TrailMap'
-import { Card, EASE, Gate, Loading, Note, PageHead, q, RefreshButton, useFetch } from '../ui'
+import { Card, EASE, Gate, Loading, Note, PageHead, q, RefreshButton, useFetch, useDecider } from '../ui'
 
 type Child = { id: string; name: string; kind: string; summary: string; annotations: Record<string, string> }
 type Node = { id: string; kind: string; summary: string; children: Child[] }
@@ -15,6 +15,7 @@ const fmt = (v: string) => (/^-?\d+\.\d+$/.test(v) ? Number(v).toFixed(2) : v.re
 
 export default function MapPage() {
   const { repo } = useDash()
+  const { name } = useDecider()
   const navigate = useNavigate()
   const [params, setParams] = useSearchParams()
   const file = params.get('file') ?? ''
@@ -54,7 +55,7 @@ export default function MapPage() {
 
   return (
     <div className="d-body">
-      <PageHead theme="lime" kicker="Map" title="The lay of the" oblique="land" note="The same tree Jev walks, with the summaries it reads at every step." actions={<RefreshButton busy={reloading} onClick={reload} />} />
+      <PageHead theme="lime" kicker="Map" title="The lay of the" oblique="land" note={`The same tree ${name} walks, with the summaries it reads at every step.`} actions={<RefreshButton busy={reloading} onClick={reload} />} />
       <Gate />
       {error && <Note tone="error">{error}</Note>}
       <nav className="d-crumbs mono" aria-label="Folder path">
@@ -163,7 +164,7 @@ export default function MapPage() {
                         )}
                       </div>
                     )}
-                    <p className="d-muted small">Pick a pin on the map, or a place in the gazetteer, to see what Jev knows about it.</p>
+                    <p className="d-muted small">Pick a pin on the map, or a place in the gazetteer, to see what {name} knows about it.</p>
                   </Card>
                 </motion.div>
               )}

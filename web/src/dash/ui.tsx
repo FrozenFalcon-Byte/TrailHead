@@ -238,9 +238,9 @@ export function SlotMeter() {
   const ready = nextSlot < 0.5
   const frac = Math.min(1, nextSlot / 65)
   return (
-    <div style={{ borderRadius: 14, padding: '12px 14px', background: 'color-mix(in srgb, var(--fg) 9%, transparent)' }} title="Jev on the free tier answers about one request per minute; cached decisions are instant.">
+    <div style={{ borderRadius: 14, padding: '12px 14px', background: 'color-mix(in srgb, var(--fg) 9%, transparent)' }} title={engine === 'jev' ? 'Jev on the free tier answers about one request per minute; cached decisions are instant.' : 'Answers come from the chosen model; cached answers are instant.'}>
       <div className="d-row" style={{ justifyContent: 'space-between', gap: 6 }}>
-        <span className="small" style={{ fontWeight: 750 }}>{offline ? 'API offline' : engine === 'jev' ? 'Jev slot' : `${engine} engine`}</span>
+        <span className="small" style={{ fontWeight: 750 }}>{offline ? 'API offline' : engine === 'jev' ? 'Jev slot' : engine === 'llm' ? 'LLM' : 'Local model'}</span>
         <span className="small mono">{offline ? '—' : engine !== 'jev' ? 'ready' : ready ? 'ready' : `${Math.ceil(nextSlot)}s`}</span>
       </div>
       <div style={{ height: 8, borderRadius: 4, marginTop: 8, overflow: 'hidden', background: 'color-mix(in srgb, var(--fg) 16%, transparent)' }}>
@@ -260,7 +260,58 @@ export function toBeamSteps(steps: { node: string; depth?: number; options: { id
   }))
 }
 
+/** Who makes the judgements with the chosen engine: Jev, or the LLM / local model standing in for it. */
+export const decider = (engine?: string) => (engine === 'llm' ? 'the LLM' : engine === 'local' ? 'the local model' : 'Jev')
+export function useDecider() {
+  const { engine } = useDash()
+  const name = decider(engine)
+  return { name, Name: name[0].toUpperCase() + name.slice(1), jev: engine === 'jev' || !engine }
+}
+
 type EvidenceLike = { label?: string; ref: string; url?: string; title?: string }
+
+/* Models often name code without backticks, sometimes padding it with narrow no-break spaces instead. These pick out
+   what reads as code in plain text: paths, file names, dotted names, calls, snake_case and CamelCase identifiers. */
+const EXT = 'py|pyi|ts|tsx|js|jsx|mjs|json|toml|cfg|ini|ya?ml|md|rst|txt|html|css|sh|go|rs|rb|java|kt|c|h|cpp|lock|sql'
+const CODE_RE = new RegExp(
+  [
+    `(?:\\.{0,2}/)?[\\w.-]+(?:/[\\w.-]+)+/?`, // a/b/c.py, docs/_ext/
+    `\\b[\\w-]+\\.(?:${EXT})\\b`, // conf.py
+    `\\b[A-Za-z_][\\w]*(?:\\.[A-Za-z_][\\w]*)+\\(\\)`, // obj.method()
+    `\\b[A-Za-z_][\\w.]*\\(\\)`, // call()
+    `\\b_*[a-z][a-z0-9]*(?:_[a-z0-9]+)+\\b`, // snake_case
+    `\\b__\\w+__\\b`, // __init__
+    `\\b[A-Z][a-z0-9]+(?:[A-Z][a-z0-9]*)+\\b`, // CamelCase
+    `\\b[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)+\\b`, // SETTING_NAME
+  ].join('|'),
+  'g',
+)
+const PLAIN = new Set(['GitHub', 'GitLab', 'JavaScript', 'TypeScript', 'PyPI', 'YouTube', 'LinkedIn', 'PostgreSQL', 'MySQL', 'OpenAI', 'iPhone', 'macOS'])
+// "and/or" or "input/output" are prose; a path has a dot, an underscore, three parts, or a leading or trailing slash.
+const plainSlash = (t: string) => t.includes('/') && !/[._]/.test(t) && t.split('/').filter(Boolean).length < 3 && !/^\.{0,2}\/|\/$/.test(t)
+const isPath = (t: string) => t.includes('/') || new RegExp(`\\.(?:${EXT})$`).test(t)
+
+/** Plain text with code-looking tokens set as code chips; file paths that match a source link to it. */
+export function CodeText({ text, evidence = [] }: { text: string; evidence?: EvidenceLike[] }) {
+  const clean = text.replace(/[\u202f\u00a0\u2009]/g, ' ')
+  const out: ReactNode[] = []
+  let last = 0
+  for (const m of clean.matchAll(CODE_RE)) {
+    let tok = m[0]
+    const at = m.index ?? 0
+    tok = tok.replace(/[.-]+$/, '') // a sentence's full stop is not part of the path
+    if (!tok || /^\d/.test(tok) || PLAIN.has(tok) || plainSlash(tok)) continue
+    if (at > last) out.push(clean.slice(last, at))
+    const path = isPath(tok)
+    const src = path ? evidence.find((e) => e.url && (e.ref === tok || e.title === tok || e.ref?.endsWith(tok) || e.title?.endsWith(tok))) : undefined
+    out.push(src
+      ? <a key={at} className="d-code is-path" href={src.url} target="_blank" rel="noreferrer noopener" title={`Open ${src.label ?? ''} ${src.ref}`.trim()}>{tok}</a>
+      : <code key={at} className={`d-code ${path ? 'is-path' : ''}`}>{tok}</code>)
+    last = at + tok.length
+  }
+  if (last < clean.length) out.push(clean.slice(last))
+  return <>{out}</>
+}
 
 /** Small, safe renderer for model prose: paragraphs, bullet lines, `code`, **bold**, and [E#] citations as links.
  *  Everything becomes React text nodes; nothing from the model is parsed as HTML. */
@@ -269,7 +320,7 @@ export function Prose({ text, evidence = [] }: { text: string; evidence?: Eviden
   const inline = (line: string, key: string) =>
     line.split(/(`[^`]+`|\*\*[^*]+\*\*|\[E\d+(?:\s*,\s*E\d+)*\])/g).map((part, i) => {
       if (!part) return null
-      if (part.startsWith('`')) return <code key={`${key}-${i}`}>{part.slice(1, -1)}</code>
+      if (part.startsWith('`')) return <code key={`${key}-${i}`} className={`d-code ${isPath(part.slice(1, -1)) ? 'is-path' : ''}`}>{part.slice(1, -1)}</code>
       if (part.startsWith('**')) return <strong key={`${key}-${i}`}>{part.slice(2, -2)}</strong>
       if (/^\[E\d/.test(part))
         return (
@@ -284,7 +335,7 @@ export function Prose({ text, evidence = [] }: { text: string; evidence?: Eviden
             })}
           </sup>
         )
-      return <Fragment key={`${key}-${i}`}>{part}</Fragment>
+      return <CodeText key={`${key}-${i}`} text={part} evidence={evidence} />
     })
   const blocks = text.split(/\n{2,}/)
   return (

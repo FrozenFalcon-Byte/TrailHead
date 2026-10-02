@@ -5,7 +5,7 @@ import { api } from '../../lib/api'
 import { Select } from '../../motion/Select'
 import { TrailLoader } from '../../motion/TrailLoader'
 import { useDash } from '../context'
-import { Gate, Note, PageHead, Prob, q, RefreshButton, useJob } from '../ui'
+import { Gate, Note, PageHead, Prob, q, RefreshButton, useJob, useDecider } from '../ui'
 
 /* First issues. Opening the page shows what is already judged straight away (from this browser's copy, then the
    server's), and quietly asks Jev to judge the next few unranked issues. Each one drops into place as it is
@@ -76,6 +76,7 @@ function Parts({ p }: { p: Pick }) {
 
 export default function Issues() {
   const { repo, engine, offline } = useDash()
+  const { Name } = useDecider()
   const navigate = useNavigate()
   const [data, setData] = useState<IssuesData | null>(() => (repo ? readCache(repo) : null))
   const [error, setError] = useState('')
@@ -158,7 +159,7 @@ export default function Issues() {
               <TrailLoader compact label={reading ? `Reading #${reading.number}` : 'Picking the next issues'} />
               <div className="fi-crew__copy">
                 <b>Grading new trails</b>
-                <span>Jev reads each unranked issue once; it lands in the list as soon as it is graded.</span>
+                <span>{Name} reads each unranked issue once; it lands in the list as soon as it is graded.</span>
                 <ol className="fi-queue">
                   {queue.map((x) => (
                     <li key={x.number} className={`is-${x.state}`}>

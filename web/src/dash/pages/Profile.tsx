@@ -219,10 +219,10 @@ export default function Profile() {
           </AnimatePresence>
           <div className="p-pass__facts">
             {[
-              prefs.passEmail && user?.email ? <span key="mail"><i>✉</i>{user.email}</span> : null,
-              prefs.passDetails && form.location ? <span key="loc"><i>⌖</i>{form.location}</span> : null,
-              prefs.passDetails && form.website ? <a key="web" href={form.website} target="_blank" rel="noreferrer noopener"><i>↗</i>{form.website.replace(/^https?:\/\//, '')}</a> : null,
-              prefs.passDetails ? <span key="since"><i>◷</i>member {since(user?.created_at)}</span> : null,
+              prefs.passEmail && user?.email ? <span key="mail"><FactIcon d="M2 4h12v8H2zM2 4l6 5 6-5" />{user.email}</span> : null,
+              prefs.passDetails && form.location ? <span key="loc"><FactIcon d="M8 14s5-4.2 5-8A5 5 0 0 0 3 6c0 3.8 5 8 5 8zM8 7.6a1.6 1.6 0 1 0 0-3.2 1.6 1.6 0 0 0 0 3.2z" />{form.location}</span> : null,
+              prefs.passDetails && form.website ? <a key="web" href={form.website} target="_blank" rel="noreferrer noopener"><FactIcon d="M6 3H3v10h10v-3M9 2h5v5M14 2 7 9" />{form.website.replace(/^https?:\/\//, '')}</a> : null,
+              prefs.passDetails ? <span key="since"><FactIcon d="M8 14A6 6 0 1 0 8 2a6 6 0 0 0 0 12zM8 5v3.2l2 1.3" />member {since(user?.created_at)}</span> : null,
             ].filter(Boolean).map((el, i) => (
               <motion.span key={(el as React.ReactElement).key ?? i} className="p-pass__fact" initial={{ scale: 0.6, rotate: -8, y: 10 }} animate={{ scale: 1, rotate: 0, y: 0 }} transition={{ type: 'spring', stiffness: 320, damping: 16, delay: 0.4 + i * 0.07 }} whileHover={{ y: -3, rotate: -1.5 }}>
                 {el}
@@ -428,5 +428,14 @@ function ShieldArt({ checks }: { checks: boolean[] }) {
           <motion.span key={i} className="p-shield__spark" style={{ background: plates[i % 4], left: `${50 + 46 * Math.cos((i / 6) * Math.PI * 2)}%`, top: `${48 + 44 * Math.sin((i / 6) * Math.PI * 2)}%` }} animate={{ scale: [0, 1, 0], opacity: [0, 1, 0] }} transition={{ duration: 2.4, repeat: Infinity, delay: 1.2 + i * 0.3, ease: 'easeInOut' }} />
         ))}
     </motion.div>
+  )
+}
+
+/** A small line icon for the facts on the trail pass. */
+function FactIcon({ d }: { d: string }) {
+  return (
+    <svg className="p-pass__icon" viewBox="0 0 16 16" width={15} height={15} aria-hidden>
+      <path d={d} fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
   )
 }
