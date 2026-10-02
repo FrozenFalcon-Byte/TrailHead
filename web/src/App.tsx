@@ -26,6 +26,8 @@ const ARRIVAL = takeArrival()
 
 // The dashboard is its own bundle, so the landing page loads light.
 const Dashboard = lazy(() => import('./dash/Dashboard'))
+// The party game is its own bundle too; nobody needs to be signed in to play.
+const Play = lazy(() => import('./play/Play'))
 
 /** Redirect exactly once. <Navigate> would fire again every time the page re-renders while the curtain plays its
  *  exit, and that loops. */
@@ -93,6 +95,7 @@ export default function App() {
           <Route path="/auth/callback" element={<AuthCallback />} />
           <Route path="/welcome" element={<Curtain><Protected welcome><Welcome /></Protected></Curtain>} />
           <Route path="/app/*" element={<Curtain><Protected><Suspense fallback={<div className="t-cream" style={{ minHeight: '100vh', display: 'grid', placeItems: 'center' }}><TrailSpinner label="Packing the dashboard" /></div>}><Dashboard /></Suspense></Protected></Curtain>} />
+          <Route path="/play/:code?" element={<Curtain><Suspense fallback={<div className="t-cream" style={{ minHeight: '100vh', display: 'grid', placeItems: 'center' }}><TrailSpinner label="Roping up" /></div>}><Play /></Suspense></Curtain>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AnimatePresence>

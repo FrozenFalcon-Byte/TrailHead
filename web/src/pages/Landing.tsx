@@ -6,7 +6,7 @@ import { Hero } from '../landing/Hero'
 import { Nav, SECTIONS } from '../landing/Nav'
 import { Lost } from '../landing/Lost'
 import { Signposts } from '../landing/Signposts'
-import { Faq, Footer, HowItWorks, Quote, Rules } from '../landing/Sections'
+import { Faq, Footer, HowItWorks, PlayPromo, Quote, Rules } from '../landing/Sections'
 import { Receipts } from '../landing/ReceiptsMile'
 import { Statement } from '../landing/Statement'
 import { JumpCover, type Hop } from '../motion/JumpCover'
@@ -67,6 +67,8 @@ export default function Landing({ ready, settled = true }: { ready: boolean; set
       <Receipts />
       <MileEdge kind="peaks" to="var(--mint)" accent="var(--lime)" label="Mile 6" />
       <Rules />
+      <MileEdge kind="arc" to="var(--sky)" accent="var(--blue)" label="Side trail" />
+      <PlayPromo />
       <MileEdge kind="wave" to="var(--peach)" accent="var(--violet)" label="Mile 7" />
       <Faq />
       <Footer onJump={jump} />
