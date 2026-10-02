@@ -32,7 +32,6 @@ const disposers = []
 const on = (target, type, fn, opts) => { target.addEventListener(type, fn, opts); disposers.push(() => target.removeEventListener(type, fn, opts)) }
 const REPO = 'https://github.com/FrozenFalcon-Byte/TrailHead/blob/ceceba83208e87b224ce1939942a084ad28b59be/';
 const APP = location.origin;
-const GUIDE_URL = location.origin + '/guide';
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
@@ -99,39 +98,12 @@ $$('.code').forEach((card) => {
 });
 $$('pre code', root).forEach(highlight);
 
-/* ---------- rail: chapters, a walker that glides to the current stop, and a carry-QR ---------- */
-const chapters = $$('section.ch');
-const stops = $('#stops');
-chapters.forEach((ch) => { const li = document.createElement('li'); li.innerHTML = `<a href="#${ch.id}">${ch.dataset.name}</a>`; stops.appendChild(li); });
-const links = $$('a', stops), walker = $('#walker');
-links.forEach((a) => a.addEventListener('click', (e) => {
-  e.preventDefault();
-  const el = document.getElementById(a.hash.slice(1));
-  if (el) el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
-  history.replaceState(history.state, '', a.hash);
-}));
 // Links into the site go through the router, so the curtain plays instead of a full reload.
 on(root, 'click', (e) => {
   const a = e.target.closest?.('a[href^="/"]');
   if (!a || e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
   e.preventDefault(); go(a.getAttribute('href'));
 });
-let current = '';
-function setCurrent(id) {
-  if (id === current) return; current = id;
-  links.forEach((a) => a.classList.toggle('on', a.hash === '#' + id));
-  const a = links.find((x) => x.hash === '#' + id);
-  if (a) { walker.style.transform = `translateY(${a.parentElement.offsetTop + a.offsetHeight / 2 - 8}px)`; a.scrollIntoView({ block: 'nearest', inline: 'center', behavior: reduce ? 'auto' : 'smooth' }); }
-  if (GUIDE_URL) { $('#carry').hidden = false; $('#carryName').textContent = a ? a.textContent : 'this chapter'; drawQR($('#carryQR'), GUIDE_URL + '#' + id, { size: 72 }); }
-}
-const spy = new IntersectionObserver((entries) => {
-  const vis = chapters.filter((c) => { const r = c.getBoundingClientRect(); return r.top < innerHeight * 0.4 && r.bottom > innerHeight * 0.25; });
-  if (vis.length) setCurrent(vis[vis.length - 1].id);
-}, { threshold: [0, .2, .5, .8, 1] });
-chapters.forEach((c) => spy.observe(c));
-disposers.push(() => spy.disconnect());
-on(window, 'scroll', () => { const vis = chapters.filter((c) => c.getBoundingClientRect().top < innerHeight * 0.4); if (vis.length) setCurrent(vis[vis.length - 1].id); }, { passive: true });
-setCurrent(location.hash && $(location.hash) ? location.hash.slice(1) : 'start');
 
 /* ---------- panels swing down on a hinge when they come up from below ---------- */
 if (!reduce) {
@@ -142,18 +114,6 @@ if (!reduce) {
   $$('.panel').forEach((p) => hinge.observe(p));
   disposers.push(() => hinge.disconnect());
 }
-
-/* ---------- hero scenery: pines and drifting clouds ---------- */
-const pines = $('#heroPines');
-[[70,238,1],[110,232,.8],[250,226,1.1],[290,232,.8],[470,236,1],[520,230,1.2],[640,224,.9],[760,214,1],[800,218,.8],[900,212,1.1]].forEach(([x,y,s]) => {
-  pines.insertAdjacentHTML('beforeend', `<path transform="translate(${x} ${y}) scale(${s})" d="M0 -34 L12 -14 L6 -14 L15 0 L-15 0 L-6 -14 L-12 -14Z"/><rect transform="translate(${x} ${y}) scale(${s})" x="-2" y="0" width="4" height="6" fill="var(--ink)"/>`);
-});
-const cloudSvg = (w) => `<svg class="cloud" width="${w}" viewBox="0 0 120 50" aria-hidden="true"><path d="M20 44h82a16 16 0 0 0 0-32 24 24 0 0 0-44-6 18 18 0 0 0-30 10A14 14 0 0 0 20 44z" fill="var(--surface)" stroke="var(--ink)" stroke-width="2.5"/></svg>`;
-const clouds = $('#clouds');
-[[110, 26, 60, -10], [80, 70, 80, -50], [140, 14, 95, -30]].forEach(([w, top, dur, delay]) => {
-  clouds.insertAdjacentHTML('beforeend', cloudSvg(w)); const c = clouds.lastElementChild;
-  c.style.top = top + 'px'; c.style.left = '0'; c.style.animationDuration = dur + 's'; c.style.animationDelay = delay + 's';
-});
 
 /* ---------- pipeline walk ---------- */
 const ICON = {

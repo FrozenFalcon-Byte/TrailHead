@@ -29,3 +29,12 @@ export function scrollTop() {
   if (lenis) lenis.scrollTo(0, { immediate: true, force: true })
   else window.scrollTo({ top: 0 })
 }
+
+/** Glide to an element (or a page offset), leaving `offset` pixels above it. */
+export function scrollToTarget(target: HTMLElement | number, offset = 0) {
+  if (lenis) lenis.scrollTo(target, { offset: -offset, duration: 1.3 })
+  else {
+    const top = typeof target === 'number' ? target : target.getBoundingClientRect().top + window.scrollY
+    window.scrollTo({ top: top - offset, behavior: 'smooth' })
+  }
+}
