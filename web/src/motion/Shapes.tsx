@@ -91,7 +91,7 @@ function GlyphArt({ glyph, bg, play }: { glyph: Glyph; bg: string; play: boolean
       return (
         <g>
           <rect x={33} y={20} width={6} height={62} rx={3} fill={INK} />
-          <motion.path fill={INK} animate={play ? { d: ['M39 22 L72 32 L39 44 Z', 'M39 22 L68 36 L39 44 Z', 'M39 22 L72 32 L39 44 Z'] } : undefined} transition={loop(1.6)} d="M39 22 L72 32 L39 44 Z" />
+          <motion.path fill={INK} initial={{ d: 'M39 22 L72 32 L39 44 Z' }} animate={play ? { d: ['M39 22 L72 32 L39 44 Z', 'M39 22 L68 36 L39 44 Z', 'M39 22 L72 32 L39 44 Z'] } : { d: 'M39 22 L72 32 L39 44 Z' }} transition={loop(1.6)} />
           <path d="M22 82 L44 58 L54 68 L62 60 L80 82 Z" fill={INK} />
         </g>
       )
@@ -100,7 +100,7 @@ function GlyphArt({ glyph, bg, play }: { glyph: Glyph; bg: string; play: boolean
         <g>
           <circle cx={45} cy={44} r={18} fill="none" stroke={INK} strokeWidth={8} />
           <rect x={58} y={58} width={10} height={24} rx={5} fill={INK} transform="rotate(-45 63 70)" />
-          <motion.circle cx={45} cy={44} r={5} fill={INK} animate={play ? { cx: [38, 52, 38] } : undefined} transition={loop(1.6)} />
+          <motion.circle cy={44} r={5} fill={INK} initial={{ cx: 45 }} animate={play ? { cx: [38, 52, 38] } : { cx: 45 }} transition={play ? loop(1.6) : { duration: 0.3 }} />
         </g>
       )
     case 'check':

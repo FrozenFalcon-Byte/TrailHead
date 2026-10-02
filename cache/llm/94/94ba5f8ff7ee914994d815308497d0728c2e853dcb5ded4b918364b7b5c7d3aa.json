@@ -1,0 +1,82 @@
+{
+ "key": "94ba5f8ff7ee914994d815308497d0728c2e853dcb5ded4b918364b7b5c7d3aa",
+ "model_id": "llm:openai/gpt-oss-120b:1f2e0674",
+ "created_at": 1790919003.582911,
+ "state": {
+  "goal": "I want to understand CODE_OF_CONDUCT.md and what it depends on."
+ },
+ "questions": {
+  "in_docs": {
+   "type": "choice",
+   "instructions": "Which entry is most likely to contain the code that the goal is about?",
+   "criteria": {
+    "c0": "Makefile: Minimal makefile for Sphinx documentation.",
+    "c1": "_ext/: Contains scrapydocs.py, scrapyfixautodoc.py.",
+    "c2": "_static/: Contains custom.css, logo.svg, selectors-sample1.html.",
+    "c3": "_templates/: Contains layout.html.",
+    "c4": "_tests/: Contains quotes.html, quotes1.html.",
+    "c5": "conf.py: Configuration file for the Sphinx documentation builder. For the full list of built-in configuration values, see the documentation: https:/…",
+    "c6": "requirements.in",
+    "c7": "utils/: Contains linkfix.py.",
+    "none": "None of the listed entries is related to the goal."
+   }
+  },
+  "in_extras": {
+   "type": "choice",
+   "instructions": "Which entry is most likely to contain the code that the goal is about?",
+   "criteria": {
+    "c0": "coverage-report.sh: Run tests, generate coverage report and open it on a browser Requires: coverage 3.3 or above from https://pypi.org/pypi/coverage.",
+    "c1": "github-release-notes.py: Defines release_notes.",
+    "c2": "pre-bump.py: Defines placeholders, old_directives, _git_grep.",
+    "c3": "qps-bench-server.py: Defines Root.",
+    "c4": "qpsclient.py: A spider that generate light requests to measure QPS throughput. Defines QPSSpider.",
+    "c5": "scrapy.1",
+    "c6": "scrapy_bash_completion: bash completion for the Scrapy command-line tool.",
+    "c7": "scrapy_zsh_completion: compdef scrapy.",
+    "c8": "upgrade-ci-pins.py: Defines main, _normalize, _section, _deps, _requirements, _resolve, _upgrade_tox_env, _github and more.",
+    "none": "None of the listed entries is related to the goal."
+   }
+  }
+ },
+ "answers": {
+  "in_docs": {
+   "type": "choice",
+   "choice": "none",
+   "probabilities": {
+    "c0": 0.02,
+    "c1": 0.02,
+    "c2": 0.02,
+    "c3": 0.02,
+    "c4": 0.02,
+    "c5": 0.02,
+    "c6": 0.02,
+    "c7": 0.02,
+    "none": 0.84
+   },
+   "confidence": 0.88
+  },
+  "in_extras": {
+   "type": "choice",
+   "choice": "none",
+   "probabilities": {
+    "c0": 0.0196078431372549,
+    "c1": 0.0196078431372549,
+    "c2": 0.0196078431372549,
+    "c3": 0.0196078431372549,
+    "c4": 0.0196078431372549,
+    "c5": 0.0196078431372549,
+    "c6": 0.0196078431372549,
+    "c7": 0.0196078431372549,
+    "c8": 0.0196078431372549,
+    "none": 0.8235294117647058
+   },
+   "confidence": 0.88
+  }
+ },
+ "model_returned": "openai/gpt-oss-120b",
+ "provider": "hosted",
+ "input_tokens": 868,
+ "output_tokens": 217,
+ "latency_ms": 927.7038749933126,
+ "request_id": ""
+}

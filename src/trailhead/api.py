@@ -47,6 +47,12 @@ class ReplanBody(BaseModel):
     repo: str | None = None
 
 
+class ExplainBody(BaseModel):
+    tour: dict[str, Any]
+    repo: str | None = None
+    engine: str | None = None
+
+
 class IngestBody(BaseModel):
     repo: str = Field(pattern=r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$")
 
@@ -145,6 +151,26 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         return {"ok": True, "auth": settings.auth_mode, "auth_configured": verifier.configured, "engines": list(ENGINE_KINDS),
                 "default_engine": settings.decision_engine, "next_slot_s": round(next_slot(), 1)}
 
+    @app.get("/api/config")
+    async def config(_: User = Depends(user)) -> dict[str, Any]:
+        """What the server is set up to use, for the Settings page. Names and limits only: never a key or a URL with credentials."""
+        from urllib.parse import urlsplit
+
+        host = lambda url: urlsplit(url).hostname or ""  # noqa: E731
+        return {
+            "default_engine": settings.decision_engine,
+            "engines": list(ENGINE_KINDS),
+            "offline": settings.offline,
+            "auth": settings.auth_mode,
+            "jev": {"model_id": settings.jev_model_id, "max_concurrency": settings.jev_max_concurrency,
+                    "providers": [{"name": p.name, "model": p.model, "rpm": p.requests_per_minute, "host": host(p.base_url)} for p in settings.jev_providers]},
+            "llm": {"configured": bool(settings.llm_api_key), "model": settings.llm_model, "host": host(settings.llm_base_url), "rpm": settings.llm_rpm,
+                    "reasoning_effort": settings.llm_reasoning_effort, "fallback_model": settings.llm_fallback_model},
+            "local": {"model": settings.local_llm_model, "host": host(settings.local_llm_base_url)},
+            "github_token": bool(settings.github_token),
+            "repos": len(repos.list_repos(settings)),
+        }
+
     @app.get("/api/me")
     async def me(current: User = Depends(user)) -> dict[str, Any]:
         return current.__dict__
@@ -225,6 +251,21 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         except (ValueError, KeyError, TypeError) as exc:
             raise HTTPException(400, str(exc)) from exc
 
+    @app.post("/api/tour/explain")
+    async def explain(body: ExplainBody, _: User = Depends(user)) -> StreamingResponse:
+        from .tour import explain_tour, tour_from_dict
+
+        ctx, kind = ctx_for(body.repo), engine_kind(body.engine)
+        try:
+            tour = tour_from_dict(body.tour)
+        except (ValueError, KeyError, TypeError) as exc:
+            raise HTTPException(400, str(exc)) from exc
+
+        async def job(emit: Emit) -> dict[str, Any]:
+            return await explain_tour(ctx, ctx.engine(kind), tour, emit=emit)
+
+        return stream(job)
+
     @app.get("/api/issues")
     async def issues(repo: str | None = None, _: User = Depends(user)) -> dict[str, Any]:
         """Ranks only issues already annotated, so this never waits on Jev. `trailhead pick` annotates more."""
@@ -251,6 +292,27 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             data = evals.load_results(name)
             out[name] = {m: b.get("summary", {}) for m, b in data.get("methods", {}).items()}
         out["why"] = evals.load_results("why_jev_scores")
+        out["injection"] = {}
+        for engine in ("jev", "llm"):
+            data = evals.load_results(f"injection_{engine}")
+            if data:
+                cases = [
+                    {"id": k, "attack": bool(c.get("attack")), "blocked": bool(c.get("blocked")), "technique": str(c.get("technique", "")), "kind": str(c.get("kind", "")), "p": c.get("p")}
+                    for k, c in sorted(data.get("screening", {}).items())
+                ]
+                out["injection"][engine] = {"summary": data.get("summary", {}), "cases": cases}
+        items = evals.load_results("why_jev").get("items", {})
+        out["why_items"] = [
+            {
+                "id": k,
+                "question": str(v.get("question", "")),
+                "status": str(v.get("status", "")),
+                "confidence": v.get("confidence"),
+                "claims": len(v.get("claims", [])),
+                "verified": sum(1 for c in v.get("claims", []) if c.get("status") == "verified"),
+            }
+            for k, v in sorted(items.items())
+        ]
         return out
 
     return app

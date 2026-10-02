@@ -1,5 +1,6 @@
 import { motion, useMotionValue, useSpring, useTransform, useVelocity } from 'motion/react'
 import { useEffect, useRef, useState } from 'react'
+import { getPrefs, usePref } from '../lib/prefs'
 
 /* The Trailhead cursor. One object, no follower: a solid teardrop whose sharp corner is the hotspot.
    - Over links the teardrop stretches into an orange label pill ("Open →", "Visit ↗", or data-cursor).
@@ -14,11 +15,53 @@ type Mode = 'idle' | 'link' | 'text' | 'stick'
 type Ring = { x: number; y: number; w: number; h: number; r: number }
 
 const STICK = '.btn, [data-magnet], .l-nav__links a, .l-nav__cta, .l-nav__login, .theme-switch, .l-chat__q, .d-chip'
-const LINK = 'a, button, [role="button"], summary, label, select, [data-cursor]'
+const LINK = 'a, button, [role="button"], [role="option"], [role="menuitem"], [role="radio"], [role="switch"], summary, label, select, [data-cursor]'
 const TEXT = 'input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), textarea, [contenteditable="true"]'
 const COLORS = ['var(--orange)', 'var(--violet)', 'var(--green)', 'var(--blue)', 'var(--yellow)']
 const KINDS = ['50%', '6px', '50% 50% 50% 6px'] as const
 const SPRING = { type: 'spring', stiffness: 520, damping: 32, mass: 0.7 } as const
+
+const ROUTES: Record<string, string> = { '/': 'Home', '/login': 'Log in', '/signup': 'Sign up', '/app': 'Overview', '/app/ask': 'Ask', '/app/tour': 'Tour', '/app/find': 'Find', '/app/issues': 'First issues', '/app/map': 'Map', '/app/decisions': 'Decisions', '/app/evals': 'Evals', '/app/repos': 'Repositories', '/app/profile': 'Profile', '/app/settings': 'Settings' }
+const clip = (s: string, n = 26) => {
+  if (s.length <= n) return s
+  const words = s.split(' ')
+  let out = ''
+  for (const w of words) {
+    if ((out + ' ' + w).trim().length > n - 1) break
+    out = (out + ' ' + w).trim()
+  }
+  return `${out || s.slice(0, n - 1)}…`
+}
+/** What a control will do, read from the control itself: its own cursor hint, accessible name, link target or
+ *  state. Nothing is hard-coded per page. */
+export function describe(el: HTMLElement): string {
+  const named = el.closest<HTMLElement>('[data-cursor]')?.dataset.cursor
+  if (named) return named
+  const text = (el.getAttribute('aria-label') || el.textContent || '').replace(/\s+/g, ' ').trim()
+  const wordy = /[A-Za-z0-9]{2}/.test(text) ? text : el.title || text
+  if ((el as HTMLButtonElement).disabled || el.getAttribute('aria-disabled') === 'true') return el.title ? clip(el.title, 30) : 'Not available'
+  if (el.tagName === 'A') {
+    const a = el as HTMLAnchorElement
+    const url = new URL(a.href, window.location.href)
+    if (url.origin !== window.location.origin) return `${clip(wordy, 18) || url.host} ↗`
+    if (a.target === '_blank') return 'New tab ↗'
+    if (url.pathname === window.location.pathname && url.hash) return `Jump to ${clip(wordy, 16)}`
+    if (url.pathname === window.location.pathname && !url.search) return 'You are here'
+    return `${ROUTES[url.pathname] ?? clip(wordy, 20)} →`
+  }
+  if (el.tagName === 'SELECT') return 'Choose'
+  if (el.tagName === 'SUMMARY') return (el.parentElement as HTMLDetailsElement).open ? 'Collapse' : 'Expand'
+  if (el.tagName === 'LABEL') {
+    const c = (el as HTMLLabelElement).control as HTMLInputElement | null
+    if (c?.type === 'checkbox') return c.checked ? 'Untick' : 'Tick'
+    if (c?.type === 'file') return 'Pick a file'
+    return 'Focus'
+  }
+  const expanded = el.getAttribute('aria-expanded')
+  if (expanded && !wordy) return expanded === 'true' ? 'Collapse' : 'Expand'
+  if ((el as HTMLButtonElement).type === 'submit') return `${clip(wordy, 20) || 'Submit'} ↵`
+  return clip(wordy) || 'Press'
+}
 
 let ctx: CanvasRenderingContext2D | null = null
 function textWidth(s: string) {
@@ -29,6 +72,7 @@ function textWidth(s: string) {
 }
 
 export function TrailCursor() {
+  const choice = usePref('cursor')
   const [on, setOn] = useState(false)
   const [mode, setMode] = useState<Mode>('idle')
   const [label, setLabel] = useState('')
@@ -49,7 +93,10 @@ export function TrailCursor() {
   const stretch = useSpring(useTransform(speed, (s) => 1 + s), { stiffness: 400, damping: 30 })
 
   useEffect(() => {
-    if (!window.matchMedia('(pointer: fine)').matches || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    if (choice !== 'trail' || !window.matchMedia('(pointer: fine)').matches || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setOn(false)
+      return
+    }
     setOn(true)
     document.documentElement.classList.add('tc-on')
 
@@ -147,8 +194,7 @@ export function TrailCursor() {
         follow(x, y)
         setMode(text ? 'text' : link ? 'link' : 'idle')
       }
-      const named = link?.closest<HTMLElement>('[data-cursor]')?.dataset.cursor
-      setLabel(named ?? (link ? (link.tagName === 'A' && (link as HTMLAnchorElement).target === '_blank' ? 'Visit ↗' : link.tagName === 'A' ? 'Open →' : 'Click') : ''))
+      setLabel(link && getPrefs().cursorLabels ? describe(link) : '')
 
       const t = target?.closest<HTMLElement>('[data-tilt]') ?? null
       if (t !== tilt) {
@@ -169,7 +215,7 @@ export function TrailCursor() {
       setDown(false)
       tintRef.current += 1
       setTint(tintRef.current)
-      release(e.clientX, e.clientY)
+      if (getPrefs().cursorBurst) release(e.clientX, e.clientY)
     }
     const leave = () => {
       setAway(true)
@@ -206,7 +252,7 @@ export function TrailCursor() {
       unstick()
       untilt()
     }
-  }, [px, py, bx, by])
+  }, [px, py, bx, by, choice])
 
   if (!on) return null
   const color = COLORS[tint % COLORS.length]

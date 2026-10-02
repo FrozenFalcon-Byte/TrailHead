@@ -1,0 +1,56 @@
+{
+ "key": "874658dd06171a69e2641ae805874c19c75a19f3938cb60df0dfbadc15f1cdf0",
+ "model_id": "llm:openai/gpt-oss-120b:1f2e0674",
+ "created_at": 1790920824.510745,
+ "state": {
+  "goal": "Where are failed requests retried?"
+ },
+ "questions": {
+  "symbol_in_scrapy_downloadermiddlewares_retry_py": {
+   "type": "choice",
+   "instructions": "Which definition in this file is the goal most directly about?",
+   "criteria": {
+    "c0": "def get_retry_request( request: Request, *, spider: scrapy.Spider, reason: str | Exception | type[Exception] = \"unspecif - Returns a new :class:`~scrapy.Request` object to retry the specified request, or ``None`` if retries of the specified re",
+    "c1": "class RetryMiddleware",
+    "none": "None of the listed definitions is related to the goal."
+   }
+  },
+  "symbol_in_scrapy_downloadermiddlewares_cookies_py": {
+   "type": "choice",
+   "instructions": "Which definition in this file is the goal most directly about?",
+   "criteria": {
+    "c0": "def _is_public_domain(domain: str) -> bool",
+    "c1": "class CookiesMiddleware - This middleware enables working with sites that need cookies",
+    "none": "None of the listed definitions is related to the goal."
+   }
+  }
+ },
+ "answers": {
+  "symbol_in_scrapy_downloadermiddlewares_retry_py": {
+   "type": "choice",
+   "choice": "c1",
+   "probabilities": {
+    "c0": 0.15,
+    "c1": 0.8,
+    "none": 0.05
+   },
+   "confidence": 0.85
+  },
+  "symbol_in_scrapy_downloadermiddlewares_cookies_py": {
+   "type": "choice",
+   "choice": "none",
+   "probabilities": {
+    "c0": 0.0,
+    "c1": 0.0,
+    "none": 1.0
+   },
+   "confidence": 0.9
+  }
+ },
+ "model_returned": "openai/gpt-oss-120b",
+ "provider": "hosted",
+ "input_tokens": 621,
+ "output_tokens": 233,
+ "latency_ms": 1309.6700829992187,
+ "request_id": ""
+}

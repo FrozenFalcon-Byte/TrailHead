@@ -1,0 +1,80 @@
+{
+ "key": "cee133bcba885068ea822b744b7122bb5f176e8d0d48bede86cacb623f6526f6",
+ "model_id": "jev-1.13.0",
+ "created_at": 1790919608.283298,
+ "state": {
+  "goal": "Where are failed requests retried?"
+ },
+ "questions": {
+  "symbol_in_scrapy_downloadermiddlewares_retry_py": {
+   "type": "choice",
+   "instructions": "Which definition in this file is the goal most directly about?",
+   "criteria": {
+    "c0": "def get_retry_request( request: Request, *, spider: scrapy.Spider, reason: str | Exception | type[Exception] = \"unspecif - Returns a new :class:`~scrapy.Request` object to retry the specified request, or ``None`` if retries of the specified re",
+    "c1": "class RetryMiddleware",
+    "none": "None of the listed definitions is related to the goal."
+   }
+  },
+  "symbol_in_scrapy_core_downloader_handlers_http11_py": {
+   "type": "choice",
+   "instructions": "Which definition in this file is the goal most directly about?",
+   "criteria": {
+    "c0": "class _ResultT(TypedDict)",
+    "c1": "class HTTP11DownloadHandler(BaseHttpDownloadHandler)",
+    "c2": "class TunnelError(Exception) - An HTTP CONNECT tunnel could not be established by the proxy.",
+    "c3": "class _TunnelingTCP4ClientEndpoint(TCP4ClientEndpoint) - An endpoint that tunnels through proxies to allow HTTPS downloads. To accomplish that, this endpoint sends an HTTP CONNE",
+    "c4": "def _tunnel_request_data( host: str, port: int, proxy_auth_header: bytes | None = None ) -> bytes - Return binary content of a CONNECT request.",
+    "c5": "class _BindAddressAgent(Agent) - An Agent that adds the configured local bind address to the connection pool key, so pooled connections are not shared be",
+    "c6": "class _TunnelingAgent(_BindAddressAgent) - An agent that uses a ``_TunnelingTCP4ClientEndpoint`` to make HTTPS downloads. It may look strange that we have chosen t",
+    "c7": "class _ScrapyProxyAgent(_BindAddressAgent)",
+    "c8": "class _ScrapyAgent",
+    "c9": "class _RequestBodyProducer",
+    "c10": "class _ResponseReader(Protocol)",
+    "c11": "class _LenientHTTPClientParser(HTTPClientParser) - Response parser that skips bad response header lines, those with no colon in them, instead of failing to parse the whole",
+    "c12": "class _LenientHTTP11ClientProtocol(HTTP11ClientProtocol) - Protocol that parses responses with :class:`_LenientHTTPClientParser`.",
+    "c13": "class _LenientHTTP11ClientFactory(_HTTP11ClientFactory) - Factory that builds :class:`_LenientHTTP11ClientProtocol` protocols.",
+    "none": "None of the listed definitions is related to the goal."
+   }
+  }
+ },
+ "answers": {
+  "symbol_in_scrapy_downloadermiddlewares_retry_py": {
+   "type": "choice",
+   "choice": "c1",
+   "probabilities": {
+    "c0": 0.4,
+    "c1": 0.5599999999999999,
+    "none": 0.04
+   },
+   "confidence": 0.35
+  },
+  "symbol_in_scrapy_core_downloader_handlers_http11_py": {
+   "type": "choice",
+   "choice": "none",
+   "probabilities": {
+    "c0": 0.01,
+    "c1": 0.05,
+    "c10": 0.01,
+    "c11": 0.01,
+    "c12": 0.01,
+    "c13": 0.01,
+    "c2": 0.0,
+    "c3": 0.01,
+    "c4": 0.0,
+    "c5": 0.03,
+    "c6": 0.02,
+    "c7": 0.01,
+    "c8": 0.24,
+    "c9": 0.0,
+    "none": 0.59
+   },
+   "confidence": 0.57
+  }
+ },
+ "model_returned": "jev-1.13-free",
+ "provider": "beatapi",
+ "input_tokens": 1009,
+ "output_tokens": 204,
+ "latency_ms": 846.6316660051234,
+ "request_id": "task_Exf42SCcbtLpOCx3eqtCrHmxkxc3W1zm"
+}

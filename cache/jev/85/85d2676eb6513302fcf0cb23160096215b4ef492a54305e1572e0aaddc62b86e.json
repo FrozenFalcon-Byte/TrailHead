@@ -1,0 +1,37 @@
+{
+ "key": "85d2676eb6513302fcf0cb23160096215b4ef492a54305e1572e0aaddc62b86e",
+ "model_id": "jev-1.13.0",
+ "created_at": 1790920252.700392,
+ "state": {
+  "goal": "I want to understand CODE_OF_CONDUCT.md and what it depends on."
+ },
+ "questions": {
+  "in_docs_ext": {
+   "type": "choice",
+   "instructions": "Which entry is most likely to contain the code that the goal is about?",
+   "criteria": {
+    "c0": "scrapydocs.py: Defines SettingData, SettingslistNode, SettingsListDirective, is_setting_index, get_setting_name_and_refid, collect_scrapy_settings_refs, purge_scrapy_settings, merge_scrapy_settings and more.",
+    "c1": "scrapyfixautodoc.py: Must be included after 'sphinx.ext.autodoc'. Fixes unwanted 'alias of' behavior. https://github.com/sphinx-doc/sphinx/issues/4422. Defines maybe_skip_member, setup.",
+    "none": "None of the listed entries is related to the goal."
+   }
+  }
+ },
+ "answers": {
+  "in_docs_ext": {
+   "type": "choice",
+   "choice": "none",
+   "probabilities": {
+    "c0": 0.0,
+    "c1": 0.01,
+    "none": 0.99
+   },
+   "confidence": 0.98
+  }
+ },
+ "model_returned": "jev-1.13-free",
+ "provider": "beatapi",
+ "input_tokens": 465,
+ "output_tokens": 42,
+ "latency_ms": 452.54704199760454,
+ "request_id": "task_JpCzKFwzQRSfandWZIIc9GCMG0KW0e0Y"
+}

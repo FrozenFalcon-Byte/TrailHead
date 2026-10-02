@@ -1,0 +1,88 @@
+{
+ "key": "72bad5ea6f4a0633475d19683f7d1ad923270490cb65a3ae919ea9e353fa2971",
+ "model_id": "jev-1.13.0",
+ "created_at": 1790867347.8921459,
+ "state": {
+  "goal": "Where are failed requests retried?"
+ },
+ "questions": {
+  "question_kind": {
+   "type": "choice",
+   "instructions": "What is the person asking for?",
+   "criteria": {
+    "where_is": "They want to know which file, class or function contains something.",
+    "how_does_it_work": "They want an explanation of how existing behaviour or a mechanism works.",
+    "why_built_this_way": "They want the reason behind a design decision, a default value, or a past change.",
+    "what_breaks_if_changed": "They want to know what depends on some code or what a change to it would affect.",
+    "how_to_run_or_test": "They want to know how to install, run, configure, debug or test the project.",
+    "other": "The goal is something else, such as a request to write code, or it is not a question about this codebase."
+   }
+  },
+  "code_alone": {
+   "type": "noul",
+   "instructions": "Can this be answered fully by reading the current source code, without commit history, pull requests, issues or discussions? A question about reasons, motivation or past decisions cannot."
+  },
+  "in_root": {
+   "type": "choice",
+   "instructions": "Which entry is most likely to contain the code that the goal is about?",
+   "criteria": {
+    "c0": "AUTHORS",
+    "c1": "CITATION.cff",
+    "c2": "LICENSE",
+    "c3": "NEWS",
+    "c4": "codecov.yml",
+    "c5": "docs/: Contains _ext/, _static/, _templates/, _tests/, intro/, news/, topics/, utils/, conf.py, conftest.py, contributing.rst, faq.rst and 6 more.",
+    "c6": "extras/: Contains coverage-report.sh, github-release-notes.py, pre-bump.py, qps-bench-server.py, qpsclient.py, scrapy.1, upgrade-ci-pins.py, scrapy_bash_completion, scrapy_zsh_completion.",
+    "c7": "pyproject.toml",
+    "c8": "scrapy/: Scrapy - a web crawling and web scraping framework written for Python. Contains commands/, contracts/, core/, downloadermiddlewares/, extensions/, http/, linkextractors/, loader/, pipelines/, selector/, settings/, spidermiddlewares/ and 31 more.",
+    "c9": "tests_typing/: Contains test_http_request.mypy-testing, test_http_response.mypy-testing, test_spiders.mypy-testing.",
+    "c10": "tox.ini: Tox (https://tox.readthedocs.io/) is a tool for running tests in multiple virtualenvs. This configuration file will run the test suite on a…",
+    "none": "None of the listed entries is related to the goal."
+   }
+  }
+ },
+ "answers": {
+  "question_kind": {
+   "type": "choice",
+   "choice": "where_is",
+   "probabilities": {
+    "how_does_it_work": 0.06,
+    "how_to_run_or_test": 0.0,
+    "other": 0.0,
+    "what_breaks_if_changed": 0.0,
+    "where_is": 0.94,
+    "why_built_this_way": 0.0
+   },
+   "confidence": 0.93
+  },
+  "code_alone": {
+   "type": "noul",
+   "noul": 0.62
+  },
+  "in_root": {
+   "type": "choice",
+   "choice": "c8",
+   "probabilities": {
+    "c0": 0.0,
+    "c1": 0.0,
+    "c10": 0.0,
+    "c2": 0.0,
+    "c3": 0.0,
+    "c4": 0.0,
+    "c5": 0.0,
+    "c6": 0.0,
+    "c7": 0.0,
+    "c8": 0.98,
+    "c9": 0.0,
+    "none": 0.02
+   },
+   "confidence": 0.97
+  }
+ },
+ "model_returned": "jev-1.13-free",
+ "provider": "beatapi",
+ "input_tokens": 953,
+ "output_tokens": 209,
+ "latency_ms": 799.2210000011255,
+ "request_id": "task_oA4yUinPYD4jnPGfb8xStvmnhodfxaEK"
+}

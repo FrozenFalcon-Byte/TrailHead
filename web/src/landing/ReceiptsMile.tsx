@@ -125,7 +125,9 @@ export function Receipts() {
     const t = v * N - k
     return t > FEED[0] && t < FEED[1] ? 1 : 0
   })
-  const roll = useTransform(p, (v) => `${(-v * N * 900).toFixed(1)}px 0`)
+  const spin = useTransform(p, (v) => -v * N * 900)
+  const led = useTransform(feeding, (f) => (f ? 'var(--lime)' : '#3a3940'))
+  const press = useTransform(feeding, (f) => (f ? 3 : 0))
   const shake = useTransform(p, (v) => {
     const t = v * N - Math.min(N - 1, Math.floor(v * N))
     return t > FEED[0] && t < FEED[1] ? Math.sin(t * 160) * 1.4 : 0
@@ -154,12 +156,35 @@ export function Receipts() {
           </div>
 
           <motion.div className="l-rx__printer" style={{ rotate: shake }} aria-hidden>
-            <motion.span className="l-rx__led" style={{ background: useTransform(feeding, (f) => (f ? 'var(--lime)' : 'var(--green)')) }} />
-            <span className="mono l-rx__name">trailhead · eval printer</span>
-            <span className="mono l-rx__count">{printed}/{N}</span>
-            <div className="l-rx__slot">
-              <motion.i style={{ backgroundPosition: roll }} />
-            </div>
+            <svg viewBox="0 0 660 156" className="l-rx__machine">
+              {/* paper roll under a smoked lid; the dashes turn as paper feeds */}
+              <rect x={150} y={4} width={360} height={62} rx={30} className="l-rx__lid" />
+              <rect x={196} y={16} width={268} height={30} rx={14} className="l-rx__window" />
+              <motion.line x1={206} y1={24} x2={454} y2={24} className="l-rx__turn" style={{ strokeDashoffset: spin }} />
+              <motion.line x1={206} y1={31} x2={454} y2={31} className="l-rx__turn is-mid" style={{ strokeDashoffset: spin }} />
+              <motion.line x1={206} y1={38} x2={454} y2={38} className="l-rx__turn" style={{ strokeDashoffset: spin }} />
+              {/* body */}
+              <rect x={8} y={52} width={644} height={92} rx={24} className="l-rx__body" />
+              <rect x={8} y={52} width={644} height={14} rx={7} className="l-rx__bevel" />
+              {/* left: lights and the little display */}
+              <circle cx={44} cy={86} r={6} className="l-rx__pwr" />
+              <motion.circle cx={64} cy={86} r={6} style={{ fill: led }} />
+              <text x={36} y={108} className="l-rx__tiny">PWR  FEED</text>
+              <rect x={92} y={74} width={84} height={30} rx={7} className="l-rx__lcd" />
+              <text x={134} y={94} textAnchor="middle" className="l-rx__lcdtext">{String(printed).padStart(2, '0')}/{String(N).padStart(2, '0')}</text>
+              {/* maker's plate */}
+              <text x={330} y={92} textAnchor="middle" className="l-rx__brand">TRAILHEAD · TP-5 · THERMAL RECEIPTS</text>
+              {/* right: vents and the feed button */}
+              {Array.from({ length: 7 }, (_, i) => <rect key={i} x={480 + i * 11} y={76} width={4} height={28} rx={2} className="l-rx__vent" />)}
+              <motion.g style={{ y: press }}>
+                <rect x={572} y={78} width={52} height={26} rx={10} className="l-rx__btn-base" />
+                <rect x={572} y={74} width={52} height={26} rx={10} className="l-rx__btn" />
+                <text x={598} y={91} textAnchor="middle" className="l-rx__btntext">FEED</text>
+              </motion.g>
+              {/* the mouth and its tear bar */}
+              <rect x={44} y={124} width={572} height={14} rx={7} className="l-rx__mouth" />
+              <path d={`M40 138 ${Array.from({ length: 48 }, (_, i) => `L${46 + i * 12} 154 L${52 + i * 12} 138`).join(' ')} L620 138 Z`} className="l-rx__teeth" />
+            </svg>
           </motion.div>
 
           <div className="l-rx__run">

@@ -8,12 +8,12 @@ import re
 from dataclasses import asdict, dataclass, field
 from typing import Any, Callable, Iterable
 
-from .answer import _prompt
+from .answer import _prompt, answer_from_evidence, answer_to_dict
 from .context import Context
 from .decisions import DecisionEngine, Question, load_question_set
 from .llm.client import LLMClient, LLMError, last_json_object
 from .navigate import Navigator, nav_to_dict
-from .retrieve import _search, load_evidence
+from .retrieve import Evidence, _search, code_evidence, load_evidence, retrieval_to_dict, retrieve
 from .store import Store, fts_query
 
 NEED_AT = 0.5  # P(need) to become a stop
@@ -261,6 +261,41 @@ class TourPlanner:
         if notes:
             await self.write_notes(tour)
         return tour
+
+
+EXPLAIN_FILES = 4
+TEXT_SLICE = 680
+
+
+def _text_evidence(store: Store, repo_dir: Any, path: str) -> list[Evidence]:
+    """The opening of a non-code file (a guide, a policy, a config) as documentation passages. Read, never run."""
+    try:
+        text = (repo_dir / path).read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        return []
+    text = re.sub(r"\n{3,}", "\n\n", text).strip()
+    base = f"https://github.com/{store.get_meta('repo')}/blob/{store.get_meta('head') or 'HEAD'}/{path}"
+    return [Evidence(f"doc:{path}#{i}", "doc", path, text[i * TEXT_SLICE : (i + 1) * TEXT_SLICE], base, 0.0, source="navigation") for i in range(2) if text[i * TEXT_SLICE :].strip()]
+
+
+async def explain_tour(ctx: Context, engine: DecisionEngine, tour: Tour, *, emit: Emit | None = None) -> dict[str, Any]:
+    """A short explanation of the goal, written from the tour's own stops. The same path as an answer: passages are
+    screened by Jev, the LLM drafts claims that cite them, Jev checks each claim, and only supported ones are shown."""
+    emit = emit or (lambda kind, payload: None)
+    pinned: list[Evidence] = []
+    for path in tour.files[:EXPLAIN_FILES]:
+        code = code_evidence(ctx.store, ctx.repo_dir, path)
+        if code is not None and ctx.store.scalar("SELECT COUNT(*) FROM symbols WHERE path = ?", (path,)):
+            pinned.append(code)
+        else:
+            pinned.extend(_text_evidence(ctx.store, ctx.repo_dir, path))
+    question = f"Explain to a newcomer, using these files: {tour.goal}"
+    found = await retrieve(ctx.store, engine, question, files=tour.files[:EXPLAIN_FILES], limit=4, pinned=pinned)
+    emit("evidence", retrieval_to_dict(found))
+    answer = await answer_from_evidence(engine, ctx.llm, question, found.candidates)
+    out = {"goal": tour.goal, "retrieval": retrieval_to_dict(found), "answer": answer_to_dict(answer)}
+    emit("answer", out["answer"])
+    return out
 
 
 def tour_to_dict(tour: Tour) -> dict[str, Any]:

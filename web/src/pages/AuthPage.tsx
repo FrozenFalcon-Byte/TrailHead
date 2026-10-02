@@ -3,7 +3,8 @@ import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import './auth.css'
 import { useAuth, useSignedIn } from '../lib/auth'
-import { authBypass, supabaseConfigured } from '../lib/supabase'
+import { authBypass, supabase, supabaseConfigured } from '../lib/supabase'
+import { firstName, playMoment, type MomentMethod } from '../lib/moment'
 import { Shape, STORY } from '../motion/Shapes'
 import { Wordmark } from '../motion/Mark'
 import { SplitReveal } from '../motion/SplitReveal'
@@ -68,16 +69,24 @@ export default function AuthPage() {
     }
   }
 
+  // The welcome scene covers the screen first, and the dashboard swaps in underneath it.
+  const greet = async (method: MomentMethod, to: string) => {
+    const { data } = (await supabase?.auth.getSession()) ?? { data: { session: null } }
+    const { covered } = playMoment({ kind: 'signin', method, name: firstName(data.session?.user) || auth.displayName })
+    await covered
+    navigate(to)
+  }
+
   const submit = (e: React.FormEvent) => {
     e.preventDefault()
     run('email', async () => {
       if (mode === 'login') {
         await auth.signInWithEmail(email, password)
-        navigate(next)
+        await greet('email', next)
       } else {
         const { needsConfirmation } = await auth.signUpWithEmail(email, password, name)
         if (needsConfirmation) setInfo('Check your inbox — we sent a link to confirm your email. It brings you straight to your dashboard.')
-        else navigate('/app')
+        else await greet('email', '/app')
       }
     })()
   }
@@ -176,22 +185,21 @@ export default function AuthPage() {
           <button className="a-provider" style={{ background: 'var(--surface)', color: 'var(--ink)', boxShadow: 'inset 0 0 0 2px var(--line)' }} disabled title="Google sign-in is not available yet">
             <GoogleIcon /> Continue with Google <span className="a-soon">soon</span>
           </button>
-          <button
-            {...aim('passkey')}
-            className="a-provider"
-            style={{ background: 'var(--lilac)', color: 'var(--ink)', boxShadow: 'inset 0 0 0 2px var(--violet)' }}
-            disabled={disabled}
-            onClick={run('passkey', async () => {
-              if (mode === 'signup') {
-                setInfo('Passkeys attach to an account. Sign up first, then add one from your Profile in the dashboard.')
-                return
-              }
-              await auth.signInWithPasskey()
-              navigate(next)
-            })}
-          >
-            {busy === 'passkey' ? <TrailSpinner /> : <PasskeyIcon />} {mode === 'login' ? 'Sign in with a passkey' : 'Use a passkey'}
-          </button>
+          {/* Passkeys attach to an account that already exists, so only the log-in side offers one. */}
+          {mode === 'login' && (
+            <button
+              {...aim('passkey')}
+              className="a-provider"
+              style={{ background: 'var(--lilac)', color: 'var(--ink)', boxShadow: 'inset 0 0 0 2px var(--violet)' }}
+              disabled={disabled}
+              onClick={run('passkey', async () => {
+                await auth.signInWithPasskey()
+                await greet('passkey', next)
+              })}
+            >
+              {busy === 'passkey' ? <TrailSpinner /> : <PasskeyIcon />} Sign in with a passkey
+            </button>
+          )}
 
           <div className="a-divider">or with email</div>
 

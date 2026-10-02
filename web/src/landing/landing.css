@@ -636,63 +636,36 @@
   background: color-mix(in srgb, var(--ink) 18%, transparent);
   transition: background 0.4s;
 }
-/* the printer: a wide head across the top of the screen */
+/* the printer: a desk thermal printer drawn front-on, its mouth sitting right where the paper starts */
 .l-rx__printer {
   position: absolute;
   z-index: 20;
   left: 50%;
-  top: var(--top);
+  top: calc(var(--top) + 60px);
   width: calc(var(--pw) + 120px);
-  max-width: 94vw;
-  translate: -50% 0;
-  height: 68px;
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 14px 20px 0;
-  border-radius: 18px 18px 12px 12px;
-  background: var(--solid);
-  color: var(--on-solid);
-  box-shadow: 0 18px 30px -18px rgba(0, 0, 0, 0.45), inset 0 -6px 0 var(--solid-2);
-  transform-origin: 50% 0;
-  font-size: 12px;
-  font-weight: 700;
+  max-width: 96vw;
+  translate: -50% -100%;
+  transform-origin: 50% 100%;
+  filter: drop-shadow(0 14px 18px rgba(0, 0, 0, 0.22));
 }
-.l-rx__name {
-  opacity: 0.85;
-}
-.l-rx__led {
-  width: 12px;
-  height: 12px;
-  margin-top: 1px;
-  border-radius: 50%;
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--lime) 25%, transparent);
-}
-.l-rx__count {
-  margin-left: auto;
-  padding: 2px 10px;
-  border-radius: 999px;
-  background: var(--lime);
-  color: var(--solid);
-}
-.l-rx__slot {
-  position: absolute;
-  left: 50%;
-  translate: -50% 0;
-  width: calc(var(--pw) + 24px);
-  max-width: 88%;
-  bottom: 12px;
-  height: 12px;
-  border-radius: 999px;
-  background: #050506;
-  overflow: hidden;
-}
-.l-rx__slot i {
-  position: absolute;
-  inset: 25% 1%;
-  border-radius: 999px;
-  background: repeating-linear-gradient(90deg, #3d3b45 0 8px, #232229 8px 16px);
-}
+.l-rx__machine { display: block; width: 100%; height: auto; overflow: visible; }
+.l-rx__lid { fill: var(--solid-2, #2a2930); }
+.l-rx__window { fill: #f3eee2; stroke: #0b0b0d; stroke-width: 3; }
+.l-rx__turn { stroke: #cfc8b6; stroke-width: 2.5; stroke-linecap: round; stroke-dasharray: 18 14; }
+.l-rx__turn.is-mid { stroke: #b9b19c; stroke-dasharray: 26 10; }
+.l-rx__body { fill: var(--solid, #141417); }
+.l-rx__bevel { fill: var(--solid-2, #2a2930); }
+.l-rx__pwr { fill: #22c55e; }
+.l-rx__tiny { font: 700 8px/1 var(--mono, ui-monospace), monospace; fill: #8d8b96; letter-spacing: 0.08em; white-space: pre; }
+.l-rx__lcd { fill: #c9e86a; stroke: #0b0b0d; stroke-width: 3; }
+.l-rx__lcdtext { font: 800 15px/1 var(--mono, ui-monospace), monospace; fill: #1b2a06; letter-spacing: 0.05em; }
+.l-rx__brand { font: 800 11px/1 var(--mono, ui-monospace), monospace; fill: #b5b3bd; letter-spacing: 0.16em; }
+.l-rx__vent { fill: #2f2e36; }
+.l-rx__btn-base { fill: #0b0b0d; }
+.l-rx__btn { fill: var(--orange, #ff6b3d); }
+.l-rx__btntext { font: 800 10px/1 var(--mono, ui-monospace), monospace; fill: #141417; letter-spacing: 0.08em; }
+.l-rx__mouth { fill: #050506; }
+.l-rx__teeth { fill: #a19fab; stroke: #6e6c77; stroke-width: 1.5; stroke-linejoin: round; }
 /* the receipts run straight down out of the slot */
 .l-rx__run {
   position: absolute;

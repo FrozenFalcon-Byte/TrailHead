@@ -1,0 +1,207 @@
+{
+ "key": "4448415eac8f6fdf88f475094ab0dc9a0c10ca2669468b6d6b20442385b56936",
+ "model_id": "llm:openai/gpt-oss-120b:1f2e0674",
+ "created_at": 1790919009.848017,
+ "state": {
+  "goal": "I want to understand CODE_OF_CONDUCT.md and what it depends on.",
+  "files": {
+   "F1": "AUTHORS: ",
+   "F2": "docs/Makefile: Minimal makefile for Sphinx documentation.",
+   "F3": "docs/_ext/scrapydocs.py: Defines SettingData, SettingslistNode, SettingsListDirective, is_setting_index, get_setting_name_and_refid, collect_scrapy_settings_refs, purge_scrapy_settings, merge_scrapy_settings and more. Defines: SettingData, SettingslistNode, SettingsListDirective, is_setting_index, get_setting_name_and_refid, collect_scrapy_settings_refs, purge_scrapy_settings, merge_scrapy_settings, make_setting_element, _iter_sorted_settings, replace_settingslist_nodes, source_role.",
+   "F4": "pyproject.toml: ",
+   "F5": "scrapy/commands/__init__.py: Base class for Scrapy commands. Defines ScrapyCommand, BaseRunSpiderCommand, ScrapyHelpFormatter, _PdbHandler. Defines: _PdbHandler, ScrapyCommand, BaseRunSpiderCommand, ScrapyHelpFormatter.",
+   "F6": "scrapy/utils/curl.py: Defines DataAction, CurlParser, curl_to_request_kwargs, _parse_headers_and_cookies. Defines: DataAction, CurlParser, _parse_headers_and_cookies, curl_to_request_kwargs.",
+   "F7": "scrapy/contracts/default.py: Defines UrlContract, CallbackKeywordArgumentsContract, MetadataContract, MethodContract, BodyContract, HeaderContract, CookieContract, ReturnsContract and more. Defines: UrlContract, CallbackKeywordArgumentsContract, MetadataContract, MethodContract, BodyContract, HeaderContract, CookieContract, ReturnsContract, ScrapesContract.",
+   "F8": "scrapy/settings/default_settings.py: This module contains the default values for all settings used by Scrapy. Defines __getattr__. Defines: __getattr__.",
+   "F9": "scrapy/http/__init__.py: Module containing all HTTP related classes.",
+   "F10": "scrapy/http/response/json.py: This module implements the JsonResponse class that is used when the response has a JSON MIME type in its Content-Type header. Defines JsonResponse. Defines: JsonResponse.",
+   "F11": "scrapy/responsetypes.py: This module implements a class which returns the appropriate Response class based on different criteria. Defines ResponseTypes. Defines: ResponseTypes."
+  }
+ },
+ "questions": {
+  "need_f1": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F1 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f1": {
+   "type": "noul",
+   "instructions": "Is file F1 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f2": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F2 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f2": {
+   "type": "noul",
+   "instructions": "Is file F2 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f3": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F3 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f3": {
+   "type": "noul",
+   "instructions": "Is file F3 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f4": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F4 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f4": {
+   "type": "noul",
+   "instructions": "Is file F4 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f5": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F5 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f5": {
+   "type": "noul",
+   "instructions": "Is file F5 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f6": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F6 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f6": {
+   "type": "noul",
+   "instructions": "Is file F6 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f7": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F7 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f7": {
+   "type": "noul",
+   "instructions": "Is file F7 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f8": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F8 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f8": {
+   "type": "noul",
+   "instructions": "Is file F8 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f9": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F9 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f9": {
+   "type": "noul",
+   "instructions": "Is file F9 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f10": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F10 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f10": {
+   "type": "noul",
+   "instructions": "Is file F10 the place where the change described by the goal would most likely be made?"
+  },
+  "need_f11": {
+   "type": "noul",
+   "instructions": "Would a contributor working toward the goal have to read file F11 to reach it? A file that only shares a word with the goal does not count."
+  },
+  "entry_f11": {
+   "type": "noul",
+   "instructions": "Is file F11 the place where the change described by the goal would most likely be made?"
+  }
+ },
+ "answers": {
+  "need_f1": {
+   "type": "noul",
+   "noul": 0.02
+  },
+  "entry_f1": {
+   "type": "noul",
+   "noul": 0.01
+  },
+  "need_f2": {
+   "type": "noul",
+   "noul": 0.01
+  },
+  "entry_f2": {
+   "type": "noul",
+   "noul": 0.01
+  },
+  "need_f3": {
+   "type": "noul",
+   "noul": 0.01
+  },
+  "entry_f3": {
+   "type": "noul",
+   "noul": 0.01
+  },
+  "need_f4": {
+   "type": "noul",
+   "noul": 0.01
+  },
+  "entry_f4": {
+   "type": "noul",
+   "noul": 0.01
+  },
+  "need_f5": {
+   "type": "noul",
+   "noul": 0.01
+  },
+  "entry_f5": {
+   "type": "noul",
+   "noul": 0.01
+  },
+  "need_f6": {
+   "type": "noul",
+   "noul": 0.01
+  },
+  "entry_f6": {
+   "type": "noul",
+   "noul": 0.01
+  },
+  "need_f7": {
+   "type": "noul",
+   "noul": 0.01
+  },
+  "entry_f7": {
+   "type": "noul",
+   "noul": 0.01
+  },
+  "need_f8": {
+   "type": "noul",
+   "noul": 0.01
+  },
+  "entry_f8": {
+   "type": "noul",
+   "noul": 0.01
+  },
+  "need_f9": {
+   "type": "noul",
+   "noul": 0.01
+  },
+  "entry_f9": {
+   "type": "noul",
+   "noul": 0.01
+  },
+  "need_f10": {
+   "type": "noul",
+   "noul": 0.01
+  },
+  "entry_f10": {
+   "type": "noul",
+   "noul": 0.01
+  },
+  "need_f11": {
+   "type": "noul",
+   "noul": 0.01
+  },
+  "entry_f11": {
+   "type": "noul",
+   "noul": 0.01
+  }
+ },
+ "model_returned": "openai/gpt-oss-120b",
+ "provider": "hosted",
+ "input_tokens": 1840,
+ "output_tokens": 323,
+ "latency_ms": 1191.3632080031675,
+ "request_id": ""
+}

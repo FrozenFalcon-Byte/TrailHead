@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase'
 import { motion } from 'motion/react'
 import { Shape, STORY } from '../motion/Shapes'
 import { TrailSpinner } from '../motion/TrailSpinner'
+import { firstName, playMoment, takeMethod, type MomentMethod } from '../lib/moment'
 
 export const GH_TOKEN_KEY = 'th-gh-provider-token'
 
@@ -26,7 +27,7 @@ export default function AuthCallback() {
       return
     }
     let done = false
-    const finish = (session: { provider_token?: string | null } | null) => {
+    const finish = (session: { provider_token?: string | null; user?: { email?: string; app_metadata?: { provider?: string }; user_metadata?: Record<string, unknown> } } | null) => {
       if (done || !session) return
       done = true
       try {
@@ -34,7 +35,10 @@ export default function AuthCallback() {
       } catch {
         /* private mode */
       }
-      navigate(next, { replace: true })
+      // Play the scene for the way they came in, and swap the dashboard in once it covers the screen.
+      const provider = session.user?.app_metadata?.provider
+      const method: MomentMethod = takeMethod() ?? (provider === 'github' || provider === 'google' ? provider : 'email')
+      playMoment({ kind: 'signin', method, name: firstName(session.user) }).covered.then(() => navigate(next, { replace: true }))
     }
     supabase.auth.getSession().then(({ data }) => finish(data.session))
     const { data } = supabase.auth.onAuthStateChange((_e, session) => finish(session))

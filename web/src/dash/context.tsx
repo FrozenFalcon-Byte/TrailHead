@@ -1,5 +1,6 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { api } from '../lib/api'
+import { toast } from '../lib/toast'
 
 export type RepoInfo = {
   repo: string
@@ -18,6 +19,17 @@ export type RepoInfo = {
   error?: string
 }
 export type Health = { ok: boolean; auth: string; engines: string[]; default_engine: string; next_slot_s: number }
+export type ServerConfig = {
+  default_engine: string
+  engines: string[]
+  offline: boolean
+  auth: string
+  jev: { model_id: string; max_concurrency: number; providers: { name: string; model: string; rpm: number; host: string }[] }
+  llm: { configured: boolean; model: string; host: string; rpm: number; reasoning_effort: string; fallback_model: string }
+  local: { model: string; host: string }
+  github_token: boolean
+  repos: number
+}
 
 type DashState = {
   repos: RepoInfo[]
@@ -30,8 +42,11 @@ type DashState = {
   nextSlot: number
   noteSlot: (s: number) => void
   refreshRepos: () => Promise<void>
-  /** Poll the API now instead of waiting for the next 15s tick. */
-  recheck: () => Promise<void>
+  /** Poll the API now instead of waiting for the next tick. Resolves with whether it answered. */
+  recheck: () => Promise<boolean>
+  checking: boolean
+  lastCheck: number
+  config: ServerConfig | null
 }
 
 const Ctx = createContext<DashState | null>(null)
@@ -56,6 +71,10 @@ export function DashProvider({ children }: { children: ReactNode }) {
   const [engine, setEngineState] = useState(read('th-engine', ''))
   const [health, setHealth] = useState<Health | null>(null)
   const [offline, setOffline] = useState(false)
+  const [checking, setChecking] = useState(false)
+  const [lastCheck, setLastCheck] = useState(0)
+  const [config, setConfig] = useState<ServerConfig | null>(null)
+  const was = useRef<boolean | null>(null)
   const [slotAt, setSlotAt] = useState(0)
   const [now, setNow] = useState(Date.now())
 
@@ -65,26 +84,45 @@ export function DashProvider({ children }: { children: ReactNode }) {
     setRepoState((current) => (current && list.some((r) => r.repo === current) ? current : list.find((r) => r.status === 'ready')?.repo || ''))
   }, [])
 
-  const poll = useCallback(async () => {
+  const poll = useCallback(async (): Promise<boolean> => {
+    let up = false
     try {
       const h = await api<Health>('/api/health')
       setHealth(h)
-      setOffline(false)
       setSlotAt(Date.now() + h.next_slot_s * 1000)
+      up = true
     } catch {
-      setOffline(true)
+      up = false
     }
+    setOffline(!up)
+    setLastCheck(Date.now())
+    // Say so when the connection changes, not on every poll.
+    if (was.current !== null && was.current !== up)
+      if (!up) toast({ tone: 'error', title: 'Lost the API', body: 'Start it again with bin/trailhead serve. Checking every few seconds.' })
+    if (up && was.current !== true) api<ServerConfig>('/api/config').then(setConfig, () => undefined)
+    was.current = up
+    return up
   }, [])
   const recheck = useCallback(async () => {
-    await poll()
-    await refreshRepos().catch(() => setOffline(true))
+    setChecking(true)
+    // Keep the spinner up long enough to read, even when the answer is instant.
+    const [up] = await Promise.all([poll(), new Promise((r) => setTimeout(r, 650))])
+    if (up) await refreshRepos().catch(() => undefined)
+    setChecking(false)
+    return up
   }, [poll, refreshRepos])
 
   useEffect(() => {
-    recheck()
-    const id = setInterval(poll, 15000)
+    poll().then((up) => { if (up) refreshRepos().catch(() => undefined) })
+  }, [poll, refreshRepos])
+  // Poll every 15s while connected, every 4s while the API is down so it reconnects quickly.
+  useEffect(() => {
+    const id = setInterval(async () => {
+      const up = await poll()
+      if (up && offline) refreshRepos().catch(() => undefined)
+    }, offline ? 4000 : 15000)
     return () => clearInterval(id)
-  }, [poll, recheck])
+  }, [poll, offline, refreshRepos])
 
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 500)
@@ -110,8 +148,11 @@ export function DashProvider({ children }: { children: ReactNode }) {
       noteSlot: (s) => setSlotAt(Date.now() + s * 1000),
       refreshRepos,
       recheck,
+      checking,
+      lastCheck,
+      config,
     }),
-    [repos, repo, engine, health, offline, slotAt, now, refreshRepos, recheck],
+    [repos, repo, engine, health, offline, slotAt, now, refreshRepos, recheck, checking, lastCheck, config],
   )
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>
 }

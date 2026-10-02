@@ -1,6 +1,6 @@
-import { AnimatePresence } from 'motion/react'
-import { lazy, Suspense, useCallback, useEffect, useState } from 'react'
-import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
+import { AnimatePresence, MotionConfig } from 'motion/react'
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
+import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import { Curtain } from './motion/Curtain'
 import { Loader } from './motion/Loader'
 import { ThemeSwitch } from './motion/ThemeSwitch'
@@ -9,22 +9,47 @@ import { useAuth, useSignedIn } from './lib/auth'
 import Landing from './pages/Landing'
 import AuthPage from './pages/AuthPage'
 import AuthCallback from './pages/AuthCallback'
+import Welcome from './pages/Welcome'
+import { isOnboarded } from './lib/onboard'
 import { TrailSpinner } from './motion/TrailSpinner'
+import { Toaster } from './motion/Toaster'
+import { ContextMenu } from './motion/ContextMenu'
+import { QrSheet } from './motion/QrSheet'
+import { MomentLayer } from './motion/Moment'
+import { DashIntro } from './motion/DashIntro'
+import { usePref } from './lib/prefs'
 
 // The dashboard is its own bundle, so the landing page loads light.
 const Dashboard = lazy(() => import('./dash/Dashboard'))
 
-function Protected({ children }: { children: React.ReactNode }) {
-  const { ready } = useAuth()
+/** Redirect exactly once. <Navigate> would fire again every time the page re-renders while the curtain plays its
+ *  exit, and that loops. */
+function Go({ to, from }: { to: string; from?: string }) {
+  const navigate = useNavigate()
+  const sent = useRef(false)
+  useEffect(() => {
+    if (sent.current) return
+    sent.current = true
+    navigate(to, { replace: true, state: from ? { from } : undefined })
+  }, [navigate, to, from])
+  return <div className="t-cream" style={{ minHeight: '100vh' }} />
+}
+
+/** Signed-in only. A first sign-in goes through the welcome walk-through before the dashboard. */
+function Protected({ children, welcome = false }: { children: React.ReactNode; welcome?: boolean }) {
+  const { ready, user } = useAuth()
   const signedIn = useSignedIn()
   const location = useLocation()
+  const from = useRef(location.pathname + location.search)
   if (!ready)
     return (
       <div className="t-cream" style={{ minHeight: '100vh', display: 'grid', placeItems: 'center' }}>
         <TrailSpinner label="Checking your session" />
       </div>
     )
-  return signedIn ? <>{children}</> : <Navigate to="/login" replace state={{ from: location.pathname }} />
+  if (!signedIn) return <Go to="/login" from={from.current} />
+  if (!welcome && !isOnboarded(user)) return <Go to="/welcome" />
+  return <>{children}</>
 }
 
 export default function App() {
@@ -40,21 +65,33 @@ export default function App() {
     if (area !== 'app') window.scrollTo(0, 0)
   }, [area])
 
+  const motionPref = usePref('motion')
+  const introPref = usePref('dashIntro')
+  // A full load straight into the dashboard gets its own intro instead of a spinner.
+  const [intro, setIntro] = useState(() => location.pathname.startsWith('/app') && motionPref !== 'off' && introPref && !window.matchMedia('(prefers-reduced-motion: reduce)').matches)
+  const introDone = useCallback(() => setIntro(false), [])
+
   return (
-    <>
+    <MotionConfig reducedMotion={motionPref === 'off' ? 'always' : 'user'}>
       <TrailCursor />
       <ThemeSwitch />
       {loading && <Loader onReveal={reveal} onDone={done} />}
+      {intro && <DashIntro onDone={introDone} />}
       <AnimatePresence mode="wait" initial={false}>
         <Routes location={location} key={area === 'login' || area === 'signup' ? 'auth' : area}>
           <Route path="/" element={<Curtain><Landing ready={revealed} settled={!loading} /></Curtain>} />
           <Route path="/login" element={<Curtain><AuthPage /></Curtain>} />
           <Route path="/signup" element={<Curtain><AuthPage /></Curtain>} />
           <Route path="/auth/callback" element={<AuthCallback />} />
+          <Route path="/welcome" element={<Curtain><Protected welcome><Welcome /></Protected></Curtain>} />
           <Route path="/app/*" element={<Curtain><Protected><Suspense fallback={<div className="t-cream" style={{ minHeight: '100vh', display: 'grid', placeItems: 'center' }}><TrailSpinner label="Packing the dashboard" /></div>}><Dashboard /></Suspense></Protected></Curtain>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AnimatePresence>
-    </>
+      <QrSheet />
+      <ContextMenu />
+      <Toaster />
+      <MomentLayer />
+    </MotionConfig>
   )
 }

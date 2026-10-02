@@ -59,3 +59,30 @@ def test_unconfigured_supabase_refuses_rather_than_opening_up(tmp_path):
     assert not Verifier(settings_for(tmp_path)).configured
     client = TestClient(create_app(settings_for(tmp_path)))
     assert client.get("/api/repos").status_code == 401
+
+
+def test_config_reports_models_but_never_keys(tmp_path):
+    seed(tmp_path)
+    base = load_settings(env={"DECISION_ENGINE": "jev", "BEATAPI_API_KEY": "sk-secret-value", "LLM_API_KEY": "gsk-another-secret"}, env_file=None)
+    client = TestClient(create_app(replace(base, data_dir=tmp_path, cache_root=tmp_path / "cache", auth_mode="off")))
+    body = client.get("/api/config")
+    assert body.status_code == 200
+    data = body.json()
+    assert data["jev"]["providers"][0]["name"] == "beatapi" and data["llm"]["configured"] is True
+    assert "secret" not in body.text
+
+
+def test_evals_include_injection_and_why_questions(tmp_path, monkeypatch):
+    from trailhead import evals
+
+    files = {
+        "nav": {"methods": {"bm25": {"summary": {"mrr": 0.7}}}},
+        "injection_jev": {"summary": {"screen_detection_rate": 0.875}, "screening": {"m01": {"attack": True, "blocked": True, "technique": "override", "kind": "issue", "p": 0.9}}},
+        "why_jev": {"items": {"w01": {"question": "Why?", "status": "answered", "confidence": 0.8, "claims": [{"status": "verified"}, {"status": "dropped"}]}}},
+    }
+    monkeypatch.setattr(evals, "load_results", lambda name: files.get(name, {}))
+    data = TestClient(create_app(settings_for(tmp_path, auth_mode="off"))).get("/api/evals").json()
+    assert data["nav"]["bm25"]["mrr"] == 0.7
+    assert data["injection"]["jev"]["cases"][0] == {"id": "m01", "attack": True, "blocked": True, "technique": "override", "kind": "issue", "p": 0.9}
+    assert "llm" not in data["injection"]
+    assert data["why_items"][0]["claims"] == 2 and data["why_items"][0]["verified"] == 1

@@ -1,0 +1,37 @@
+{
+ "key": "8a73cd067c5c77c3ebd67ca2a3d02755566be90ff5d3f1e8f8beed8e6e2cfa2a",
+ "model_id": "llm:openai/gpt-oss-120b:1f2e0674",
+ "created_at": 1790919006.376707,
+ "state": {
+  "goal": "I want to understand CODE_OF_CONDUCT.md and what it depends on."
+ },
+ "questions": {
+  "in_docs_ext": {
+   "type": "choice",
+   "instructions": "Which entry is most likely to contain the code that the goal is about?",
+   "criteria": {
+    "c0": "scrapydocs.py: Defines SettingData, SettingslistNode, SettingsListDirective, is_setting_index, get_setting_name_and_refid, collect_scrapy_settings_refs, purge_scrapy_settings, merge_scrapy_settings and more.",
+    "c1": "scrapyfixautodoc.py: Must be included after 'sphinx.ext.autodoc'. Fixes unwanted 'alias of' behavior. https://github.com/sphinx-doc/sphinx/issues/4422. Defines maybe_skip_member, setup.",
+    "none": "None of the listed entries is related to the goal."
+   }
+  }
+ },
+ "answers": {
+  "in_docs_ext": {
+   "type": "choice",
+   "choice": "none",
+   "probabilities": {
+    "c0": 0.0,
+    "c1": 0.0,
+    "none": 1.0
+   },
+   "confidence": 0.99
+  }
+ },
+ "model_returned": "openai/gpt-oss-120b",
+ "provider": "hosted",
+ "input_tokens": 557,
+ "output_tokens": 105,
+ "latency_ms": 722.6874170009978,
+ "request_id": ""
+}

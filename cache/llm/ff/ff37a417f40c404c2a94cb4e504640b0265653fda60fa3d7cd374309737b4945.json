@@ -1,0 +1,43 @@
+{
+ "key": "ff37a417f40c404c2a94cb4e504640b0265653fda60fa3d7cd374309737b4945",
+ "model_id": "llm:openai/gpt-oss-120b:1f2e0674",
+ "created_at": 1790920949.449939,
+ "state": {
+  "goal": "Where is the robots.txt check?"
+ },
+ "questions": {
+  "symbol_in_scrapy_robotstxt_py": {
+   "type": "choice",
+   "instructions": "Which definition in this file is the goal most directly about?",
+   "criteria": {
+    "c0": "def decode_robotstxt( robotstxt_body: bytes, spider: Spider | None, to_native_str_type: bool = False ) -> str",
+    "c1": "class RobotParser(metaclass=ABCMeta)",
+    "c2": "class PythonRobotParser(RobotParser)",
+    "c3": "class RerpRobotParser(RobotParser)",
+    "c4": "class ProtegoRobotParser(RobotParser)",
+    "none": "None of the listed definitions is related to the goal."
+   }
+  }
+ },
+ "answers": {
+  "symbol_in_scrapy_robotstxt_py": {
+   "type": "choice",
+   "choice": "c1",
+   "probabilities": {
+    "c0": 0.1,
+    "c1": 0.7,
+    "c2": 0.1,
+    "c3": 0.05,
+    "c4": 0.05,
+    "none": 0.0
+   },
+   "confidence": 0.7
+  }
+ },
+ "model_returned": "openai/gpt-oss-120b",
+ "provider": "hosted",
+ "input_tokens": 539,
+ "output_tokens": 192,
+ "latency_ms": 796.8051670031855,
+ "request_id": ""
+}
