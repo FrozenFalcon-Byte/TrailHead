@@ -79,7 +79,11 @@ export function DashProvider({ children }: { children: ReactNode }) {
   const [now, setNow] = useState(Date.now())
 
   const refreshRepos = useCallback(async () => {
-    const list = await api<RepoInfo[]>('/api/repos')
+    const raw = await api<RepoInfo[]>('/api/repos')
+    // one entry per repository; a running job wins over a half-written database
+    const by = new Map<string, RepoInfo>()
+    raw.forEach((r) => { const had = by.get(r.repo); if (!had || r.status === 'running') by.set(r.repo, r) })
+    const list = [...by.values()]
     setRepos(list)
     setRepoState((current) => (current && list.some((r) => r.repo === current) ? current : list.find((r) => r.status === 'ready')?.repo || ''))
   }, [])

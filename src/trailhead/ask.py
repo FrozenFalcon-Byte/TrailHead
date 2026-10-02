@@ -17,7 +17,7 @@ OUT_OF_SCOPE_AT = 0.6
 # What each route does. Code decides this; the router only picks the key.
 ROUTES: dict[str, dict[str, Any]] = {
     "where_is": {"navigate": True, "symbols": True, "answer": "location"},
-    "how_does_it_work": {"navigate": True, "symbols": True, "code": 2, "history": 8, "kinds": None},
+    "how_does_it_work": {"navigate": True, "symbols": True, "code": 3, "history": 8, "kinds": None},
     "why_built_this_way": {"navigate": True, "symbols": True, "code": 1, "history": 20, "kinds": None, "reason": True},
     "what_breaks_if_changed": {"navigate": True, "symbols": True, "code": 1, "graph": 2, "history": 8, "kinds": ("commit", "pr", "issue", "comment")},
     "how_to_run_or_test": {"navigate": False, "code": 0, "guides": True, "history": 8, "kinds": ("doc", "pr", "issue", "comment")},
@@ -93,7 +93,7 @@ async def ask(ctx: Context, question: str, *, engine_kind: str | None = None, em
         pinned: list[Evidence] = []
         for path in files[: plan.get("code", 0)]:
             symbol = nav.symbols.get(path, {}).get("name")
-            evidence = code_evidence(ctx.store, ctx.repo_dir, path, symbol)
+            evidence = code_evidence(ctx.store, ctx.repo_dir, path, symbol, question)
             if evidence:
                 pinned.append(evidence)
         for path in files[: plan.get("graph", 0)]:

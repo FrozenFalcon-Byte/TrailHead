@@ -60,7 +60,16 @@ async def test_repairs_once_then_fails():
 
     bad = json.dumps({"answers": {**GOOD["answers"], "kind": {"probabilities": {"made_up": 1}}}})
     with pytest.raises(DecisionError, match="unknown options"):
-        await LLMFallbackEngine(FakeLLM([bad, bad])).decide("s", QUESTIONS)
+        await LLMFallbackEngine(FakeLLM([bad, bad, bad])).decide("s", QUESTIONS)
+
+
+async def test_keeps_parsed_answers_and_reasks_only_for_the_missing():
+    partial = {"answers": {k: v for k, v in GOOD["answers"].items() if k != "kind"}}
+    llm = FakeLLM([json.dumps(partial), json.dumps({"answers": {"kind": GOOD["answers"]["kind"]}})])
+    result = await LLMFallbackEngine(llm).decide("s", QUESTIONS)
+    assert set(result.answers) == set(QUESTIONS)
+    asked_again = llm.prompts[1][1].split("STATE")[0]
+    assert '"kind"' in asked_again and all(f'"{k}"' not in asked_again for k in partial["answers"])
 
 
 async def test_openai_compat_client_request_shape_and_retry(clock):

@@ -89,12 +89,14 @@ export default function Repos() {
   const identity = user?.identities?.find((i) => i.provider === 'github')
   const ghLogin = (identity?.identity_data?.user_name as string | undefined) || (user?.app_metadata?.provider === 'github' ? (user?.user_metadata?.user_name as string | undefined) : undefined)
   const was = useRef<Record<string, string>>({})
+  const told = useRef(new Set<string>())
 
   // Poll while an ingest runs, and say when one finishes.
   useEffect(() => {
     repos.forEach((r) => {
       const before = was.current[r.repo]
-      if (before === 'running' && r.status === 'ready') toast({ tone: 'job', title: `${r.repo} is ready`, body: `${r.files?.toLocaleString()} files and ${r.commits?.toLocaleString()} commits read.`, action: { label: 'Use it', run: () => setRepo(r.repo) } })
+      if (r.status === 'running') told.current.delete(r.repo)
+      if (before === 'running' && r.status === 'ready' && !told.current.has(r.repo) && told.current.add(r.repo)) toast({ key: `ready:${r.repo}`, tone: 'job', title: `${r.repo} is ready`, body: `${r.files?.toLocaleString()} files and ${r.commits?.toLocaleString()} commits read.`, action: { label: 'Use it', run: () => setRepo(r.repo) } })
       if (before === 'running' && r.status === 'failed') notify.error(`${r.repo} failed`, r.error)
       was.current[r.repo] = r.status
     })

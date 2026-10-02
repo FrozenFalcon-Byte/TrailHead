@@ -16,6 +16,7 @@ PROMPTS = Path(__file__).resolve().parents[2] / "prompts" / "v1"
 KEEP_AT = 0.7  # P(supports) needed to state a claim plainly
 FLAG_AT = 0.5  # below KEEP_AT but at or above this, the claim is shown with a low-confidence badge
 ADDRESSES_AT = 0.5
+HOW_ADDRESSES_AT = 0.3
 MAX_CLAIMS = 6
 NO_RATIONALE = "No recorded rationale found."
 _MARKER = re.compile(r"\[(E\d+)\]")
@@ -186,9 +187,12 @@ async def answer_from_evidence(
     answer.claims = await draft_claims(llm, question, kept, usage)
     if not answer.claims:
         answer.abstain_reason = "the evidence does not answer the question"
+        answer.text = f"{nothing} {_where_to_look(kept)}"
         return answer
     await verify_claims(engine, question, answer.claims, kept, usage)
-    answering = [c for c in answer.verified if c.addresses >= ADDRESSES_AT]
+    # a why needs a claim that states the reason; a how is usually answered by several facts together, each partly
+    bar = ADDRESSES_AT if wants_reason else HOW_ADDRESSES_AT
+    answering = [c for c in answer.verified if c.addresses >= bar]
     if not answering:
         answer.abstain_reason = "no claim that answers the question is supported by its evidence" if answer.verified else "no drafted claim is supported by its evidence"
         if answer.verified:
@@ -197,6 +201,8 @@ async def answer_from_evidence(
             answer.confidence = max(c.p_support for c in answer.verified)
             lead = "No recorded rationale answers the why directly. What the repository does show:" if wants_reason else "Nothing answers this directly. What the repository does show:"
             answer.text, answer.render = f"{lead} {claims_as_text(answer.verified)}", "claims"
+        else:
+            answer.text = f"{nothing} {_where_to_look(kept)}"
         return answer
     answer.status = "answered"
     answer.confidence = max(c.p_support for c in answering)
@@ -206,6 +212,12 @@ async def answer_from_evidence(
     else:
         answer.text, answer.render = claims_as_text(shown), "claims"
     return answer
+
+
+def _where_to_look(kept: Sequence[Evidence]) -> str:
+    """No claim held up, but the passages that were judged on topic are still the best place to start reading."""
+    near = sorted(kept, key=lambda e: -e.relevance)[:3]
+    return "The closest material to read: " + "; ".join(f"{e.title} [{e.label}]" for e in near) + "." if near else ""
 
 
 def _count(usage: dict[str, Any], who: str, input_tokens: int, output_tokens: int, latency_ms: float) -> None:

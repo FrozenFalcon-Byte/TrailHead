@@ -13,7 +13,7 @@ from .decisions import DecisionEngine, Question, load_question_set
 from .store import Store, fts_query
 
 MAX_PASSAGE_CHARS = 700
-MAX_CODE_CHARS = 1600
+MAX_CODE_CHARS = 2600
 KIND_LABEL = {
     "commit": "commit message", "pr": "pull request", "issue": "issue", "comment": "comment", "doc": "documentation",
     "code": "source code", "graph": "import graph",
@@ -180,8 +180,25 @@ def candidates(
     return out
 
 
-def code_evidence(store: Store, repo_dir: Path, path: str, symbol: str | None = None) -> Evidence | None:
-    """A source excerpt as evidence: the module header, its definitions, and the body of one symbol if given."""
+_WORD = re.compile(r"[a-z]+|[A-Z][a-z]*|[0-9]+")
+_STOP = {"the", "a", "an", "how", "does", "do", "is", "are", "what", "which", "where", "why", "when", "it", "of", "to", "in", "on", "for", "and", "or", "if", "i", "this", "that", "work", "works", "get", "gets", "go", "goes", "by", "with"}
+
+
+def _terms(text: str) -> set[str]:
+    words = {w.lower() for w in _WORD.findall(text)}
+    return {w.rstrip("s") for w in words if w not in _STOP and len(w) > 2}
+
+
+def _symbol_match(row: Any, terms: set[str]) -> float:
+    """How well a definition matches the question: name words count double, docstring words once."""
+    name = _terms(row["name"].replace(".", " ").replace("_", " "))
+    doc = _terms(row["doc"] or "")
+    return 2 * len(name & terms) + 0.5 * len(doc & terms) - 0.001 * (row["end_line"] - row["start_line"])
+
+
+def code_evidence(store: Store, repo_dir: Path, path: str, symbol: str | None = None, question: str = "") -> Evidence | None:
+    """A source excerpt as evidence: the module header, its definitions, and the bodies of the symbols that matter:
+    the one navigation picked plus the ones whose names match the question."""
     row = store.one("SELECT path, header FROM files WHERE path = ?", (path,))
     if row is None:
         return None
@@ -190,16 +207,22 @@ def code_evidence(store: Store, repo_dir: Path, path: str, symbol: str | None = 
     if row["header"]:
         parts.append(f"Module docstring: {row['header'][:240]}")
     chosen = next((s for s in symbols if s["name"] == symbol), None)
-    if chosen is not None:
+    terms = _terms(question)
+    ranked = sorted((s for s in symbols if s is not chosen and s["kind"] != "class"), key=lambda s: -_symbol_match(s, terms)) if terms else []
+    picked = ([chosen] if chosen is not None else []) + [s for s in ranked[:3] if _symbol_match(s, terms) >= 2][: 3 if chosen is None else 2]
+    if picked:
         lines = (repo_dir / path).read_text(encoding="utf-8", errors="replace").splitlines()
-        body = "\n".join(lines[chosen["start_line"] - 1 : min(chosen["end_line"], chosen["start_line"] + 45)])
-        parts.append(f"Lines {chosen['start_line']} to {chosen['end_line']}:\n{body[:1000]}")
-    listing = [f"- {s['signature'][:110]}" + (f"  # {s['doc'][:80]}" if s["doc"] else "") for s in symbols if s["kind"] != "method" or (chosen is not None and s["name"].startswith(chosen["name"] + "."))]
+        budget = 1700
+        for s in picked:
+            body = "\n".join(lines[s["start_line"] - 1 : min(s["end_line"], s["start_line"] + 40)])[: max(300, budget // len(picked))]
+            parts.append(f"{s['name']}, lines {s['start_line']} to {s['end_line']}:\n{body}")
+    listing = [f"- {s['signature'][:110]}" + (f"  # {s['doc'][:80]}" if s["doc"] else "") for s in symbols if s["kind"] != "method" or any(s["name"].startswith(p["name"].split(".")[0] + ".") for p in picked)]
     if listing:
         parts.append("Definitions:\n" + "\n".join(listing[:24]))
     base = f"https://github.com/{store.get_meta('repo')}/blob/{store.get_meta('head') or 'HEAD'}/{path}"
-    url = base + (f"#L{chosen['start_line']}-L{chosen['end_line']}" if chosen is not None else "")
-    title = path + (f" ({chosen['name']})" if chosen is not None else "")
+    first = picked[0] if picked else None
+    url = base + (f"#L{first['start_line']}-L{first['end_line']}" if first is not None else "")
+    title = path + (f" ({', '.join(p['name'] for p in picked)})" if picked else "")
     return Evidence(f"file:{path}", "code", title, "\n".join(parts), url, 0.0, source="navigation")
 
 
@@ -280,7 +303,7 @@ async def retrieve(
     *,
     files: Sequence[str] = (),
     limit: int = 20,
-    threshold: float = 0.5,
+    threshold: float = 0.35,
     injection_threshold: float = 0.5,
     rerank: bool = True,
     as_of: float | None = None,

@@ -13,4 +13,5 @@ Rules:
 - Use only what the passages say. Do not use outside knowledge about the project, and do not guess reasons.
 - For a why-question, a claim must carry the reason in the same sentence ("X was done because Y") and cite where the reason is stated. Reasons usually live in commit messages, pull request descriptions and review comments: look there first, and state the motive or problem they describe (a bug, a spec, a performance cost, a user request).
 - Put the claims that answer the question first. At most six claims.
-- If the passages do not answer the question, reply {"claims": []}.
+- If the passages answer only part of the question, give claims for that part; a partial, well-cited answer beats none. For a how-does-it-work question, describe what the code shown does, step by step, citing the code passage.
+- Reply {"claims": []} only when none of the passages is about the question.

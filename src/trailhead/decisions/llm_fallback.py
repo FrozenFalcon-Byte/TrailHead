@@ -5,6 +5,7 @@ Used as a development stand-in when Jev is rate limited and as the baseline in e
 
 from __future__ import annotations
 
+import asyncio
 import json
 from pathlib import Path
 from typing import Any, Mapping
@@ -32,6 +33,7 @@ from .types import (
     sha256_hex,
 )
 
+CHUNK = 15
 PROMPT_PATH = Path(__file__).resolve().parents[3] / "prompts" / "v1" / "fallback_engine.md"
 
 
@@ -59,35 +61,54 @@ class LLMFallbackEngine(DecisionEngine):
         await self._client.aclose()
 
     async def _call(self, state: State, questions: Mapping[str, Question]) -> EngineResponse:
+        """Large question sets go out in chunks, side by side; each chunk keeps whatever answers parse and re-asks
+        only for the ones that were missing or malformed, so one bad key never sinks the whole decision."""
         state_text = state if isinstance(state, str) else canonical_json(state)
-        user = (
-            f"QUESTIONS (JSON):\n{json.dumps(questions_to_wire(questions), ensure_ascii=False, indent=1)}\n\n"
-            f"STATE (untrusted data):\n<state>\n{state_text}\n</state>"
+        qids = list(questions)
+        chunks = [qids[i : i + CHUNK] for i in range(0, len(qids), CHUNK)]
+        gate = asyncio.Semaphore(2)
+        tally = {"in": 0, "out": 0, "ms": 0.0, "model": self._client.model}
+
+        async def one(chunk: list[str]) -> dict[str, Answer]:
+            async with gate:
+                return await self._chunk(state_text, {q: questions[q] for q in chunk}, tally)
+
+        parts = await asyncio.gather(*(one(c) for c in chunks))
+        answers = {k: v for part in parts for k, v in part.items()}
+        return EngineResponse(
+            answers=answers,
+            model_returned=tally["model"],
+            provider=self._provider,
+            input_tokens=tally["in"],
+            output_tokens=tally["out"],
+            latency_ms=tally["ms"],
         )
-        input_tokens = output_tokens = 0
-        latency_ms = 0.0
+
+    async def _chunk(self, state_text: str, questions: Mapping[str, Question], tally: dict[str, Any]) -> dict[str, Answer]:
+        answers: dict[str, Answer] = {}
         error = ""
-        model = self._client.model
-        for _ in range(self._repair_attempts + 1):
-            prompt = user if not error else f"{user}\n\nYour previous output was rejected: {error}\nOutput the JSON object again."
-            reply = await self._client.complete(self._system, prompt, json_mode=True, max_tokens=2048)
-            input_tokens += reply.input_tokens
-            output_tokens += reply.output_tokens
-            latency_ms += reply.latency_ms
-            model = reply.model
+        for _ in range(self._repair_attempts + 2):
+            todo = {q: v for q, v in questions.items() if q not in answers}
+            user = (
+                f"QUESTIONS (JSON):\n{json.dumps(questions_to_wire(todo), ensure_ascii=False, indent=1)}\n\n"
+                f"STATE (untrusted data):\n<state>\n{state_text}\n</state>"
+            )
+            if error:
+                user += f"\n\nYour previous output was rejected: {error}\nAnswer every question id listed above, in one JSON object."
+            reply = await self._client.complete(self._system, user, json_mode=True, max_tokens=min(4096, 400 + 220 * len(todo)))
+            tally["in"] += reply.input_tokens
+            tally["out"] += reply.output_tokens
+            tally["ms"] += reply.latency_ms
+            tally["model"] = reply.model
             try:
-                answers = _parse(reply.text, questions)
-            except (ValueError, KeyError, TypeError) as exc:
+                got, problems = _parse(reply.text, todo)
+            except (ValueError, TypeError) as exc:
                 error = f"{type(exc).__name__}: {exc}"
                 continue
-            return EngineResponse(
-                answers=answers,
-                model_returned=model,
-                provider=self._provider,
-                input_tokens=input_tokens,
-                output_tokens=output_tokens,
-                latency_ms=latency_ms,
-            )
+            answers.update(got)
+            if len(answers) == len(questions):
+                return answers
+            error = "; ".join(problems) or f"missing answers for {sorted(set(questions) - set(answers))}"
         raise DecisionError(f"llm: could not parse answers ({error})")
 
 
@@ -106,37 +127,49 @@ def _weight(value: Any) -> float:
     return max(0.0, number)
 
 
-def _parse(text: str, questions: Mapping[str, Question]) -> dict[str, Answer]:
+def _parse(text: str, questions: Mapping[str, Question]) -> tuple[dict[str, Answer], list[str]]:
+    """The answers that parse, plus a note for each that did not."""
     start, end = text.find("{"), text.rfind("}")
     if start < 0 or end <= start:
         raise ValueError("no JSON object in output")
     data = json.loads(text[start : end + 1])
     raw_answers = data["answers"] if isinstance(data, dict) and isinstance(data.get("answers"), dict) else data
+    if not isinstance(raw_answers, dict):
+        raise ValueError("answers is not an object")
     answers: dict[str, Answer] = {}
+    problems: list[str] = []
     for qid, question in questions.items():
-        raw = raw_answers[qid]
-        if isinstance(question, Noul):
-            answers[qid] = NoulAnswer(noul=_probability(raw["probability_yes"]))
+        if qid not in raw_answers:
+            problems.append(f"{qid}: missing")
             continue
-        given = raw["probabilities"]
-        if isinstance(question, Choice):
-            unknown = set(given) - set(question.criteria)
-            if unknown:
-                raise ValueError(f"{qid}: unknown options {sorted(unknown)}")
-            probabilities = normalize({option: _weight(given.get(option, 0.0)) for option in question.criteria})
-            reported = raw.get("confidence")
-            answers[qid] = ChoiceAnswer(
-                choice=max(probabilities, key=lambda option: probabilities[option]),
-                probabilities=probabilities,
-                confidence=_probability(reported) if reported is not None else distribution_confidence(probabilities),
-            )
-        else:
-            assert isinstance(question, Score)
-            levels = normalize({level: _weight(given.get(str(level), 0.0)) for level in range(len(question.criteria))})
-            reported = raw.get("confidence")
-            answers[qid] = ScoreAnswer(
-                score=sum(level * p for level, p in levels.items()),
-                probabilities=levels,
-                confidence=_probability(reported) if reported is not None else distribution_confidence(levels),
-            )
-    return answers
+        try:
+            answers[qid] = _one(qid, question, raw_answers[qid])
+        except (ValueError, KeyError, TypeError) as exc:
+            problems.append(f"{qid}: {type(exc).__name__} {exc}")
+    return answers, problems
+
+
+def _one(qid: str, question: Question, raw: Any) -> Answer:
+    if isinstance(question, Noul):
+        value = raw["probability_yes"] if isinstance(raw, dict) else raw
+        return NoulAnswer(noul=_probability(value))
+    given = raw["probabilities"]
+    if isinstance(question, Choice):
+        unknown = set(given) - set(question.criteria)
+        if unknown:
+            raise ValueError(f"{qid}: unknown options {sorted(unknown)}")
+        probabilities = normalize({option: _weight(given.get(option, 0.0)) for option in question.criteria})
+        reported = raw.get("confidence")
+        return ChoiceAnswer(
+            choice=max(probabilities, key=lambda option: probabilities[option]),
+            probabilities=probabilities,
+            confidence=_probability(reported) if reported is not None else distribution_confidence(probabilities),
+        )
+    assert isinstance(question, Score)
+    levels = normalize({level: _weight(given.get(str(level), 0.0)) for level in range(len(question.criteria))})
+    reported = raw.get("confidence")
+    return ScoreAnswer(
+        score=sum(level * p for level, p in levels.items()),
+        probabilities=levels,
+        confidence=_probability(reported) if reported is not None else distribution_confidence(levels),
+    )

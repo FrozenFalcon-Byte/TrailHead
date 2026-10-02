@@ -56,16 +56,19 @@ def summary(store: Store) -> dict[str, Any]:
 def list_repos(settings: Settings) -> list[dict[str, Any]]:
     paths = [settings.data_dir / "trailhead.db", *sorted((settings.data_dir / "dbs").glob("*.db"))]
     out = []
+    with _lock:
+        jobs = {repo: dict(job) for repo, job in _jobs.items()}
     for path in paths:
         if not path.exists():
             continue
         store = Store(path)
-        if store.get_meta("repo"):
+        name = store.get_meta("repo")
+        # a database that is still being written belongs to its running job, not the shelf
+        if name and jobs.get(name, {}).get("status") not in ("running", "failed"):
             out.append({**summary(store), "status": "ready"})
         store.close()
     known = {r["repo"] for r in out}
-    with _lock:
-        out += [{"repo": repo, **job} for repo, job in _jobs.items() if repo not in known or job["status"] != "done"]
+    out += [{"repo": repo, **job} for repo, job in jobs.items() if repo not in known and job["status"] != "done"]
     return out
 
 

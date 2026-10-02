@@ -12,6 +12,8 @@ export type Toast = {
   action?: { label: string; run: () => void }
   /** Seconds before it leaves on its own; 0 keeps it until dismissed. */
   ttl: number
+  /** Toasts sharing a key replace each other instead of stacking. */
+  key?: string
 }
 
 let items: Toast[] = []
@@ -25,6 +27,7 @@ export function toast(t: Omit<Toast, 'id' | 'ttl'> & { ttl?: number }): number {
   if (t.tone === 'error' && !p.toastErrors) return 0
   if (t.tone === 'job' && !p.toastJobs) return 0
   const id = next++
+  if (t.key) items = items.filter((x) => x.key !== t.key)
   items = [...items.slice(-Math.max(0, Math.round(p.toastStack) - 1)), { ...t, id, ttl: t.ttl ?? (t.tone === 'error' ? p.toastDuration + 3 : p.toastDuration) }]
   emit()
   if (p.toastSound) chime(t.tone)
