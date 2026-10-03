@@ -6,6 +6,7 @@ import { Shape } from '../../motion/Shapes'
 import { useDash } from '../context'
 import { Donut, Gauge, PALETTE } from '../viz'
 import { layoutPlaces, TrailMap } from '../TrailMap'
+import { CodeView } from '../CodeView'
 import { Card, EASE, Gate, Loading, Note, PageHead, q, RefreshButton, useFetch, useDecider } from '../ui'
 
 type Child = { id: string; name: string; kind: string; summary: string; annotations: Record<string, string> }
@@ -19,6 +20,10 @@ export default function MapPage() {
   const navigate = useNavigate()
   const [params, setParams] = useSearchParams()
   const file = params.get('file') ?? ''
+  const lines = useMemo<[number, number] | null>(() => {
+    const m = (params.get('lines') ?? '').match(/^(\d+)(?:-(\d+))?$/)
+    return m ? [Number(m[1]), Number(m[2] ?? m[1])] : null
+  }, [params])
   const dir = params.get('path') ?? file.split('/').slice(0, -1).join('/')
   const { data, error, loading, reloading, reload } = useFetch<Node>(repo ? `/api/tree?path=${encodeURIComponent(dir)}&${q(repo)}` : null)
   const [filter, setFilter] = useState('')
@@ -139,7 +144,8 @@ export default function MapPage() {
                       </dl>
                     )}
                     <div className="d-detail__actions">
-                      <button className="btn small" onClick={() => navigate(`/app/tour?q=${encodeURIComponent(`I want to understand ${picked.id} and what it depends on.`)}`)}><span>Tour from here</span><span className="arrow">→</span></button>
+                      <button className="btn small" onClick={() => document.getElementById('m-code')?.scrollIntoView({ behavior: 'smooth', block: 'start' })}><span>Read the code</span><span className="arrow">↓</span></button>
+                      <button className="d-chip" onClick={() => navigate(`/app/tour?q=${encodeURIComponent(`I want to understand ${picked.id} and what it depends on.`)}`)}>Tour from here →</button>
                       <button className="d-chip" onClick={() => navigate(`/app/ask?q=${encodeURIComponent(`How does ${picked.id} work?`)}`)}>Ask how it works</button>
                       <button className="d-chip" onClick={() => copy(picked.id)}>Copy path</button>
                     </div>
@@ -172,6 +178,7 @@ export default function MapPage() {
           </aside>
         </div>
       )}
+      {data && picked && picked.kind === 'file' && <CodeView key={picked.id} repo={repo} path={picked.id} lines={lines} />}
     </div>
   )
 }

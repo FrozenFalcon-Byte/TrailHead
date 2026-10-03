@@ -2,6 +2,7 @@
 /* The field guide's interactive parts: plain DOM code over the markup in markup.ts. initGuide returns a cleanup
    function, so leaving /guide stops every timer, observer and window listener it started. */
 import qrcode from 'qrcode-generator'
+import { onWrap, setWrap, WRAP_GLYPH, wrapOn } from '../lib/wrap'
 
 /** A small highlighter for the code cards: comments, strings, numbers, keywords and definitions. */
 const KEYWORDS = new Set('def class return if elif else for while in not and or is None True False import from as with async await raise try except lambda const let function new break typeof'.split(' '))
@@ -97,6 +98,22 @@ $$('.code').forEach((card) => {
   }));
 });
 $$('pre code', root).forEach(highlight);
+
+/* ---------- word wrap: one switch for every code block on the site, remembered ---------- */
+const wrapButtons = [];
+const paintWrap = (v) => {
+  root.classList.toggle('is-wrap', v);
+  wrapButtons.forEach((b) => { b.classList.toggle('is-on', v); b.setAttribute('aria-pressed', String(v)); b.querySelector('path').setAttribute('d', WRAP_GLYPH(v)); });
+};
+$$('.code .acts', root).forEach((acts) => {
+  const b = document.createElement('button');
+  b.type = 'button'; b.className = 'wrap-btn';
+  b.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Wrap';
+  b.addEventListener('click', () => setWrap(!root.classList.contains('is-wrap')));
+  acts.prepend(b); wrapButtons.push(b);
+});
+paintWrap(wrapOn());
+disposers.push(onWrap(paintWrap));
 
 // Links into the site go through the router, so the curtain plays instead of a full reload.
 on(root, 'click', (e) => {

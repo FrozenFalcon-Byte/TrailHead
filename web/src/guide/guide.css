@@ -369,3 +369,6 @@ html[data-theme='dark'] .fg-carry__in{background:#26252c}
 .tt--carry{padding:0;border-radius:0}
 .tt--carry .tt-kicker{font-size:10.5px;color:color-mix(in srgb,var(--on-solid) 45%,transparent);margin:0}
 .tt--carry h2.tt-title{font:800 16px/1.15 'Bricolage Grotesque Variable',sans-serif;color:var(--on-solid);margin:3px 0 0}
+.code-bar .wrap-btn{display:inline-flex;align-items:center;gap:6px}
+.code-bar .wrap-btn.is-on{background:#ffd76a;color:#17161b}
+.is-wrap .code pre,.is-wrap .wire{white-space:pre-wrap;overflow-wrap:anywhere}

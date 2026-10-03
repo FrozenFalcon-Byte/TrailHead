@@ -114,3 +114,23 @@ def test_rank_judges_unranked_issues_once_and_streams_each(tmp_path, monkeypatch
     with client.stream("POST", "/api/issues/rank", json={"limit": 5}) as res:
         assert "event: ranked" not in "".join(res.iter_text())
     assert len(engine.calls) == calls  # stored judgements are the cache
+
+
+def test_file_view_reads_the_checkout_and_stays_inside_it(tmp_path):
+    seed(tmp_path)
+    checkout = tmp_path / "checkout"
+    (checkout / "pkg").mkdir(parents=True)
+    (checkout / "pkg" / "core.py").write_text("def run():\n    return 1\n")
+    (tmp_path / "secret.txt").write_text("outside")
+    store = Store(tmp_path / "trailhead.db")
+    store.set_meta("repo_dir", str(checkout))
+    store.set_meta("head", "abc123")
+    store.execute("INSERT INTO symbols (path, name, kind, signature, doc, start_line, end_line) VALUES ('pkg/core.py','run','function','def run()','',1,2)")
+    store.execute("INSERT INTO files VALUES ('../secret.txt','text',1,7,0,'','')")
+    store.close()
+    client = TestClient(create_app(settings_for(tmp_path, auth_mode="off")))
+    view = client.get("/api/file", params={"path": "pkg/core.py"}).json()
+    assert view["code"].startswith("def run()") and view["symbols"][0]["start"] == 1
+    assert view["url"] == "https://github.com/acme/widget/blob/abc123/pkg/core.py"
+    assert client.get("/api/file", params={"path": "../secret.txt"}).json()["code"] is None
+    assert client.get("/api/file", params={"path": "nope.py"}).status_code == 404

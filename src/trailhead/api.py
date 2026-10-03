@@ -273,6 +273,16 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         children.sort(key=lambda c: (c["kind"] != "dir", c["name"]))
         return {"id": node.id, "kind": node.kind, "summary": node.summary, "children": children}
 
+    @app.get("/api/file")
+    async def file(path: str, repo: str | None = None, _: User = Depends(user)) -> dict[str, Any]:
+        from .retrieve import file_view
+
+        ctx = ctx_for(repo)
+        view = file_view(ctx.store, ctx.repo_dir, path)
+        if view is None:
+            raise HTTPException(404, f"no such file: {path}")
+        return view
+
     @app.post("/api/ask")
     async def ask_endpoint(body: AskBody, _: User = Depends(user)) -> StreamingResponse:
         from .ask import ask

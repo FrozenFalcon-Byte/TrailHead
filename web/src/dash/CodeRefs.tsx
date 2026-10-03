@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { notify } from '../lib/toast'
+import { useWrap, WRAP_GLYPH } from '../lib/wrap'
 
 /* "The code behind it": the definitions the answer rests on, read from the checkout at the ingested commit. A tab
    per file, the block itself with real line numbers, a light highlighter, and links to the map and to GitHub at
@@ -17,9 +18,9 @@ const KEYWORDS = new Set(
 // one pass over the whole block, so strings and comments that span lines stay coloured
 const TOKEN = /("""[\s\S]*?"""|'''[\s\S]*?'''|`(?:\\[\s\S]|[^`\\])*`|"(?:\\.|[^"\\\n])*"|'(?:\\.|[^'\\\n])*')|(#[^\n]*|\/\/[^\n]*|\/\*[\s\S]*?\*\/)|(@[A-Za-z_][\w.]*)|\b(\d[\d_]*(?:\.\d+)?)\b|([A-Za-z_]\w*)/g
 
-type Tok = { t: string; c?: string }
+export type Tok = { t: string; c?: string }
 
-function highlight(code: string, lang: string): Tok[][] {
+export function highlight(code: string, lang: string): Tok[][] {
   const hashComments = !/^(javascript|typescript|tsx|jsx|go|rust|java|c|cpp|csharp)$/i.test(lang)
   const toks: Tok[] = []
   let at = 0
@@ -69,6 +70,7 @@ export function CodeRefs({ snippets }: { snippets: Snippet[] }) {
   const [pick, setPick] = useState(0)
   const [open, setOpen] = useState(false)
   const [docOpen, setDocOpen] = useState(false)
+  const [wrap, toggleWrap] = useWrap()
   const s = snippets[Math.min(pick, snippets.length - 1)]
   const lines = useMemo(() => (s ? highlight(s.code, s.lang) : []), [s])
   const doc = useMemo(() => (s ? docSpan(s.code) : null), [s])
@@ -105,15 +107,16 @@ export function CodeRefs({ snippets }: { snippets: Snippet[] }) {
       <AnimatePresence mode="popLayout" initial={false}>
         <motion.figure key={s.path} className="cr-block" initial={{ y: 12, rotateX: -6 }} animate={{ y: 0, rotateX: 0 }} exit={{ y: -8, rotateX: 4, transition: { duration: 0.12 } }} transition={{ type: 'spring', stiffness: 320, damping: 28 }}>
           <figcaption className="cr-bar">
-            <Link to={`/app/map?file=${encodeURIComponent(s.path)}`} className="cr-path mono" data-path={s.path} data-cursor="Show on the map">{s.path}</Link>
+            <Link to={`/app/map?file=${encodeURIComponent(s.path)}&lines=${s.start}-${s.end}`} className="cr-path mono" data-path={s.path} data-cursor="Show on the map">{s.path}</Link>
             {s.symbol && <span className="cr-sym mono">{s.symbol}</span>}
             <span className="cr-lines">lines {s.start}–{s.end}{s.full_end > s.end ? ` · the definition runs to ${s.full_end}` : ''}</span>
             <span className="cr-acts">
+              <WrapButton on={wrap} onClick={toggleWrap} />
               <button onClick={copy} data-cursor="Copy the code">Copy</button>
               {s.url && <a href={s.url} target="_blank" rel="noreferrer noopener" data-cursor="Open at this commit">GitHub ↗</a>}
             </span>
           </figcaption>
-          <motion.pre className="cr-code" layout="size" transition={{ type: 'spring', stiffness: 260, damping: 30 }}>
+          <motion.pre className={`cr-code ${wrap ? 'is-wrap' : ''}`} layout="size" transition={{ type: 'spring', stiffness: 260, damping: 30 }}>
             <code>
               {shown.map((row) =>
                 row.kind === 'fold' ? (
@@ -138,5 +141,17 @@ export function CodeRefs({ snippets }: { snippets: Snippet[] }) {
         </motion.figure>
       </AnimatePresence>
     </section>
+  )
+}
+
+/** Wrap long lines or let them run; the same switch for every code block on the site. */
+export function WrapButton({ on, onClick, className = '' }: { on: boolean; onClick: () => void; className?: string }) {
+  return (
+    <button type="button" className={`cr-wrap ${on ? 'is-on' : ''} ${className}`} onClick={onClick} aria-pressed={on} data-cursor={on ? 'Let long lines run' : 'Wrap long lines'}>
+      <svg width={14} height={14} viewBox="0 0 24 24" aria-hidden>
+        <path d={WRAP_GLYPH(on)} fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+      Wrap
+    </button>
   )
 }
