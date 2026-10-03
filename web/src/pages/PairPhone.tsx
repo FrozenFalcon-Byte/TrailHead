@@ -587,6 +587,27 @@ export function PhoneView({ code }: { code: string }) {
     [],
   )
   const linked = pair.status === 'linked'
+  // a remote that dims and locks mid-use is no remote: hold the screen awake while linked, and take the lock
+  // back when the page returns from the background (the browser drops it whenever the tab is hidden)
+  useEffect(() => {
+    if (!linked || !('wakeLock' in navigator)) return
+    let lock: WakeLockSentinel | null = null
+    let gone = false
+    const take = () => {
+      if (document.visibilityState !== 'visible' || (lock && !lock.released)) return
+      navigator.wakeLock.request('screen').then((l) => {
+          if (gone) l.release()
+          else lock = l
+        }).catch(() => undefined)
+    }
+    take()
+    document.addEventListener('visibilitychange', take)
+    return () => {
+      gone = true
+      document.removeEventListener('visibilitychange', take)
+      lock?.release().catch(() => undefined)
+    }
+  }, [linked])
   const steer = linked && !pair.held
   const page = pagePath(pair.page || '')
   const incoming = pair.drops.filter((d) => d.from === 'host')

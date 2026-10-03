@@ -18,6 +18,13 @@ import { TypedField } from '../../motion/TypedField'
 type GhRepo = { full_name: string; description: string | null; stargazers_count: number; language: string | null; private: boolean; html_url: string; pushed_at: string }
 const REPO_EXAMPLES = ['scrapy/scrapy', 'pallets/flask', 'psf/requests', 'encode/httpx', 'tiangolo/fastapi', 'django/django']
 const NAME = /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/
+/** Takes owner/name however it was copied: a github.com link (any page inside it), an SSH or .git clone URL. */
+function repoName(raw: string) {
+  const t = raw.trim().replace(/^git@github\.com:/i, '').replace(/^(https?:\/\/)?(www\.)?github\.com\//i, '')
+  const [owner = '', rest = ''] = t.split('/')
+  const repo = rest.split(/[?#]/)[0].replace(/\.git$/i, '')
+  return owner && repo ? `${owner}/${repo}` : t
+}
 
 const n = (v?: number) => (v ?? 0).toLocaleString()
 const since = (s?: number) => {
@@ -236,10 +243,19 @@ export default function Repos() {
     if (ghLogin) loadGitHub(ghLogin)
   }, [ghLogin])
 
-  const onboard = async (full: string) => {
+  const onboard = async (typed: string) => {
     setError('')
+    const full = repoName(typed)
     if (!NAME.test(full)) {
       setError('Use the owner/name form, for example scrapy/scrapy.')
+      return
+    }
+    const have = repos.find((r) => r.repo.toLowerCase() === full.toLowerCase())
+    if (have && have.status !== 'failed') {
+      // already on the shelf: pick it rather than reading it all again (Update on its card does a fresh read)
+      setName('')
+      setRepo(have.repo)
+      toast({ tone: 'info', title: `${have.repo} is already here`, body: have.status === 'running' ? 'It is still being read; you will hear when it is ready.' : 'Picked it for you. Use Update on its card to read it again.' })
       return
     }
     try {
@@ -347,7 +363,7 @@ export default function Repos() {
         <form className="rp-add" onSubmit={(e) => { e.preventDefault(); onboard(name.trim()) }}>
           <span className="rp-add__label">Onboard another</span>
           <div className="rp-add__row">
-            <TypedField className="mono" value={name} onValue={setName} suggestions={REPO_EXAMPLES} placeholder="owner/name" aria-label="Repository" disabled={offline} />
+            <TypedField className="mono" value={name} onValue={setName} suggestions={REPO_EXAMPLES} placeholder="owner/name or a GitHub link" aria-label="Repository" disabled={offline} />
             <button className="btn" type="submit" disabled={!name.trim() || offline}><span>Onboard</span><span className="arrow">→</span></button>
           </div>
           <span className="rp-add__hint">Big histories take a while.{health?.snapshots === 'ready' ? ' Only the newest repository you onboard is kept when the server restarts; onboarding another frees the last one’s space, and it stays here until the next restart.' : ' Annotations and summaries run from the command line afterwards.'}</span>
