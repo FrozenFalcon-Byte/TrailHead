@@ -6288,3 +6288,22 @@ a.d-code.is-path:hover { translate: 0 -1px; background: color-mix(in srgb, var(-
 .tk-type { color: #8fd3ff; }
 .tk-deco { color: #ff9fc6; }
 @media (max-width: 640px) { .cr-acts { margin-left: 0; } .cr-code { font-size: 12px; } }
+
+/* GitHub's token ran out: a printed card with the way back in, instead of GitHub's bare status code. */
+.rp-expired {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 14px 16px 14px 18px;
+  border-radius: 16px;
+  background: var(--butter);
+  color: var(--ink);
+  border: 2px solid var(--solid);
+  box-shadow: 4px 4px 0 var(--solid);
+  font-size: 14.5px;
+  line-height: 1.45;
+}
+.rp-expired > span { flex: 1 1 280px; min-width: 0; }
+.rp-expired b { font-weight: 800; }
+.p-provider__act { display: flex; gap: 8px; flex-wrap: wrap; }

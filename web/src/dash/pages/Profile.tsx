@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import type { PasskeyListItem } from '@supabase/supabase-js'
 import { useAuth } from '../../lib/auth'
+import { GH_EXPIRED_KEY } from '../../pages/AuthCallback'
 import { clearSaved, countSaved, exportSaved } from '../../lib/history'
 import { playMoment } from '../../lib/moment'
 import { removeAvatar, saveProfile, useAvatar, useProfile } from '../../lib/profile'
@@ -83,6 +84,13 @@ export default function Profile() {
   useEffect(loadKeys, [loadKeys])
 
   const identities = user?.identities ?? []
+  const ghExpired = useMemo(() => {
+    try {
+      return !!sessionStorage.getItem(GH_EXPIRED_KEY)
+    } catch {
+      return false
+    }
+  }, [])
   const linked = (id: string) => identities.some((i) => i.provider === id)
   const hasPassword = linked('email')
   const checks = [
@@ -320,8 +328,11 @@ export default function Profile() {
                       <motion.div key={pr.id} className={`p-provider ${on ? 'is-on' : ''}`} style={{ ['--pc' as string]: pr.color }} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 + i * 0.05, ease: EASE }}>
                         <span className={`p-provider__icon is-${pr.id}`}>{pr.logo(on)}</span>
                         <b>{pr.name}</b>
-                        <span className="d-muted">{on ? `Connected ${day(ident?.created_at)}${ident?.identity_data?.user_name ? ` · @${ident.identity_data.user_name}` : ''}` : pr.note}</span>
+                        <span className="d-muted">{on && pr.id === 'github' && ghExpired ? 'Sign-in ran out, reconnect to list your repositories' : on ? `Connected ${day(ident?.created_at)}${ident?.identity_data?.user_name ? ` · @${ident.identity_data.user_name}` : ''}` : pr.note}</span>
                         <span className="p-provider__act">
+                          {on && pr.id === 'github' && (
+                            <button className={`d-chip ${ghExpired ? 'is-on' : ''}`} onClick={() => auth.reconnectGitHub('/app/profile').catch((e) => notify.error('Could not reconnect GitHub', errorText(e)))} data-cursor="Sign in through GitHub again for a fresh token">Reconnect ↗</button>
+                          )}
                           {on ? (
                             <button className="d-chip is-danger" disabled={identities.length < 2 || busy === pr.id} onClick={() => window.confirm(`Disconnect ${pr.name}?`) && run(pr.id, () => auth.unlinkProvider(pr.id), `${pr.name} disconnected`)} data-cursor={identities.length < 2 ? 'Your only sign-in method' : 'Disconnect'}>Disconnect</button>
                           ) : pr.id === 'github' ? (

@@ -7,7 +7,7 @@ import { useCtx } from '../../lib/ctx'
 import { errorText, notify, toast } from '../../lib/toast'
 import { Select } from '../../motion/Select'
 import { TrailSpinner } from '../../motion/TrailSpinner'
-import { GH_TOKEN_KEY } from '../../pages/AuthCallback'
+import { GH_EXPIRED_KEY, GH_TOKEN_KEY } from '../../pages/AuthCallback'
 import { LOOKS, lookFor } from '../looks'
 import { useDash, type RepoInfo } from '../context'
 import { Donut, PALETTE, Treemap } from '../viz'
@@ -164,7 +164,7 @@ function StopButton({ repo, stopping }: { repo: string; stopping: boolean }) {
 export default function Repos() {
   const { repos, repo, setRepo, refreshRepos, offline, recheck, checking, health } = useDash()
   const navigate = useNavigate()
-  const { user, connectGitHub, bypass } = useAuth()
+  const { user, connectGitHub, reconnectGitHub, bypass } = useAuth()
   const [name, setName] = useState('')
   const [error, setError] = useState('')
   const [gh, setGh] = useState<GhRepo[] | null>(null)
@@ -172,6 +172,13 @@ export default function Repos() {
   const [ghBusy, setGhBusy] = useState(false)
   const [ghFilter, setGhFilter] = useState('')
   const [ghSort, setGhSort] = useState('pushed')
+  const [ghExpired, setGhExpired] = useState(() => {
+    try {
+      return !!sessionStorage.getItem(GH_EXPIRED_KEY)
+    } catch {
+      return false
+    }
+  })
   const identity = user?.identities?.find((i) => i.provider === 'github')
   const ghLogin = (identity?.identity_data?.user_name as string | undefined) || (user?.app_metadata?.provider === 'github' ? (user?.user_metadata?.user_name as string | undefined) : undefined)
   const was = useRef<Record<string, string>>({})
@@ -204,7 +211,19 @@ export default function Repos() {
       // The token only ever goes to GitHub itself, and only lists repositories.
       const url = token ? 'https://api.github.com/user/repos?per_page=100&sort=pushed&affiliation=owner,collaborator,organization_member' : `https://api.github.com/users/${encodeURIComponent(login)}/repos?per_page=100&sort=pushed`
       if (!token && !login) throw new Error('Connect GitHub or type a GitHub username.')
-      const res = await fetch(url, { headers: { Accept: 'application/vnd.github+json', ...(token ? { Authorization: `Bearer ${token}` } : {}) } })
+      let res = await fetch(url, { headers: { Accept: 'application/vnd.github+json', ...(token ? { Authorization: `Bearer ${token}` } : {}) } })
+      // GitHub sign-in tokens expire or get revoked; drop a dead one and fall back to the public listing
+      if (res.status === 401 && token) {
+        try {
+          sessionStorage.removeItem(GH_TOKEN_KEY)
+          sessionStorage.setItem(GH_EXPIRED_KEY, '1')
+        } catch {
+          /* ignore */
+        }
+        setGhExpired(true)
+        if (!login) return
+        res = await fetch(`https://api.github.com/users/${encodeURIComponent(login)}/repos?per_page=100&sort=pushed`, { headers: { Accept: 'application/vnd.github+json' } })
+      }
       if (!res.ok) throw new Error(res.status === 404 ? 'No such GitHub user.' : `GitHub answered ${res.status}.`)
       setGh(((await res.json()) as GhRepo[]).filter((r) => !r.private))
     } catch (e) {
@@ -253,7 +272,7 @@ export default function Repos() {
 
   const aside = (
     <>
-      <Card title="GitHub" delay={0.1} aside={ghLogin ? <span className="d-tag is-ok">@{ghLogin}</span> : undefined}>
+      <Card title="GitHub" delay={0.1} aside={ghLogin ? <span className={`d-tag ${ghExpired ? 'is-warn' : 'is-ok'}`} data-cursor={ghExpired ? 'Sign-in ran out' : undefined}>@{ghLogin}</span> : undefined}>
         {ghLogin ? (
           <p className="d-muted small" style={{ margin: 0 }}>Your public repositories are listed below the shelf. Connected accounts are managed in your <a href="/app/profile#security">profile</a>.</p>
         ) : (
@@ -288,6 +307,14 @@ export default function Repos() {
       <PageHead theme="peach" kicker="Repositories" title="Pick your" oblique="mountain" note="Onboard any public GitHub repository. Ingest reads; it never runs anything." actions={<RefreshButton busy={checking} onClick={() => recheck()} />} />
       {offline && <Note tone="error">The API is offline, so repositories cannot be listed or added. Start it with <span className="mono">bin/trailhead serve</span>.</Note>}
       {error && <Note tone="error">{error}</Note>}
+      {ghExpired && !bypass && (
+        <div className="rp-expired" role="status">
+          <span>
+            <b>Your GitHub sign-in has run out.</b> Public repositories still list by your username; reconnect to list everything you can reach and lift the onboarding quota.
+          </span>
+          <button className="btn small" onClick={() => reconnectGitHub('/app/repos').catch((e) => setError(errorText(e)))}><span>Reconnect GitHub</span><span className="arrow">↗</span></button>
+        </div>
+      )}
 
       <section className="rp-camp" style={{ ['--tint' as string]: look.bg }}>
         <div className="rp-camp__mark" aria-hidden>

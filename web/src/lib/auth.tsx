@@ -22,6 +22,7 @@ type AuthState = {
   renamePasskey: (id: string, name: string) => Promise<void>
   deletePasskey: (id: string) => Promise<void>
   connectGitHub: () => Promise<void>
+  reconnectGitHub: (next?: string) => Promise<void>
   unlinkProvider: (provider: string) => Promise<void>
   updateEmail: (email: string) => Promise<void>
   updatePassword: (password: string) => Promise<void>
@@ -126,6 +127,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       async connectGitHub() {
         // Links GitHub to the signed-in account (manual identity linking must be enabled in Supabase).
         const { error } = await need().auth.linkIdentity({ provider: 'github', options: { redirectTo: redirectTo() + '?next=/app/repos', scopes: 'read:user public_repo' } })
+        if (error) throw error
+      },
+      async reconnectGitHub(next = window.location.pathname) {
+        // GitHub is already linked: signing in through it again lands on the same account with a fresh token.
+        rememberMethod('github')
+        const { error } = await need().auth.signInWithOAuth({ provider: 'github', options: { redirectTo: `${redirectTo()}?next=${encodeURIComponent(next)}`, scopes: 'read:user public_repo' } })
         if (error) throw error
       },
       async signOut(scope = 'local') {

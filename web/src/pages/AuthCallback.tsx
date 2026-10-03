@@ -8,6 +8,8 @@ import { firstName, momentTo, takeMethod, type MomentMethod } from '../lib/momen
 import { isOnboarded } from '../lib/onboard'
 
 export const GH_TOKEN_KEY = 'th-gh-provider-token'
+/** Set when GitHub turned the saved token down, so the repositories page and the profile offer a reconnect. */
+export const GH_EXPIRED_KEY = 'th-gh-expired'
 
 /** OAuth and magic-link landing. supabase-js exchanges the code in the URL; we wait for the session, keep the
  *  GitHub token for listing repositories (this tab only), then move on. */
@@ -32,7 +34,10 @@ export default function AuthCallback() {
       if (done || !session) return
       done = true
       try {
-        if (session.provider_token) sessionStorage.setItem(GH_TOKEN_KEY, session.provider_token)
+        if (session.provider_token) {
+          sessionStorage.setItem(GH_TOKEN_KEY, session.provider_token)
+          sessionStorage.removeItem(GH_EXPIRED_KEY)
+        }
       } catch {
         /* private mode */
       }
