@@ -115,7 +115,14 @@ export default function MapPage() {
                     {c.annotations.layer && <span className="d-tag is-soft">{fmt(c.annotations.layer)}</span>}
                   </motion.button>
                 ))}
-                {kids.length === 0 && <p className="d-muted" style={{ padding: 14 }}>Nothing matches “{filter}”.</p>}
+                {kids.length === 0 && (filter ? (
+                  <p className="d-muted" style={{ padding: 14 }}>Nothing matches “{filter}”.</p>
+                ) : (
+                  <div className="d-muted" style={{ padding: 14, display: 'grid', gap: 10, justifyItems: 'start' }}>
+                    <span>{dir ? 'This folder is empty.' : 'The map came back empty. The repository may be partway through an update.'}</span>
+                    {!dir && <button className="d-chip" onClick={reload}>Try again</button>}
+                  </div>
+                ))}
               </motion.div>
             </AnimatePresence>
           </section>

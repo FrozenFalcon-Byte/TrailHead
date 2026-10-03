@@ -90,9 +90,6 @@ def split_doc(text: str, lang: str) -> list[tuple[str, str]]:
 def ingest_tree(store: Store, repo_dir: Path) -> dict[str, int]:
     files, skipped = list_repo_files(repo_dir)
     known = {f.path for f in files}
-    for table in ("files", "symbols", "dirs", "imports", "docs", "code_fts"):
-        store.execute(f"DELETE FROM {table}")
-
     file_rows, symbol_rows, import_rows, doc_rows, fts_rows = [], [], set(), [], []
     headers: dict[str, str] = {}
     for f in files:
@@ -108,11 +105,6 @@ def ingest_tree(store: Store, repo_dir: Path) -> dict[str, int]:
             doc_rows.extend((f.path, heading, chunk) for heading, chunk in split_doc(text, f.lang))
         fts_rows.append((f.path, path_words(f.path), " ".join(f"{n} {path_words(n)}" for n in names), info.header))
 
-    store.executemany("INSERT INTO files VALUES (?,?,?,?,?,?,?)", file_rows)
-    store.executemany("INSERT INTO symbols (path, name, kind, signature, doc, start_line, end_line) VALUES (?,?,?,?,?,?,?)", symbol_rows)
-    store.executemany("INSERT OR IGNORE INTO imports VALUES (?,?)", import_rows)
-    store.executemany("INSERT INTO docs (path, heading, text) VALUES (?,?,?)", doc_rows)
-    store.executemany("INSERT INTO code_fts (path, path_words, symbols, header) VALUES (?,?,?,?)", fts_rows)
 
     dirs: dict[str, set[str]] = {}
     for path in known:
@@ -138,7 +130,17 @@ def ingest_tree(store: Store, repo_dir: Path) -> dict[str, int]:
         if summary and not summary.endswith((".", "…")):
             summary += "."
         dir_rows.append((directory, f"{summary} {listing}".strip()[:260]))
-    store.executemany("INSERT INTO dirs VALUES (?,?)", dir_rows)
+    # one transaction: a server reading this database while an update runs sees the old tree until the new one is
+    # complete, never an empty one in between
+    with store.lock, store.conn as con:
+        for table in ("files", "symbols", "dirs", "imports", "docs", "code_fts"):
+            con.execute(f"DELETE FROM {table}")
+        con.executemany("INSERT INTO files VALUES (?,?,?,?,?,?,?)", file_rows)
+        con.executemany("INSERT INTO symbols (path, name, kind, signature, doc, start_line, end_line) VALUES (?,?,?,?,?,?,?)", symbol_rows)
+        con.executemany("INSERT OR IGNORE INTO imports VALUES (?,?)", import_rows)
+        con.executemany("INSERT INTO docs (path, heading, text) VALUES (?,?,?)", doc_rows)
+        con.executemany("INSERT INTO code_fts (path, path_words, symbols, header) VALUES (?,?,?,?)", fts_rows)
+        con.executemany("INSERT INTO dirs VALUES (?,?)", dir_rows)
     return {"files": len(file_rows), "symbols": len(symbol_rows), "imports": len(import_rows), "doc_chunks": len(doc_rows), **{f"skipped_{k}": v for k, v in skipped.items()}}
 
 

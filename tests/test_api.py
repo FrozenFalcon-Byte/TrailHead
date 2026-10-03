@@ -134,3 +134,14 @@ def test_file_view_reads_the_checkout_and_stays_inside_it(tmp_path):
     assert view["url"] == "https://github.com/acme/widget/blob/abc123/pkg/core.py"
     assert client.get("/api/file", params={"path": "../secret.txt"}).json()["code"] is None
     assert client.get("/api/file", params={"path": "nope.py"}).status_code == 404
+
+
+def test_tree_follows_an_update_instead_of_keeping_the_first_copy(tmp_path):
+    seed(tmp_path)
+    client = TestClient(create_app(settings_for(tmp_path, auth_mode="off")))
+    assert [c["id"] for c in client.get("/api/tree", params={"path": "pkg"}).json()["children"]] == ["pkg/core.py"]
+    store = Store(tmp_path / "trailhead.db")
+    store.execute("INSERT INTO files VALUES ('pkg/extra.py','python',3,30,0,'Extra.','Extra.')")
+    store.set_meta("updated_at", "2")
+    store.close()
+    assert [c["id"] for c in client.get("/api/tree", params={"path": "pkg"}).json()["children"]] == ["pkg/core.py", "pkg/extra.py"]

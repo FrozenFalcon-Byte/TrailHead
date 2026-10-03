@@ -21,6 +21,7 @@ class Context:
         self._engines: dict[str, DecisionEngine] = {}
         self._llm: LLMClient | None = None
         self._trees: dict[tuple[bool, bool], RepoTree] = {}
+        self._tree_mark: tuple[str, int] | None = None
 
     @property
     def repo(self) -> str:
@@ -48,6 +49,11 @@ class Context:
 
     def tree(self, *, include_tests: bool = False, include_docs: bool = False) -> RepoTree:
         key = (include_tests, include_docs)
+        # the trees are built once, but an update rewrites the files under them: rebuild when the database moved on
+        mark = (self.store.get_meta("updated_at"), int(self.store.scalar("SELECT COUNT(*) FROM files") or 0))
+        if mark != self._tree_mark:
+            self._trees.clear()
+            self._tree_mark = mark
         if key not in self._trees:
             self._trees[key] = RepoTree(self.store, include_tests=include_tests, include_docs=include_docs)
         return self._trees[key]
