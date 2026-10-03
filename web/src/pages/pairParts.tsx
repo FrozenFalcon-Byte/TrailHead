@@ -55,23 +55,28 @@ export function Since({ at }: { at: number }) {
   return <>{m < 1 ? 'just now' : m === 1 ? 'a minute ago' : m < 60 ? `${m} minutes ago` : 'over an hour ago'}</>
 }
 
-/** The two devices side by side with the line between them: it flows while linked, sags red while the phone is out
- *  of reach, and marches as dots while it waits. */
+const BEADS = ['var(--orange)', 'var(--yellow)', 'var(--green)', 'var(--blue)', 'var(--violet)', 'var(--orange)', 'var(--yellow)']
+
+/** The two devices side by side with a string of beads between them. Linked, the beads ripple in a wave running
+ *  towards the other device; waiting, they chase each other in grey; out of reach, they drop and lie where they fell.
+ *  Everything passed across hops over the beads as a coloured packet and lands on the other tile with a bump. */
 export function LinkLine({ status, peer, phone = false, bare = false }: { status: string; peer: string; phone?: boolean; bare?: boolean }) {
   const linked = status === 'linked'
   const lost = status === 'lost'
   const pair = usePair()
-  const line = useRef<SVGPathElement>(null)
+  const tiles = useRef<(HTMLSpanElement | null)[]>([])
   const me = deviceName()
   const devices = [
     { key: 'screen', name: phone ? peer || 'Computer' : me, glyph: <ScreenGlyph size={22} />, bg: 'var(--butter)', you: !phone },
     { key: 'phone', name: phone ? me : peer || 'Your phone', glyph: <PhoneGlyph size={22} live={linked} />, bg: 'var(--peach)', you: phone },
   ]
+  // the wave runs away from this device, towards the other one
+  const order = (i: number) => (phone ? BEADS.length - 1 - i : i)
   return (
     <div className={`pr-link is-${status}`}>
       {devices.map((d, i) => (
         <motion.span key={d.key} className={`pr-link__dev ${i ? 'is-right' : ''}`} animate={{ x: linked ? (i ? -4 : 4) : 0 }} transition={{ type: 'spring', stiffness: 300, damping: 12 }}>
-          <motion.span className="pr-link__tile" style={{ background: d.bg }} animate={!linked && !lost && !d.you ? { scale: [1, 0.9, 1] } : { scale: 1 }} transition={{ duration: 1.4, repeat: !linked && !lost && !d.you ? Infinity : 0 }}>
+          <motion.span ref={(el) => { tiles.current[i] = el }} className="pr-link__tile" style={{ background: d.bg }} animate={!linked && !lost && !d.you ? { scale: [1, 0.9, 1] } : { scale: 1 }} transition={{ duration: 1.4, repeat: !linked && !lost && !d.you ? Infinity : 0 }}>
             {d.glyph}
           </motion.span>
           {!bare && <span className="pr-link__name">
@@ -82,32 +87,64 @@ export function LinkLine({ status, peer, phone = false, bare = false }: { status
           </span>}
         </motion.span>
       ))}
-      <svg className="pr-link__line" viewBox="0 0 200 40" preserveAspectRatio="none" aria-hidden>
-        <motion.path
-          ref={line}
-          fill="none"
-          stroke={lost ? 'var(--stop)' : linked ? 'var(--ink)' : 'var(--dim)'}
-          strokeWidth={3}
-          strokeLinecap="round"
-          strokeDasharray={linked ? '200 0' : lost ? '7 7' : '0.5 9'}
-          vectorEffect="non-scaling-stroke"
-          initial={false}
-          animate={{ d: lost ? 'M4 14 C 60 44, 140 44, 196 14' : 'M4 20 C 60 20, 140 20, 196 20', strokeDashoffset: linked ? 0 : [0, -19] }}
-          transition={{ d: { type: 'spring', stiffness: 140, damping: 9 }, strokeDashoffset: { duration: 0.9, repeat: linked ? 0 : Infinity, ease: 'linear' } }}
-        />
-        {linked && <motion.path d="M4 20 C 60 20, 140 20, 196 20" fill="none" stroke="var(--yellow)" strokeWidth={3} strokeLinecap="round" strokeDasharray="8 30" vectorEffect="non-scaling-stroke" initial={{ strokeDashoffset: 0 }} animate={{ strokeDashoffset: phone ? 76 : -76 }} transition={{ duration: 1.2, repeat: Infinity, ease: 'linear' }} />}
-        {pair.traffic.map((t) => <Pulse key={t.id} t={t} phone={phone} />)}
-      </svg>
+      <div className="pr-link__beads" aria-hidden>
+        {BEADS.map((c, i) => (
+          <Bead key={`${status}-${i}`} color={c} k={order(i)} n={BEADS.length} status={status} />
+        ))}
+        {pair.traffic.map((t) => (
+          <Hop key={t.id} t={t} phone={phone} onLand={(left) => {
+            tiles.current[left ? 0 : 1]?.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.22) rotate(-8deg)' }, { transform: 'scale(0.95)' }, { transform: 'scale(1)' }], { duration: 480, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' })
+            if (phone) clearTraffic(t.id)
+          }} />
+        ))}
+      </div>
     </div>
   )
 }
 
-/** A dot shooting along the link line for each thing passed across, in the direction it went. */
-function Pulse({ t, phone }: { t: Traffic; phone: boolean }) {
-  // left is the computer: on the computer "in" comes from the right; on the phone "out" goes to the left
-  const leftward = phone ? t.dir === 'out' : t.dir === 'in'
-  return (
-    <motion.circle cy={20} r={6} fill={KIND_COLOR[t.kind] ?? 'var(--ink)'} stroke="var(--ink)" strokeWidth={2} vectorEffect="non-scaling-stroke" initial={{ cx: leftward ? 196 : 4 }} animate={{ cx: leftward ? 4 : 196 }} transition={{ duration: 0.8, ease: [0.45, 0, 0.2, 1] }} onAnimationComplete={() => phone && clearTraffic(t.id)} />
-  )
+function Bead({ color, k, n, status }: { color: string; k: number; n: number; status: string }) {
+  if (status === 'linked')
+    return (
+      <motion.i
+        className="pr-bead"
+        style={{ background: color }}
+        initial={{ scale: 0, y: -18 }}
+        animate={{ scale: [1, 1.3, 1], y: [0, -9, 0] }}
+        transition={{
+          scale: { duration: 1.2, repeat: Infinity, delay: 0.35 + k * 0.11, ease: 'easeInOut' },
+          y: { duration: 1.2, repeat: Infinity, delay: 0.35 + k * 0.11, ease: 'easeInOut' },
+          default: { type: 'spring', stiffness: 400, damping: 14, delay: Math.abs(k - (n - 1) / 2) * 0.05 },
+        }}
+      />
+    )
+  if (status === 'lost')
+    return (
+      <motion.i
+        className="pr-bead is-down"
+        initial={{ y: 0, rotate: 0 }}
+        animate={{ y: 13, rotate: (k % 2 ? 1 : -1) * (20 + k * 7), x: (k - (n - 1) / 2) * 2 }}
+        transition={{ type: 'spring', stiffness: 260, damping: 9, delay: k * 0.05 }}
+      />
+    )
+  return <motion.i className="pr-bead is-wait" animate={{ scale: [0.45, 1, 0.45] }} transition={{ duration: 1.1, repeat: Infinity, delay: k * 0.12, ease: 'easeInOut' }} />
 }
 
+/** A packet hopping over the beads in the direction it went, landing on the other tile. */
+function Hop({ t, phone, onLand }: { t: Traffic; phone: boolean; onLand: (left: boolean) => void }) {
+  // left is the computer: on the computer "in" comes from the right; on the phone "out" goes to the left
+  const leftward = phone ? t.dir === 'out' : t.dir === 'in'
+  const from = leftward ? '100%' : '0%'
+  const to = leftward ? '0%' : '100%'
+  return (
+    <motion.span
+      className="pr-hop"
+      style={{ background: KIND_COLOR[t.kind] ?? 'var(--ink)' }}
+      initial={{ left: from, y: 0, scale: 0, rotate: 0 }}
+      animate={{ left: [from, to], y: [0, -26, -4, -20, -2, -12, 0], scale: [0, 1.15, 1, 1, 1, 1, 0.6], rotate: leftward ? [0, -200] : [0, 200] }}
+      transition={{ duration: 0.95, ease: [0.45, 0, 0.3, 1], y: { duration: 0.95, ease: 'easeInOut' }, scale: { duration: 0.95 } }}
+      onAnimationComplete={() => onLand(leftward)}
+    >
+      <UseArt kind={t.kind === 'point' ? 'tap' : t.kind} />
+    </motion.span>
+  )
+}

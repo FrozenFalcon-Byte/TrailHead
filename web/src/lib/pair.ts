@@ -28,6 +28,7 @@ export type Msg =
   | { t: 'ask'; q: string }
   | { t: 'drop'; text: string; title?: string }
   | { t: 'ring' }
+  | { t: 'hold'; on: boolean }
 type Wire = Msg & { from: Role }
 
 /** Pages the phone may send the desktop to. */
@@ -54,9 +55,11 @@ type State = {
   since: number
   drops: Drop[]
   traffic: Traffic[]
+  /** the computer has paused the remote: the phone's steering, pointing, scrolling and asking are ignored */
+  held: boolean
 }
 
-let state: State = { role: null, code: '', status: 'off', peer: '', page: '', since: 0, drops: [], traffic: [] }
+let state: State = { role: null, code: '', status: 'off', peer: '', page: '', since: 0, drops: [], traffic: [], held: false }
 const listeners = new Set<() => void>()
 const set = (patch: Partial<State>) => {
   state = { ...state, ...patch }
@@ -97,10 +100,17 @@ export function onPairEvent(h: (e: PairEvent) => void) {
 }
 const announce = (e: PairEvent) => events.forEach((h) => h(e))
 
-const ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'
+export const ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'
 function makeCode(): string {
   const bytes = crypto.getRandomValues(new Uint8Array(8))
   return Array.from(bytes, (b) => ALPHABET[b % ALPHABET.length]).join('')
+}
+/** The code in whatever was typed, pasted or scanned: a bare code, or a pairing link with the code after the #. */
+export function findCode(raw: string): string {
+  const s = raw.trim().toUpperCase()
+  const hash = s.match(/#([A-Z0-9]{8})\b/)
+  if (hash && validCode(hash[1])) return hash[1]
+  return s.replace(/[^A-Z0-9]/g, '').slice(0, 8)
 }
 export const validCode = (c: string) => new RegExp(`^[${ALPHABET}]{8}$`).test(c)
 export const prettyCode = (c: string) => `${c.slice(0, 4)}·${c.slice(4)}`
@@ -126,7 +136,9 @@ let watch = 0
 let lastSeen = 0
 let trafficId = 0
 // Pointer and scroll moves are many and small: they skip the traffic markers.
-const QUIET = new Set(['beat', 'point', 'scroll', 'hello', 'welcome', 'page'])
+const QUIET = new Set(['beat', 'point', 'scroll', 'hello', 'welcome', 'page', 'hold'])
+// what a paused remote cannot do
+const CONTROL = new Set(['go', 'point', 'tap', 'scroll', 'ask'])
 
 function mark(dir: 'in' | 'out', kind: string) {
   if (QUIET.has(kind)) return
@@ -144,29 +156,39 @@ function receive(m: Wire) {
     const role = state.role
     if (role === 'host') {
       // the phone left on purpose: show the code again on the same channel, so it can scan straight back in
-      set({ status: 'waiting', peer: '', page: location.pathname, since: 0, drops: [], traffic: [] })
+      set({ status: 'waiting', peer: '', page: location.pathname, since: 0, drops: [], traffic: [], held: false })
       save()
     } else {
       stop()
       forget()
-      set({ role: null, code: '', status: 'off', peer: '', page: '', since: 0, drops: [], traffic: [] })
+      set({ role: null, code: '', status: 'off', peer: '', page: '', since: 0, drops: [], traffic: [], held: false })
     }
     announce({ kind: 'unpaired', by: 'peer', peer, role: role as Role })
     return
   }
   if (m.t === 'hello' || m.t === 'welcome') {
     set({ peer: m.device, ...(m.page ? { page: m.page } : {}) })
-    if (state.status === 'linked') save()
+    if (state.status === 'linked') {
+      save()
+      remember()
+    }
   }
   if (state.status !== 'linked') {
     const back = state.status === 'lost'
     set({ status: 'linked', since: state.since && back ? state.since : Date.now() })
     save()
+    remember()
     announce({ kind: back ? 'relinked' : 'linked', by: 'peer', peer: state.peer, role: state.role as Role })
   }
   if (m.t === 'hello' || m.t === 'welcome') {
     if (m.t === 'hello') post({ t: 'welcome', device: deviceName(), page: state.role === 'host' ? location.pathname : undefined })
+    if (state.role === 'host' && state.held) post({ t: 'hold', on: true })
   }
+  if (m.t === 'hold') {
+    if (state.role === 'phone') set({ held: !!m.on })
+    return
+  }
+  if (state.role === 'host' && state.held && CONTROL.has(m.t)) return
   if (m.t === 'page') set({ page: m.page })
   if (m.t === 'go' && (state.role !== 'host' || !allowed(m.to))) return
   if (m.t === 'drop') {
@@ -176,6 +198,41 @@ function receive(m: Wire) {
   }
   mark('in', m.t)
   handlers.forEach((h) => h(m))
+}
+
+/* A phone remembers the last computer it linked to, so the join screen can offer to link straight back to it (the
+   computer keeps showing the same code on the same channel after a phone leaves). */
+const LAST = 'th-pair-last'
+const LAST_FOR = 12 * 3600e3
+export type LastLink = { code: string; peer: string; at: number }
+function remember() {
+  if (state.role !== 'phone') return
+  try {
+    localStorage.setItem(LAST, JSON.stringify({ code: state.code, peer: state.peer, at: Date.now() }))
+  } catch {
+    /* private mode */
+  }
+}
+export function lastLink(): LastLink | null {
+  try {
+    const l = JSON.parse(localStorage.getItem(LAST) || 'null') as LastLink | null
+    return l && validCode(l.code) && Date.now() - l.at < LAST_FOR ? l : null
+  } catch {
+    return null
+  }
+}
+export function forgetLastLink() {
+  try {
+    localStorage.removeItem(LAST)
+  } catch {
+    /* private mode */
+  }
+}
+
+/** Pause or resume the phone's control of this screen; the phone's controls sink while paused. */
+export function holdRemote(on: boolean) {
+  set({ held: on })
+  post({ t: 'hold', on })
 }
 
 export function post(m: Msg) {
@@ -287,7 +344,7 @@ export function unpair() {
   stop()
   if (was.role && (was.status === 'linked' || was.status === 'lost')) announce({ kind: 'unpaired', by: 'you', peer: was.peer, role: was.role })
   forget()
-  set({ role: null, code: '', status: 'off', peer: '', page: '', since: 0, drops: [], traffic: [] })
+  set({ role: null, code: '', status: 'off', peer: '', page: '', since: 0, drops: [], traffic: [], held: false })
 }
 
 /** A desktop tab that was pairing before a reload keeps its code, so the phone finds it again. */

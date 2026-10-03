@@ -1,20 +1,22 @@
 import '@fontsource-variable/bricolage-grotesque'
 import '@fontsource-variable/inter'
-import { animate, AnimatePresence, LayoutGroup, motion, useMotionValue, useSpring, useTransform, type MotionValue } from 'motion/react'
+import { AnimatePresence, LayoutGroup, motion, useMotionValue, useSpring, useTransform, type MotionValue } from 'motion/react'
 import { useEffect, useRef, useState } from 'react'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { Mark } from '../motion/Mark'
 import { PhoneGlyph } from '../motion/PairHost'
+import { JoinView } from './PairJoin'
 import { buzz } from '../motion/PairSplash'
 import { QrCode } from '../motion/QrSheet'
 import {
-  clearTraffic, dismissDrop, getPair, isLink, onPairMessage, PAIR_PAGES, pagePath, phoneUrl, post, prettyCode, startHosting, unpair, usePair, validCode, type Traffic,
+  dismissDrop, getPair, holdRemote, isLink, onPairMessage, PAIR_PAGES, pagePath, phoneUrl, post, prettyCode, startHosting, unpair, usePair, validCode,
 } from '../lib/pair'
 import { isLocalOrigin } from '../lib/qr'
 import { notify } from '../lib/toast'
 import { useSignedIn } from '../lib/auth'
 import './pair.css'
-import { EASE, FLIP_OUT, KIND_COLOR, KIND_LABEL, LinkLine, Since, SPRING, UseArt } from './pairParts'
+import { EASE, FLIP_OUT, KIND_COLOR, LinkLine, Since, SPRING, UseArt } from './pairParts'
+import { Island, MiniRemote, StageHop, StatusBar } from './PairDevice'
 import { PhoneView } from './PairPhone'
 
 /* Pair a phone. On a computer the page shows a QR on a ridge; the phone that scans it opens this same page as a
@@ -34,7 +36,7 @@ export default function Pair() {
     }
   }, [])
   if (validCode(code)) return <PhoneView code={code} />
-  return isPhone() ? <JoinView /> : <HostView />
+  return isPhone() || new URLSearchParams(location.search).has('join') ? <JoinView /> : <HostView />
 }
 
 /* ---------------------------------------------------------------- shared bits */
@@ -55,33 +57,6 @@ function Top({ quiet = false }: { quiet?: boolean }) {
         </nav>
       )}
     </header>
-  )
-}
-
-/** Something passed across rides the cord between the phone and the window. */
-function Rider({ t, path }: { t: Traffic; path: React.RefObject<SVGPathElement | null> }) {
-  const g = useRef<SVGGElement>(null)
-  const p = useMotionValue(0)
-  useEffect(() => {
-    const el = path.current
-    if (!el) return
-    // the cord starts at the phone: what comes in from the phone runs forwards, what this screen sends runs back
-    const place = (v: number) => {
-      const at = el.getPointAtLength((t.dir === 'in' ? v : 1 - v) * el.getTotalLength())
-      g.current?.setAttribute('transform', `translate(${at.x} ${at.y})`)
-    }
-    place(0)
-    const ctl = animate(p, 1, { duration: 1.1, ease: [0.45, 0, 0.2, 1], onUpdate: place, onComplete: () => clearTraffic(t.id) })
-    return () => ctl.stop()
-  }, [t, path, p])
-  const color = KIND_COLOR[t.kind] ?? 'var(--ink)'
-  return (
-    <g ref={g}>
-      <motion.g initial={{ scale: 0 }} animate={{ scale: [0, 1.25, 1] }} transition={{ duration: 0.35 }}>
-        <circle r={8} fill={color} stroke="var(--ink)" strokeWidth={2.5} />
-        <text x={13} y={5} className="pr-rider__label">{KIND_LABEL[t.kind] ?? t.kind}</text>
-      </motion.g>
-    </g>
   )
 }
 
@@ -121,41 +96,6 @@ function Viewfinder() {
         <motion.span className="pr-vf__scan" animate={{ y: ['-40%', '140%'] }} transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut', repeatType: 'reverse' }} />
       </motion.div>
       <span className="pr-vf__label">Point at the code</span>
-    </motion.div>
-  )
-}
-
-const REMOTE = [
-  { kind: 'go', label: 'Steer' },
-  { kind: 'tap', label: 'Point' },
-  { kind: 'ask', label: 'Ask' },
-  { kind: 'drop', label: 'Pass' },
-] as const
-
-/** The phone's screen once it is linked: the remote, lighting up whichever part was just used. */
-function Remote({ lost, peer }: { lost: boolean; peer: string }) {
-  const [lit, setLit] = useState('')
-  useEffect(
-    () =>
-      onPairMessage((m) => {
-        const kind = m.t === 'point' ? 'tap' : m.t
-        if (!REMOTE.some((r) => r.kind === kind)) return
-        setLit(kind)
-        window.setTimeout(() => setLit((k) => (k === kind ? '' : k)), 600)
-      }),
-    [],
-  )
-  return (
-    <motion.div className={`pr-remote ${lost ? 'is-lost' : ''}`} initial={{ clipPath: 'inset(100% 0 0 0)' }} animate={{ clipPath: 'inset(0% 0 0 0)', transitionEnd: { clipPath: 'none' } }} exit={{ clipPath: 'inset(0 0 100% 0)', transition: { duration: 0.35 } }} transition={{ duration: 0.55, ease: EASE, delay: 0.35 }}>
-      <span className="pr-remote__top">{lost ? 'Out of reach' : peer || 'Linked'}</span>
-      <div className="pr-remote__grid">
-        {REMOTE.map((r, i) => (
-          <motion.span key={r.kind} style={{ background: KIND_COLOR[r.kind] }} initial={{ scale: 0, rotate: -20 }} animate={{ scale: lit === r.kind ? 1.12 : 1, rotate: 0, y: lit === r.kind ? -4 : 0 }} transition={{ type: 'spring', stiffness: 420, damping: 14, delay: lit ? 0 : 0.55 + i * 0.06 }}>
-            <UseArt kind={r.kind} />
-            <b>{r.label}</b>
-          </motion.span>
-        ))}
-      </div>
     </motion.div>
   )
 }
@@ -203,46 +143,51 @@ function Mirror() {
   )
 }
 
-/** Keep the cord fastened to the top of the phone and the end of the window's bar, wherever the two have drifted,
- *  and let it sag (smoothly) while the phone is out of reach. */
-function useCord(refs: { stage: React.RefObject<HTMLDivElement | null>; notch: React.RefObject<HTMLSpanElement | null>; bar: React.RefObject<HTMLDivElement | null>; svg: React.RefObject<SVGSVGElement | null>; paths: React.RefObject<SVGPathElement | null>[] }) {
-  useEffect(() => {
-    let raf = 0
-    let sag = 0
-    let size = ''
-    const tick = () => {
-      raf = requestAnimationFrame(tick)
-      const st = refs.stage.current?.getBoundingClientRect()
-      const no = refs.notch.current?.getBoundingClientRect()
-      const bar = refs.bar.current?.getBoundingClientRect()
-      if (!st || !no || !bar || !st.width) return
-      const vb = `0 0 ${Math.round(st.width)} ${Math.round(st.height)}`
-      if (vb !== size) refs.svg.current?.setAttribute('viewBox', (size = vb))
-      sag += ((getPair().status === 'lost' ? 1 : 0) - sag) * 0.07
-      const ax = no.left + no.width / 2 - st.left
-      const ay = no.top - st.top - 12
-      const bx = bar.right - st.left - 2
-      const by = bar.top + bar.height / 2 - st.top
-      const lift = 70 * (1 - sag)
-      const drop = 150 * sag
-      const d = `M${ax.toFixed(1)} ${ay.toFixed(1)} C ${ax.toFixed(1)} ${(ay - lift + drop).toFixed(1)}, ${(bx + 60).toFixed(1)} ${(by - lift * 0.6 + drop).toFixed(1)}, ${bx.toFixed(1)} ${by.toFixed(1)}`
-      for (const p of refs.paths) p.current?.setAttribute('d', d)
-    }
-    raf = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(raf)
-  }, [refs])
+/** The QR, which swells to fill the window while the pointer is on it (or a tap holds it), so a phone across the room
+ *  can still read it. */
+function QrHold({ url }: { url: string }) {
+  const [big, setBig] = useState(false)
+  return (
+    <motion.div
+      className={`pr-qrhold ${big ? 'is-big' : ''}`}
+      onHoverStart={() => setBig(true)}
+      onHoverEnd={() => setBig(false)}
+      onTap={(e) => { if ((e as PointerEvent).pointerType !== 'mouse') setBig((b) => !b) }}
+      animate={{ scale: big ? 1.8 : 1, rotate: big ? -1.5 : 0 }}
+      transition={{ type: 'spring', stiffness: 260, damping: 20, mass: 0.8 }}
+    >
+      <motion.div className="pr-qrbox" animate={big ? { rotate: 0 } : { rotate: [0, 0.8, 0, -0.8, 0] }} transition={big ? SPRING : { duration: 5, repeat: Infinity, ease: 'easeInOut' }}>
+        <QrCode key={url} text={url} size={168} />
+      </motion.div>
+    </motion.div>
+  )
 }
 
+/** Copy the pairing link, for sending to the phone some other way (a message to yourself, AirDrop). */
+function CopyLink({ url }: { url: string }) {
+  const [done, setDone] = useState(0)
+  useEffect(() => {
+    if (!done) return
+    const t = window.setTimeout(() => setDone(0), 1600)
+    return () => window.clearTimeout(t)
+  }, [done])
+  return (
+    <motion.button className="pr-copy-link" whileTap={{ scale: 0.92 }} onClick={() => navigator.clipboard?.writeText(url).then(() => setDone(Date.now()), () => notify.warn('Could not copy', url))}>
+      <AnimatePresence mode="popLayout" initial={false}>
+        <motion.span key={done ? 'y' : 'n'} initial={{ y: 14, rotateX: -80 }} animate={{ y: 0, rotateX: 0 }} exit={{ y: -14, rotateX: 80, transition: FLIP_OUT }} transition={SPRING}>
+          {done ? 'Link copied ✓' : 'Copy the link'}
+        </motion.span>
+      </AnimatePresence>
+    </motion.button>
+  )
+}
+
+/** The window holding the QR and the iPhone in front of it; whatever passes across hops between the island and the window. */
 function Stage() {
   const pair = usePair()
-  const cord = useRef<SVGPathElement>(null)
-  const flow = useRef<SVGPathElement>(null)
   const stage = useRef<HTMLDivElement>(null)
-  const notch = useRef<HTMLSpanElement>(null)
-  const bar = useRef<HTMLDivElement>(null)
-  const svg = useRef<SVGSVGElement>(null)
-  const refs = useRef({ stage, notch, bar, svg, paths: [cord, flow] }).current
-  useCord(refs)
+  const island = useRef<HTMLDivElement>(null)
+  const win = useRef<HTMLDivElement>(null)
   const linked = pair.status === 'linked'
   const lost = pair.status === 'lost'
   const shown = linked || lost
@@ -274,8 +219,8 @@ function Stage() {
       <Hills px={px} py={py} />
 
       <motion.div className="pr-win-at" style={{ x: winX, y: winY }}>
-        <motion.div className="pr-win" initial={{ y: 90, rotate: -3, scale: 0.94 }} animate={{ y: 0, rotate: 0, scale: 1 }} transition={{ type: 'spring', stiffness: 150, damping: 17, delay: 0.25 }}>
-          <div className="pr-win__bar" ref={bar}>
+        <motion.div className="pr-win" ref={win} initial={{ y: 90, rotate: -3, scale: 0.94 }} animate={{ y: 0, rotate: 0, scale: 1 }} transition={{ type: 'spring', stiffness: 150, damping: 17, delay: 0.25 }}>
+          <div className="pr-win__bar">
             <i /><i /><i />
             <span className="mono">trailhead · pair</span>
           </div>
@@ -290,15 +235,14 @@ function Stage() {
                   exit={{ x: 220, y: 120, scale: 0.25, rotate: 14, transition: { duration: 0.5, ease: [0.76, 0, 0.24, 1] } }}
                   transition={{ type: 'spring', stiffness: 170, damping: 22, delay: 0.6 }}
                 >
-                  <motion.div className="pr-qrbox" animate={{ rotate: [0, 0.8, 0, -0.8, 0] }} transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}>
-                    <QrCode key={url} text={url} size={168} />
-                  </motion.div>
+                  <QrHold url={url} />
                   <div className="pr-win__how">
                     <span>Scan with your phone’s camera</span>
                     <AnimatePresence mode="popLayout" initial={false}>
                       <motion.b key={pair.code} className="mono" initial={{ y: 20, rotateX: -80 }} animate={{ y: 0, rotateX: 0 }} exit={{ y: -20, rotateX: 80, transition: FLIP_OUT }} transition={SPRING}>{prettyCode(pair.code)}</motion.b>
                     </AnimatePresence>
                     <small>or open /pair on the phone and type the code</small>
+                    <CopyLink url={url} />
                   </div>
                 </motion.div>
               ) : shown ? (
@@ -309,30 +253,23 @@ function Stage() {
         </motion.div>
       </motion.div>
 
-      <svg className="pr-cord" ref={svg} aria-hidden>
-        <motion.path
-          ref={cord}
-          d="M0 0"
-          fill="none"
-          stroke={lost ? 'var(--stop)' : 'var(--ink)'}
-          strokeWidth={4}
-          strokeLinecap="round"
-          initial={false}
-          animate={{ pathLength: shown ? 1 : 0 }}
-          transition={{ pathLength: { duration: shown ? 0.8 : 0.3, ease: [0.65, 0, 0.35, 1], delay: shown ? 0.6 : 0 } }}
-        />
-        <path ref={flow} d="M0 0" className={`pr-cord__flow ${linked ? 'is-on' : ''}`} />
-        {pair.traffic.map((t) => <Rider key={t.id} t={t} path={cord} />)}
-      </svg>
+
+      {pair.traffic.map((t) => <StageHop key={t.id} t={t} stage={stage} island={island} win={win} />)}
 
       <motion.div className="pr-phone-at" style={{ x: phX, y: phY }}>
         <motion.div className="pr-phone" initial={{ x: 260, y: 240, rotate: 34 }} animate={{ x: 0, y: 0, rotate: shown ? -4 : -9 }} transition={{ type: 'spring', stiffness: 120, damping: 15, delay: 0.45 }}>
-          <motion.div className="pr-phone__body" animate={shown ? { y: 0 } : { y: [0, -10, 0] }} transition={shown ? SPRING : { duration: 3, repeat: Infinity, ease: 'easeInOut' }}>
-            <span className="pr-phone__notch" ref={notch} />
+          <motion.div className={`pr-phone__body ${lost ? 'is-lost' : ''}`} animate={shown ? { y: 0 } : { y: [0, -10, 0] }} transition={shown ? SPRING : { duration: 3, repeat: Infinity, ease: 'easeInOut' }}>
+            <i className="pr-phone__btn is-action" />
+            <i className="pr-phone__btn is-up" />
+            <i className="pr-phone__btn is-down" />
+            <i className="pr-phone__btn is-side" />
             <div className="pr-phone__screen">
               <AnimatePresence initial={false}>
-                {shown ? <Remote key="remote" lost={lost} peer={pair.peer} /> : <Viewfinder key="vf" />}
+                {shown ? <MiniRemote key="remote" lost={lost} peer={pair.peer} /> : <Viewfinder key="vf" />}
               </AnimatePresence>
+              <StatusBar lost={lost} />
+              <Island ref={island} lost={lost} waiting={!shown} />
+              <i className="pr-phone__home" />
             </div>
           </motion.div>
         </motion.div>
@@ -454,7 +391,7 @@ function HostView() {
   }
   const head = linked ? `Linked to ${pair.peer || 'your phone'}.` : lost ? 'The phone stepped away.' : 'Two screens, one trail.'
   const line = linked
-    ? 'Your phone is a remote now. Steer, point, press, ask or pass something across; it all rides the cord.'
+    ? 'Your phone is a remote now. Steer, point, press, ask or pass something across, and watch it hop between the two.'
     : lost
       ? 'It links again on its own as soon as the phone wakes or comes back into signal.'
       : 'Scan the code with your phone. It becomes a remote with its own cursor here, and a pocket for links, for as long as both pages stay open.'
@@ -472,12 +409,13 @@ function HostView() {
               <LinkLine status={pair.status} peer={pair.peer} />
               <div className="pr-acts">
                 <span className="pr-acts__state">
-                  {linked ? <>Linked <Since at={pair.since} /></> : lost ? 'Out of reach, retrying' : <>Code <b className="mono">{pair.code ? prettyCode(pair.code) : '…'}</b></>}
+                  {linked ? <>{pair.held ? 'Paused · ' : ''}Linked <Since at={pair.since} /></> : lost ? 'Out of reach, retrying' : <>Code <b className="mono">{pair.code ? prettyCode(pair.code) : '…'}</b></>}
                 </span>
                 <AnimatePresence mode="popLayout" initial={false}>
                   {shown ? (
                     <motion.span key="on" className="pr-acts__btns" initial={{ y: 20, clipPath: 'inset(0 0 100% 0)' }} animate={{ y: 0, clipPath: 'inset(0 0 0% 0)', transitionEnd: { clipPath: 'none' } }} exit={{ y: -20, clipPath: 'inset(100% 0 0 0)' }} transition={SPRING}>
                       <motion.button onClick={buzz} disabled={!linked} whileTap={{ scale: 0.92, rotate: -4 }}>Buzz {pair.peer || 'the phone'}</motion.button>
+                      <motion.button className={pair.held ? 'is-held' : 'is-quiet'} onClick={() => holdRemote(!pair.held)} disabled={!linked} whileTap={{ scale: 0.92 }} data-cursor={pair.held ? 'Give the phone its controls back' : 'Stop the phone steering this screen'}>{pair.held ? 'Resume remote' : 'Pause remote'}</motion.button>
                       <button className="is-quiet" onClick={() => { unpair(); window.setTimeout(() => startHosting(true), 150) }}>Unpair</button>
                     </motion.span>
                   ) : (
@@ -510,23 +448,4 @@ function HostView() {
 
 /* ---------------------------------------------------------------- phone */
 
-function JoinView() {
-  const navigate = useNavigate()
-  const [code, setCode] = useState('')
-  const clean = code.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8)
-  return (
-    <div className="pr t-cream pr-join">
-      <Top quiet />
-      <motion.div className="pr-join__card" initial={{ y: 40 }} animate={{ y: 0 }} transition={SPRING}>
-        <span className="pr-kicker"><PhoneGlyph size={15} /> Pair a phone</span>
-        <h1>Open this page on your computer, then scan its code.</h1>
-        <p>Or type the eight letters it shows under the QR.</p>
-        <form onSubmit={(e) => { e.preventDefault(); if (validCode(clean)) navigate(`/pair#${clean}`) }}>
-          <input value={clean.length > 4 ? `${clean.slice(0, 4)}·${clean.slice(4)}` : clean} onChange={(e) => setCode(e.target.value)} placeholder="ABCD·EFGH" aria-label="Pairing code" autoCapitalize="characters" autoComplete="off" spellCheck={false} className="mono" />
-          <button type="submit" disabled={!validCode(clean)}>Link</button>
-        </form>
-      </motion.div>
-    </div>
-  )
-}
 

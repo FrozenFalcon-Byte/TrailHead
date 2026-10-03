@@ -104,7 +104,8 @@ function Tether({ status, peer }: { status: string; peer: string }) {
   const linked = status === 'linked'
   const kicker = linked ? 'Linked to' : status === 'lost' ? 'Lost sight of' : 'Reaching'
   const name = peer || 'your computer'
-  const line = last ? last.id : linked ? 'since' : status
+  const held = linked && pair.held
+  const line = last ? last.id : held ? 'held' : linked ? 'since' : status
   return (
     <motion.header className={`pp-head is-${status}`} initial={{ y: -40, clipPath: 'inset(0 0 100% 0 round 26px)' }} animate={{ y: 0, clipPath: 'inset(0 0 0% 0 round 26px)', transitionEnd: { clipPath: 'none' } }} transition={{ type: 'spring', stiffness: 200, damping: 24 }}>
       <div className="pp-head__words">
@@ -121,6 +122,11 @@ function Tether({ status, peer }: { status: string; peer: string }) {
                 <>
                   <i style={{ background: KIND_COLOR[last.kind] ?? 'var(--yellow)' }} />
                   {last.text}
+                </>
+              ) : held ? (
+                <>
+                  <i style={{ background: 'var(--yellow)' }} />
+                  Paused by {name} · passing and buzzing still work
                 </>
               ) : linked && pair.since ? (
                 <>since <Since at={pair.since} /></>
@@ -218,7 +224,7 @@ const SPARKS = ['var(--orange)', 'var(--yellow)', 'var(--green)', 'var(--blue)',
 
 /** One-finger drag moves this phone's cursor on the computer; a quick tap presses what it points at; the wheel on the
  *  right scrolls the page. Your finger drags an orange cursor with a short yellow trail behind it. */
-function Pad({ enabled, peer }: { enabled: boolean; peer: string }) {
+function Pad({ enabled, peer, held }: { enabled: boolean; peer: string; held: boolean }) {
   const acc = useRef({ dx: 0, dy: 0, sy: 0 })
   const start = useRef<{ x: number; y: number; t: number; moved: number } | null>(null)
   const last = useRef({ x: 0, y: 0 })
@@ -309,7 +315,7 @@ function Pad({ enabled, peer }: { enabled: boolean; peer: string }) {
   }
 
   return (
-    <Section i={1} title="Point and scroll" meta={<span className="pp-sec__meta">{enabled ? 'Live' : 'Paused'}</span>}>
+    <Section i={1} title="Point and scroll" meta={<span className="pp-sec__meta">{enabled ? 'Live' : held ? 'Paused' : 'Waiting'}</span>}>
       <div className={`pp-pad ${enabled ? '' : 'is-off'}`}>
         <div className={`pp-pad__area ${mode === 'point' ? 'is-on' : ''}`} onPointerDown={down('point')} onPointerMove={move} onPointerUp={up} onPointerCancel={up}>
           <svg className="pp-pad__trail" aria-hidden>
@@ -335,7 +341,7 @@ function Pad({ enabled, peer }: { enabled: boolean; peer: string }) {
               </motion.span>
             )}
           </AnimatePresence>
-          <span className="pp-pad__hint">{enabled ? 'Drag to move your cursor · tap to press' : 'Waiting for the link'}</span>
+          <span className="pp-pad__hint">{enabled ? 'Drag to move your cursor · tap to press' : held ? `${peer || 'The computer'} paused the remote` : 'Waiting for the link'}</span>
         </div>
         <div className={`pp-pad__rail ${mode === 'scroll' ? 'is-on' : ''}`} onPointerDown={down('scroll')} onPointerMove={move} onPointerUp={up} onPointerCancel={up} aria-label="Scroll the page">
           <motion.svg className="pp-pad__arrow" viewBox="0 0 24 24" animate={{ y: dir === 1 ? -5 : 0, scale: dir === 1 ? 1.25 : 1 }} transition={POP} aria-hidden>
@@ -493,6 +499,7 @@ export function PhoneView({ code }: { code: string }) {
     [],
   )
   const linked = pair.status === 'linked'
+  const steer = linked && !pair.held
   const page = pagePath(pair.page || '')
   const incoming = pair.drops.filter((d) => d.from === 'host')
   const peer = pair.peer
@@ -502,8 +509,8 @@ export function PhoneView({ code }: { code: string }) {
   return (
     <div className={`pr t-cream pp ${linked ? 'is-linked' : 'is-down'}`}>
       <Tether status={pair.status === 'off' ? 'waiting' : pair.status} peer={peer} />
-      <Keys linked={linked} page={page} />
-      <Pad enabled={linked} peer={peer} />
+      <Keys linked={steer} page={page} />
+      <Pad enabled={steer} peer={peer} held={pair.held && linked} />
       <div className="pp-cards">
         <Composer
           i={2}
@@ -514,7 +521,7 @@ export function PhoneView({ code }: { code: string }) {
           label="Ask on the computer"
           bg="var(--lilac)"
           accent="var(--violet)"
-          linked={linked}
+          linked={steer}
           min={3}
           onSend={(q) => {
             post({ t: 'ask', q })

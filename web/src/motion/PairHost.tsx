@@ -1,7 +1,7 @@
 import { AnimatePresence, motion, useMotionValue, useSpring, useTransform, useVelocity } from 'motion/react'
 import { useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { dismissDrop, isLink, onPairMessage, post, resumeHosting, unpair, usePair, type Drop } from '../lib/pair'
+import { dismissDrop, holdRemote, isLink, onPairMessage, post, resumeHosting, unpair, usePair, type Drop } from '../lib/pair'
 import { chime, notify } from '../lib/toast'
 import { buzz } from './PairSplash'
 
@@ -138,19 +138,118 @@ function DropCard({ d }: { d: Drop }) {
   )
 }
 
+// what this screen sent lately, kept across pages so it can be sent again in a click
+let sentLog: { id: string; text: string; title?: string }[] = []
+
+const DOCK_BEADS = ['var(--orange)', 'var(--yellow)', 'var(--green)', 'var(--blue)', 'var(--violet)']
+
+type Act = { id: string; label: string; sub: string; bg: string; glyph: string; run: () => void; off?: boolean; on?: boolean }
+
+/** What the dock can do, as keys: each a pastel square with an ink outline that sinks when pressed. */
+function DockKey({ a, i }: { a: Act; i: number }) {
+  const [fired, setFired] = useState(0)
+  return (
+    <motion.button
+      className={`ph-key ${a.on ? 'is-on' : ''}`}
+      style={{ '--key': a.bg, '--i': i } as React.CSSProperties}
+      disabled={a.off}
+      onClick={() => {
+        a.run()
+        setFired((f) => f + 1)
+      }}
+      initial={{ scale: 0.4, rotate: i % 2 ? 10 : -10 }}
+      animate={{ scale: 1, rotate: 0 }}
+      transition={{ type: 'spring', stiffness: 420, damping: 18, delay: 0.08 + i * 0.035 }}
+      data-cursor={a.sub}
+    >
+      <motion.svg key={fired} viewBox="0 0 24 24" aria-hidden initial={fired ? { scale: 0.5, rotate: -20 } : false} animate={{ scale: 1, rotate: 0 }} transition={{ type: 'spring', stiffness: 500, damping: 14 }}>
+        <path d={a.glyph} />
+      </motion.svg>
+      <b>{a.label}</b>
+      <small>{a.sub}</small>
+    </motion.button>
+  )
+}
+
 function Dock() {
   const pair = usePair()
+  const navigate = useNavigate()
   const [open, setOpen] = useState(false)
   const [text, setText] = useState('')
+  const picked = useRef('')
   const live = pair.status === 'linked'
+  const lost = pair.status === 'lost'
+  const name = pair.peer || 'your phone'
   const incoming = pair.drops.filter((d) => d.from === 'phone')
+  const [sent, setSent] = useState(sentLog)
+
+  // Alt+P opens the dock from anywhere, Escape folds it
+  useEffect(() => {
+    const key = (e: KeyboardEvent) => {
+      if (e.altKey && e.code === 'KeyP') {
+        e.preventDefault()
+        setOpen((o) => !o)
+      }
+      if (e.key === 'Escape') setOpen(false)
+    }
+    // remember what was selected before a click in the dock clears it
+    const sel = () => {
+      const t = window.getSelection()?.toString().trim() ?? ''
+      if (t) picked.current = t
+    }
+    window.addEventListener('keydown', key)
+    document.addEventListener('selectionchange', sel)
+    return () => {
+      window.removeEventListener('keydown', key)
+      document.removeEventListener('selectionchange', sel)
+    }
+  }, [])
+
+  const give = (t: string, title?: string, what = 'Sent') => {
+    post({ t: 'drop', text: t.slice(0, 4000), ...(title ? { title } : {}) })
+    sentLog = [{ id: `${Date.now()}`, text: t, title }, ...sentLog.filter((x) => x.text !== t)].slice(0, 3)
+    setSent(sentLog)
+    notify.ok(`${what} to ${name}`, t.length > 60 ? `${t.slice(0, 56)}…` : t)
+  }
   const sendText = () => {
     const t = text.trim()
     if (!t) return
-    post({ t: 'drop', text: t })
+    give(t)
     setText('')
-    notify.ok('Sent to your phone', t.length > 60 ? `${t.slice(0, 56)}…` : t)
   }
+  const acts: Act[] = [
+    { id: 'page', label: 'This page', sub: 'Its link, ready to open on the phone', bg: 'var(--sky)', glyph: 'M4 6 H20 V18 H4 Z M4 9.5 H20 M7 7.8 H7.1', run: () => give(window.location.href, document.title, 'Page sent'), off: !live },
+    { id: 'sel', label: 'Selection', sub: 'The text you have highlighted', bg: 'var(--lilac)', glyph: 'M5 7 H19 M5 12 H14 M5 17 H11 M16 14 V20 M14 15 H18', run: () => (picked.current ? give(picked.current) : notify.warn('Nothing selected', 'Highlight some text on the page first.')), off: !live },
+    {
+      id: 'clip',
+      label: 'Clipboard',
+      sub: 'Whatever you last copied',
+      bg: 'var(--mint)',
+      glyph: 'M9 4 H15 V7 H9 Z M7 5.5 H5.5 V20 H18.5 V5.5 H17 M9 12 H15 M9 16 H13',
+      run: () =>
+        navigator.clipboard?.readText().then(
+          (t) => (t.trim() ? give(t.trim()) : notify.warn('The clipboard is empty')),
+          () => notify.warn('Could not read the clipboard', 'Allow it in the browser, or paste into the box below.'),
+        ),
+      off: !live,
+    },
+    { id: 'buzz', label: 'Buzz', sub: 'Ring the phone to find it', bg: 'var(--butter)', glyph: 'M6 16 V11 A6 6 0 0 1 18 11 V16 L20 18 H4 Z M10 21 H14', run: buzz, off: !live },
+    {
+      id: 'hold',
+      label: pair.held ? 'Resume' : 'Pause',
+      sub: pair.held ? 'Give the phone its controls back' : 'Stop the phone steering this screen',
+      bg: 'var(--peach)',
+      glyph: pair.held ? 'M8 5 L19 12 L8 19 Z' : 'M8 5 V19 M16 5 V19',
+      run: () => {
+        holdRemote(!pair.held)
+        notify.ok(pair.held ? 'Remote resumed' : 'Remote paused', pair.held ? `${name} can steer again.` : 'Passing and buzzing still work.')
+      },
+      off: !live,
+      on: pair.held,
+    },
+    { id: 'pair', label: 'Pair page', sub: 'The full view of the link', bg: 'var(--limeade)', glyph: 'M7 2.5 H17 V21.5 H7 Z M11 18.5 H13 M3 9 L5 11 L3 13 M21 9 L19 11 L21 13', run: () => navigate('/pair') },
+  ]
+
   return (
     <div className="ph-dock">
       <AnimatePresence initial={false}>
@@ -158,27 +257,53 @@ function Dock() {
           <DropCard key={d.id} d={d} />
         ))}
       </AnimatePresence>
-      <motion.div className={`ph-tether ${live ? 'is-live' : ''}`} layout transition={{ type: 'spring', stiffness: 340, damping: 30 }}>
-        <button className="ph-tether__handle" onClick={() => setOpen((o) => !o)} aria-expanded={open} data-cursor={open ? 'Fold the drawer' : 'Your phone'}>
+      <motion.div className={`ph-tether is-${pair.status} ${pair.held ? 'is-held' : ''}`} layout transition={{ type: 'spring', stiffness: 340, damping: 30 }}>
+        <button className="ph-tether__handle" onClick={() => setOpen((o) => !o)} aria-expanded={open} aria-keyshortcuts="Alt+P" data-cursor={open ? 'Fold the drawer · Esc' : 'Your phone · Alt+P'}>
           <PhoneGlyph live={live} />
-          <span className="ph-tether__cord" aria-hidden>
-            <motion.i animate={live ? { x: ['-100%', '100%'] } : { x: '-100%' }} transition={live ? { duration: 1.6, repeat: Infinity, ease: 'linear' } : { duration: 0.3 }} />
+          <span className="ph-tether__beads" aria-hidden>
+            {DOCK_BEADS.map((c, k) => (
+              <motion.i
+                key={`${pair.status}-${pair.held}-${k}`}
+                style={{ background: live && !pair.held ? c : lost ? 'var(--stop)' : 'var(--dim)' }}
+                animate={live && !pair.held ? { x: [0, -5, 0], scale: [1, 1.3, 1] } : lost ? { x: 4, rotate: 40 } : { scale: [1, 0.7, 1] }}
+                transition={live && !pair.held ? { duration: 0.9, repeat: Infinity, repeatDelay: 0.6, delay: k * 0.1 } : lost ? { type: 'spring', stiffness: 300, damping: 12, delay: k * 0.05 } : { duration: 1.4, repeat: Infinity, delay: k * 0.15 }}
+              />
+            ))}
           </span>
+          {pair.held && <motion.span className="ph-tether__held" initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 500, damping: 15 }}>II</motion.span>}
         </button>
         <AnimatePresence initial={false}>
           {open && (
             <motion.div className="ph-drawer" initial={{ width: 0 }} animate={{ width: 'auto' }} exit={{ width: 0 }} transition={{ type: 'spring', stiffness: 320, damping: 32 }}>
               <div className="ph-drawer__in">
-                <b>{live ? `Linked to ${pair.peer || 'your phone'}` : pair.status === 'lost' ? 'Phone out of reach' : 'Waiting for your phone'}</b>
-                <form onSubmit={(e) => { e.preventDefault(); sendText() }}>
-                  <input value={text} onChange={(e) => setText(e.target.value)} placeholder="Text or a link for your phone" aria-label="Send to phone" disabled={!live} />
-                  <button type="submit" disabled={!live || !text.trim()}>Send</button>
-                </form>
-                <div className="ph-drawer__row">
-                  <button disabled={!live} onClick={() => post({ t: 'drop', text: window.location.href, title: document.title })}>Send this page</button>
-                  <button disabled={!live} onClick={buzz}>Buzz it</button>
-                  <button className="is-quiet" onClick={() => { unpair(); setOpen(false) }}>Unpair</button>
+                <div className="ph-drawer__head">
+                  <small>{live ? (pair.held ? 'Paused' : 'Linked to') : lost ? 'Out of reach' : 'Waiting for'}</small>
+                  <AnimatePresence mode="popLayout" initial={false}>
+                    <motion.b key={name} initial={{ y: 20, rotateX: -80 }} animate={{ y: 0, rotateX: 0 }} exit={{ y: -20, rotateX: 80, transition: { duration: 0.22, ease: [0.5, 0, 0.75, 0] } }} transition={{ type: 'spring', stiffness: 420, damping: 24 }}>{name[0].toUpperCase() + name.slice(1)}</motion.b>
+                  </AnimatePresence>
+                  <span className="ph-drawer__kbd"><kbd>Alt</kbd><kbd>P</kbd></span>
                 </div>
+                <div className="ph-keys">
+                  {acts.map((a, i) => <DockKey key={a.id} a={a} i={i} />)}
+                </div>
+                <form className="ph-send" onSubmit={(e) => { e.preventDefault(); sendText() }}>
+                  <input value={text} onChange={(e) => setText(e.target.value)} placeholder="Text or a link for the phone" aria-label="Send to phone" disabled={!live} />
+                  <motion.button type="submit" disabled={!live || !text.trim()} whileTap={{ x: 6 }} aria-label="Send">
+                    <svg viewBox="0 0 24 24" aria-hidden><path d="M5 12 H19 M13 6 L19 12 L13 18" /></svg>
+                  </motion.button>
+                </form>
+                {sent.length > 0 && (
+                  <div className="ph-sent">
+                    <small>Sent lately</small>
+                    {sent.map((d) => (
+                      <button key={d.id} onClick={() => give(d.text, d.title, 'Sent again')} disabled={!live} data-cursor="Send it again">
+                        <span>{d.title || d.text}</span>
+                        <svg viewBox="0 0 24 24" aria-hidden><path d="M4 12 A8 8 0 1 0 7 6 M4 4 V8 H8" /></svg>
+                      </button>
+                    ))}
+                  </div>
+                )}
+                <button className="ph-cut" onClick={() => { unpair(); setOpen(false) }}>Unpair {name}</button>
               </div>
             </motion.div>
           )}

@@ -10,7 +10,8 @@
 .pp-head__line i { width: 8px; height: 8px; border-radius: 3px; box-shadow: 0 0 0 1.5px #fbf8f1; }
 .pp-head .pr-link { max-width: none; }
 .pp-head .pr-link__tile { width: 40px; height: 40px; border-radius: 13px; box-shadow: inset 0 0 0 2px #17161b; }
-.pp-head.is-linked .pr-link__line path:first-child { stroke: #fbf8f1; }
+.pp-head .pr-bead { box-shadow: 0 0 0 2px #fbf8f1; }
+.pp-head .pr-hop { box-shadow: 0 0 0 2px #fbf8f1; }
 
 /* sections */
 .pp-sec { margin-top: 22px; }
@@ -117,3 +118,52 @@
 .pp-end__cord path { fill: none; stroke: var(--stop); stroke-width: 5; stroke-linecap: round; }
 .pp .pp-again { margin-top: 6px; padding: 15px 30px; font-size: 16px; background: var(--yellow); color: #17161b; box-shadow: inset 0 0 0 2px #fbf8f1, 3px 4px 0 0 #fbf8f1; }
 .pp .pp-again:active { box-shadow: inset 0 0 0 2px #fbf8f1, 0 0 0 0 #fbf8f1; }
+
+/* join: the phone before it has a code */
+.pj { padding-bottom: 40px; }
+.pj-code { position: relative; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)) 4px repeat(4, minmax(0, 1fr)); gap: 7px; padding: 0 4px 4px 0; cursor: text; }
+.pj-code__input { position: absolute; inset: 0; z-index: 2; width: 100%; height: 100%; opacity: 0; font-size: 16px; color: transparent; caret-color: transparent; border: 0; background: none; }
+.pj-cell {
+  position: relative; display: grid; place-items: center; aspect-ratio: 3 / 4; border-radius: 13px; background: var(--surface); overflow: visible;
+  box-shadow: inset 0 0 0 2px var(--ink), 3px 4px 0 0 var(--ink); translate: 3px 4px;
+  transition: translate 0.35s cubic-bezier(0.34, 1.7, 0.64, 1), box-shadow 0.35s cubic-bezier(0.34, 1.7, 0.64, 1), background-color 0.2s;
+}
+.pj-cell:not(.is-on) { box-shadow: inset 0 0 0 2px var(--ink), 0 0 0 0 var(--ink); }
+.pj-cell.is-on { translate: 0 0; }
+.pj-cell.is-gap { grid-column-start: 6; }
+.pj-cell.is-gap::before { content: ''; position: absolute; left: -12px; top: 50%; width: 6px; height: 6px; margin-top: -3px; border-radius: 2px; background: var(--ink); }
+.pj-cell b { font-size: clamp(18px, 6vw, 26px); font-weight: 800; color: var(--ink); }
+.pj-caret { position: absolute; left: 50%; top: 24%; bottom: 24%; width: 3px; margin-left: -1.5px; border-radius: 2px; background: var(--orange); animation: pj-blink 1s steps(1) infinite; }
+@keyframes pj-blink { 50% { opacity: 0; } }
+.pj-acts { display: grid; grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); gap: 9px; margin-top: 16px; padding: 0 4px 4px 0; }
+.pp .pj-act { min-height: 62px; font-size: 12.5px; }
+.pp .pj-act svg, .pj-go svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.pp .pj-go { grid-auto-flow: column; gap: 6px; min-height: 62px; font: 800 17px/1 var(--display); color: var(--ink); }
+.pj-hint { margin: 12px 4px 0; font-size: 12.5px; line-height: 1.45; color: var(--ink-soft); }
+.pj-last { display: grid; grid-template-columns: auto 1fr auto auto; align-items: center; gap: 12px; padding: 12px 10px 12px 12px; border-radius: 20px; background: #17161b; color: #fbf8f1; box-shadow: 0 0 0 2px #17161b, 4px 5px 0 0 rgba(23, 22, 27, 0.28); }
+.pj-last__glyph { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 13px; background: var(--mint); color: var(--ink); box-shadow: inset 0 0 0 2px #17161b; }
+.pj-last__words { display: grid; min-width: 0; }
+.pj-last__words small { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(251, 248, 241, 0.6); }
+.pj-last__words b { font: 800 18px/1.15 var(--display); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pj-last__words .mono { font-size: 11.5px; color: rgba(251, 248, 241, 0.55); letter-spacing: 0.1em; }
+.pj-last__go { border: 0; border-radius: 12px; padding: 10px 13px; background: var(--yellow); color: #17161b; font: 750 13.5px/1 inherit; font-family: inherit; box-shadow: inset 0 0 0 2px #17161b; cursor: pointer; }
+.pj-last__go:active { scale: 0.94; }
+.pj-last__x { width: 30px; height: 30px; border: 0; border-radius: 50%; background: rgba(251, 248, 241, 0.1); color: inherit; font-size: 18px; line-height: 1; cursor: pointer; }
+.pj-steps { display: grid; gap: 9px; margin: 0; padding: 0 4px 4px 0; list-style: none; }
+.pj-steps li { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 12px; padding: 12px 14px 12px 12px; border-radius: 18px; box-shadow: inset 0 0 0 2px var(--ink), 3px 4px 0 0 var(--ink); }
+.pj-steps__n { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 10px; background: #17161b; color: #fbf8f1; font: 800 16px/1 var(--display); }
+.pj-steps li span { display: grid; gap: 2px; min-width: 0; }
+.pj-steps li span b { font-size: 14.5px; font-weight: 750; color: var(--ink); }
+.pj-steps li small { font-size: 12.5px; color: var(--ink-soft); overflow-wrap: anywhere; }
+.pj-scan { position: fixed; inset: 0; z-index: 200; display: grid; place-items: center; align-content: center; gap: 22px; background: #17161b; color: #fbf8f1; }
+.pj-scan video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.85; }
+.pj-scan__frame { position: relative; width: min(68vw, 280px); aspect-ratio: 1; border-radius: 28px; box-shadow: 0 0 0 100vmax rgba(23, 22, 27, 0.55); }
+.pj-scan__frame i { position: absolute; width: 46px; height: 46px; border: 5px solid var(--yellow); }
+.pj-scan__frame i:nth-child(1) { left: -3px; top: -3px; border-right: 0; border-bottom: 0; border-radius: 28px 0 0 0; }
+.pj-scan__frame i:nth-child(2) { right: -3px; top: -3px; border-left: 0; border-bottom: 0; border-radius: 0 28px 0 0; }
+.pj-scan__frame i:nth-child(3) { right: -3px; bottom: -3px; border-left: 0; border-top: 0; border-radius: 0 0 28px 0; }
+.pj-scan__frame i:nth-child(4) { left: -3px; bottom: -3px; border-right: 0; border-top: 0; border-radius: 0 0 0 28px; }
+.pj-scan__frame.is-found i { border-color: var(--green); }
+.pj-scan__sweep { position: absolute; left: 10%; right: 10%; height: 4px; border-radius: 4px; background: var(--orange); box-shadow: 0 0 0 2px #17161b; }
+.pj-scan p { position: relative; margin: 0; font: 800 20px/1.2 var(--display); text-align: center; }
+.pj-scan__x { position: relative; border: 0; border-radius: 14px; padding: 12px 18px; background: #fbf8f1; color: #17161b; font: 750 14px/1 inherit; font-family: inherit; box-shadow: inset 0 0 0 2px #17161b, 3px 4px 0 0 var(--yellow); cursor: pointer; }
