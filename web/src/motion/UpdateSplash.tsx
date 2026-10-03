@@ -3,6 +3,7 @@ import '@fontsource-variable/inter'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { cornerOffset, useCornerSlot } from '../lib/corner'
 import { usePref } from '../lib/prefs'
 import { useRelease } from '../lib/version'
 import { Mark } from './Mark'
@@ -42,6 +43,7 @@ export function UpdateSplash() {
   // The chip sits under the splash while it closes, and the splash clips down onto exactly where it is.
   const chip = useRef<DOMRect | null>(null)
   const folded = useRef(false)
+  const slot = useCornerSlot('update', view === 'chip' && !going)
 
   useEffect(() => {
     if (!release || shown.current === release.id) return
@@ -62,7 +64,10 @@ export function UpdateSplash() {
   const changes = release.changes.slice(0, 3).map((c) => { const head = c.split(':')[0]; const t = head.length >= 12 && head.length < 90 ? head : c; return t.length > 96 ? `${t.slice(0, 94).trimEnd()}…` : t })
   const spring = reduce ? { duration: 0 } : { type: 'spring' as const, stiffness: 220, damping: 26 }
   const c = chip.current
-  const box = { left: c?.left ?? 18, top: c?.top ?? window.innerHeight - 58, w: c?.width ?? 150, h: c?.height ?? 40 }
+  // where the chip will sit in the corner stack, which may have moved since it was last measured
+  const base = window.innerWidth <= 640 ? 12 : 18
+  const h = c?.height ?? 40
+  const box = { left: base, top: window.innerHeight - base - h - cornerOffset('update'), w: c?.width ?? 150, h }
   const into = `inset(${box.top}px ${window.innerWidth - box.left - box.w}px ${window.innerHeight - box.top - box.h}px ${box.left}px round 18px)`
   const fold = { duration: 0.5, ease: [0.76, 0, 0.24, 1] as const }
 
@@ -113,8 +118,8 @@ export function UpdateSplash() {
           </motion.div>
         ) : (
           !going && (
-            <motion.button key="chip" className="usp-chip" onClick={() => setOpen(true)} ref={(el: HTMLButtonElement | null) => { if (el) chip.current = el.getBoundingClientRect() }}
-              initial={reduce || folded.current ? false : { scale: 0, rotate: -20 }} animate={{ scale: 1, rotate: 0, transition: { type: 'spring', stiffness: 380, damping: 18, delay: 0.25 } }} exit={{ scale: 0, rotate: 20, transition: { duration: 0.15 } }}
+            <motion.button key="chip" className="usp-chip" onClick={() => setOpen(true)} ref={(el: HTMLButtonElement | null) => { if (el) chip.current = el.getBoundingClientRect(); slot.measure(el) }}
+              initial={reduce || folded.current ? false : { scale: 0, rotate: -20 }} animate={{ scale: 1, rotate: 0, y: -slot.offset, transition: { type: 'spring', stiffness: 380, damping: 18, delay: 0.25, y: { type: 'spring', stiffness: 300, damping: 28 } } }} exit={{ scale: 0, rotate: 20, transition: { duration: 0.15 } }}
               style={{ borderRadius: 18, transformOrigin: 'left bottom' }} aria-label="A new version is ready" data-cursor="See what changed">
               <motion.span animate={{ rotate: [0, -10, 0] }} transition={{ duration: 1.6, repeat: Infinity, repeatDelay: 2.4 }} style={{ display: 'inline-flex' }}>
                 <Shape kind="tag" color="var(--orange)" glyph="flag" size={24} play={false} />

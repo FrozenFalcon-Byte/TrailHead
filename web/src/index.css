@@ -602,3 +602,4 @@ html.tc-on * {
   .usp { padding-bottom: calc(18vh + 16px); }
   .usp-land { height: 18vh; }
 }
+@media (max-width: 640px) { .usp-chip { left: 12px; bottom: 12px; } }

@@ -1,6 +1,7 @@
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { useCornerSlot } from '../lib/corner'
 import { COLD_START_S, dismissWake, isHosted, useWake, watchWake } from '../lib/wake'
 
 /* The wait for a sleeping server, told as dawn at a ranger station. While the host boots, the sun climbs behind
@@ -98,6 +99,7 @@ export function WakeSheet() {
   const awake = w.phase === 'awake'
   const frac = Math.min(1, secs / COLD_START_S)
   const took = Math.round(w.took / 1000)
+  const slot = useCornerSlot('wake', shown && folded)
   useEffect(() => {
     if (!live) return
     const id = window.setInterval(() => setHint((n) => (n + 1) % HINTS.length), 3200)
@@ -171,11 +173,12 @@ export function WakeSheet() {
       {shown && folded && (
         <motion.button
           key="toast"
+          ref={slot.measure}
           className={`wkt is-${w.phase}`}
           onClick={() => (awake ? dismissWake() : setFolded(false))}
           initial={reduce ? false : { scale: 0, rotate: -12, y: 20 }}
-          animate={{ scale: 1, rotate: 0, y: 0, transition: { type: 'spring', stiffness: 380, damping: 20, delay: 0.3 } }}
-          exit={{ scale: 0.4, y: 30, opacity: 0, transition: { duration: 0.25 } }}
+          animate={{ scale: 1, rotate: 0, y: -slot.offset, transition: { type: 'spring', stiffness: 380, damping: 20, delay: 0.3, y: { type: 'spring', stiffness: 300, damping: 28 } } }}
+          exit={{ scale: 0, rotate: 12, transition: { duration: 0.22 } }}
           style={{ transformOrigin: 'left bottom' }}
           aria-label={awake ? 'The server is awake' : 'Open the server wake-up screen'}
           data-cursor={awake ? 'Done' : 'Open'}
