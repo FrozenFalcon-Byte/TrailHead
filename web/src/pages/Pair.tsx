@@ -5,24 +5,21 @@ import { useEffect, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { Mark } from '../motion/Mark'
 import { PhoneGlyph } from '../motion/PairHost'
-import { buzz, ScreenGlyph } from '../motion/PairSplash'
+import { buzz } from '../motion/PairSplash'
 import { QrCode } from '../motion/QrSheet'
 import {
-  clearTraffic, deviceName, dismissDrop, getPair, isLink, joinAsPhone, onPairEvent, onPairMessage, PAIR_PAGES, pagePath, phoneUrl, post, prettyCode, startHosting, unpair, usePair, validCode, type Traffic,
+  clearTraffic, dismissDrop, getPair, isLink, onPairMessage, PAIR_PAGES, pagePath, phoneUrl, post, prettyCode, startHosting, unpair, usePair, validCode, type Traffic,
 } from '../lib/pair'
 import { isLocalOrigin } from '../lib/qr'
-import { chime, notify } from '../lib/toast'
+import { notify } from '../lib/toast'
 import { useSignedIn } from '../lib/auth'
 import './pair.css'
+import { EASE, FLIP_OUT, KIND_COLOR, KIND_LABEL, LinkLine, Since, SPRING, UseArt } from './pairParts'
+import { PhoneView } from './PairPhone'
 
 /* Pair a phone. On a computer the page shows a QR on a ridge; the phone that scans it opens this same page as a
    controller, and a trail draws itself across the valley between the two peaks. Everything that passes between
    them rides that trail. On a phone without a code, the page asks for the one the computer shows. */
-
-const EASE = [0.22, 1, 0.36, 1] as const
-const SPRING = { type: 'spring', stiffness: 260, damping: 28 } as const
-const KIND_LABEL: Record<string, string> = { go: 'Steer', ask: 'Ask', drop: 'Pass', ring: 'Ring', tap: 'Point', bye: 'Bye' }
-const KIND_COLOR: Record<string, string> = { go: 'var(--blue)', ask: 'var(--violet)', drop: 'var(--orange)', ring: 'var(--yellow)', tap: 'var(--green)', bye: 'var(--stop)' }
 
 const isPhone = () => window.matchMedia('(max-width: 720px), (pointer: coarse) and (max-width: 1024px)').matches
 
@@ -183,7 +180,7 @@ function Mirror() {
     <motion.div className="pr-mirror" initial={{ y: 40, clipPath: 'inset(0 0 100% 0)' }} animate={{ y: 0, clipPath: 'inset(0 0 0% 0)', transitionEnd: { clipPath: 'none' } }} exit={{ y: -20, clipPath: 'inset(0 0 100% 0)', transition: { duration: 0.3 } }} transition={{ type: 'spring', stiffness: 200, damping: 24, delay: 0.5 }}>
       <span className="pr-mirror__k"><PhoneGlyph size={14} live /> {pair.peer || 'Your phone'} has the wheel</span>
       <AnimatePresence mode="popLayout" initial={false}>
-        <motion.b key={pair.page} className="pr-mirror__page" initial={{ y: 30, rotateX: -70 }} animate={{ y: 0, rotateX: 0 }} exit={{ y: -30, rotateX: 70 }} transition={SPRING}>
+        <motion.b key={pair.page} className="pr-mirror__page" initial={{ y: 30, rotateX: -70 }} animate={{ y: 0, rotateX: 0 }} exit={{ y: -30, rotateX: 70, transition: FLIP_OUT }} transition={SPRING}>
           {pageLabel(pair.page)}
         </motion.b>
       </AnimatePresence>
@@ -299,7 +296,7 @@ function Stage() {
                   <div className="pr-win__how">
                     <span>Scan with your phone’s camera</span>
                     <AnimatePresence mode="popLayout" initial={false}>
-                      <motion.b key={pair.code} className="mono" initial={{ y: 20, rotateX: -80 }} animate={{ y: 0, rotateX: 0 }} exit={{ y: -20, rotateX: 80 }} transition={SPRING}>{prettyCode(pair.code)}</motion.b>
+                      <motion.b key={pair.code} className="mono" initial={{ y: 20, rotateX: -80 }} animate={{ y: 0, rotateX: 0 }} exit={{ y: -20, rotateX: 80, transition: FLIP_OUT }} transition={SPRING}>{prettyCode(pair.code)}</motion.b>
                     </AnimatePresence>
                     <small>or open /pair on the phone and type the code</small>
                   </div>
@@ -345,37 +342,6 @@ function Stage() {
 }
 
 /** Each use shows itself working, small and on a loop. */
-function UseArt({ kind }: { kind: string }) {
-  const stroke = { fill: 'none', stroke: 'currentColor', strokeWidth: 2.2, strokeLinecap: 'round', strokeLinejoin: 'round' } as const
-  if (kind === 'go')
-    return (
-      <svg width={24} height={24} viewBox="0 0 24 24" aria-hidden>
-        <motion.path d="M5 12 H19 M13 6 L19 12 L13 18" {...stroke} animate={{ x: [-2, 3, -2] }} transition={{ duration: 1.4, repeat: Infinity, ease: 'easeInOut' }} />
-      </svg>
-    )
-  if (kind === 'tap')
-    return (
-      <svg width={24} height={24} viewBox="0 0 24 24" aria-hidden>
-        <path d="M12 3 V7 M12 17 V21 M3 12 H7 M17 12 H21" {...stroke} />
-        <motion.circle r={2.6} fill="currentColor" animate={{ cx: [12, 15, 10, 12], cy: [12, 10, 14, 12] }} transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut' }} />
-      </svg>
-    )
-  if (kind === 'ask')
-    return (
-      <svg width={24} height={24} viewBox="0 0 24 24" aria-hidden>
-        <path d="M5 6 H19 V16 H11 L7 20 V16 H5 Z" {...stroke} />
-        {[0, 1, 2].map((i) => (
-          <motion.circle key={i} cx={9 + i * 3} cy={11} r={1.2} fill="currentColor" animate={{ cy: [11, 9.4, 11] }} transition={{ duration: 0.9, repeat: Infinity, delay: i * 0.15 }} />
-        ))}
-      </svg>
-    )
-  return (
-    <svg width={24} height={24} viewBox="0 0 24 24" aria-hidden>
-      <motion.path d="M4 12 L20 4 L14 20 L11 13 Z" {...stroke} animate={{ x: [-3, 2, -3], y: [3, -2, 3], rotate: [0, -6, 0] }} transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }} />
-    </svg>
-  )
-}
-
 const USES = [
   { kind: 'go', title: 'Steer', text: 'Tap a page on the phone and this screen goes there. Handy from across the room.' },
   { kind: 'tap', title: 'Point', text: 'Drag on the phone to move a cursor with its name on it over this screen; tap to press what it points at.' },
@@ -416,7 +382,7 @@ function Uses() {
           <p>{u.text}</p>
           <span className={`pr-use__state ${on ? 'is-on' : ''}`}>
             <AnimatePresence mode="popLayout" initial={false}>
-              <motion.span key={String(on)} initial={{ y: 12, rotateX: -70 }} animate={{ y: 0, rotateX: 0 }} exit={{ y: -12, rotateX: 70 }} transition={SPRING}>
+              <motion.span key={String(on)} initial={{ y: 12, rotateX: -70 }} animate={{ y: 0, rotateX: 0 }} exit={{ y: -12, rotateX: 70, transition: FLIP_OUT }} transition={SPRING}>
                 {on ? 'Ready on your phone' : 'After you scan'}
               </motion.span>
             </AnimatePresence>
@@ -461,72 +427,6 @@ function Drops() {
         ))}
       </AnimatePresence>
     </div>
-  )
-}
-
-function Since({ at }: { at: number }) {
-  const [, tick] = useState(0)
-  useEffect(() => {
-    const t = window.setInterval(() => tick((n) => n + 1), 15000)
-    return () => window.clearInterval(t)
-  }, [])
-  const m = Math.floor((Date.now() - at) / 60000)
-  return <>{m < 1 ? 'just now' : m === 1 ? 'a minute ago' : m < 60 ? `${m} minutes ago` : 'over an hour ago'}</>
-}
-
-/** The two devices side by side with the line between them: it flows while linked, sags red while the phone is out
- *  of reach, and marches as dots while it waits. */
-function LinkLine({ status, peer, phone = false, bare = false }: { status: string; peer: string; phone?: boolean; bare?: boolean }) {
-  const linked = status === 'linked'
-  const lost = status === 'lost'
-  const pair = usePair()
-  const line = useRef<SVGPathElement>(null)
-  const me = deviceName()
-  const devices = [
-    { key: 'screen', name: phone ? peer || 'Computer' : me, glyph: <ScreenGlyph size={22} />, bg: 'var(--butter)', you: !phone },
-    { key: 'phone', name: phone ? me : peer || 'Your phone', glyph: <PhoneGlyph size={22} live={linked} />, bg: 'var(--peach)', you: phone },
-  ]
-  return (
-    <div className={`pr-link is-${status}`}>
-      {devices.map((d, i) => (
-        <motion.span key={d.key} className={`pr-link__dev ${i ? 'is-right' : ''}`} animate={{ x: linked ? (i ? -4 : 4) : 0 }} transition={{ type: 'spring', stiffness: 300, damping: 12 }}>
-          <motion.span className="pr-link__tile" style={{ background: d.bg }} animate={!linked && !lost && !d.you ? { scale: [1, 0.9, 1] } : { scale: 1 }} transition={{ duration: 1.4, repeat: !linked && !lost && !d.you ? Infinity : 0 }}>
-            {d.glyph}
-          </motion.span>
-          {!bare && <span className="pr-link__name">
-            <small>{d.you ? 'This one' : linked ? 'Linked' : lost ? 'Out of reach' : 'Waiting'}</small>
-            <AnimatePresence mode="popLayout" initial={false}>
-              <motion.b key={d.name} initial={{ y: 16, rotateX: -80 }} animate={{ y: 0, rotateX: 0 }} exit={{ y: -16, rotateX: 80 }} transition={SPRING}>{d.name}</motion.b>
-            </AnimatePresence>
-          </span>}
-        </motion.span>
-      ))}
-      <svg className="pr-link__line" viewBox="0 0 200 40" preserveAspectRatio="none" aria-hidden>
-        <motion.path
-          ref={line}
-          fill="none"
-          stroke={lost ? 'var(--stop)' : linked ? 'var(--ink)' : 'var(--dim)'}
-          strokeWidth={3}
-          strokeLinecap="round"
-          strokeDasharray={linked ? '200 0' : lost ? '7 7' : '0.5 9'}
-          vectorEffect="non-scaling-stroke"
-          initial={false}
-          animate={{ d: lost ? 'M4 14 C 60 44, 140 44, 196 14' : 'M4 20 C 60 20, 140 20, 196 20', strokeDashoffset: linked ? 0 : [0, -19] }}
-          transition={{ d: { type: 'spring', stiffness: 140, damping: 9 }, strokeDashoffset: { duration: 0.9, repeat: linked ? 0 : Infinity, ease: 'linear' } }}
-        />
-        {linked && <motion.path d="M4 20 C 60 20, 140 20, 196 20" fill="none" stroke="var(--yellow)" strokeWidth={3} strokeLinecap="round" strokeDasharray="8 30" vectorEffect="non-scaling-stroke" initial={{ strokeDashoffset: 0 }} animate={{ strokeDashoffset: phone ? 76 : -76 }} transition={{ duration: 1.2, repeat: Infinity, ease: 'linear' }} />}
-        {pair.traffic.map((t) => <Pulse key={t.id} t={t} phone={phone} />)}
-      </svg>
-    </div>
-  )
-}
-
-/** A dot shooting along the link line for each thing passed across, in the direction it went. */
-function Pulse({ t, phone }: { t: Traffic; phone: boolean }) {
-  // left is the computer: on the computer "in" comes from the right; on the phone "out" goes to the left
-  const leftward = phone ? t.dir === 'out' : t.dir === 'in'
-  return (
-    <motion.circle cy={20} r={6} fill={KIND_COLOR[t.kind] ?? 'var(--ink)'} stroke="var(--ink)" strokeWidth={2} vectorEffect="non-scaling-stroke" initial={{ cx: leftward ? 196 : 4 }} animate={{ cx: leftward ? 4 : 196 }} transition={{ duration: 0.8, ease: [0.45, 0, 0.2, 1] }} onAnimationComplete={() => phone && clearTraffic(t.id)} />
   )
 }
 
@@ -630,192 +530,3 @@ function JoinView() {
   )
 }
 
-/** The top of the phone: a dark card with both devices and the line between them, saying who this phone is
- *  linked to. It flips its words, flows while linked, sags red when the computer is out of reach. */
-function Tether({ status, peer }: { status: string; peer: string }) {
-  const pair = usePair()
-  const linked = status === 'linked'
-  const kicker = linked ? 'Linked to' : status === 'lost' ? 'Lost sight of' : status === 'off' ? 'Unpaired from' : 'Reaching'
-  const name = peer || 'your computer'
-  return (
-    <motion.header className={`pp-head is-${status}`} layout initial={{ y: -40, clipPath: 'inset(0 0 100% 0 round 24px)' }} animate={{ y: 0, clipPath: 'inset(0 0 0% 0 round 24px)', transitionEnd: { clipPath: 'none' } }} transition={{ type: 'spring', stiffness: 200, damping: 24 }}>
-      <div className="pp-head__words">
-        <AnimatePresence mode="popLayout" initial={false}>
-          <motion.small key={kicker} initial={{ y: 14, rotateX: -80 }} animate={{ y: 0, rotateX: 0 }} exit={{ y: -14, rotateX: 80 }} transition={SPRING}>{kicker}</motion.small>
-        </AnimatePresence>
-        <AnimatePresence mode="popLayout" initial={false}>
-          <motion.b key={name} initial={{ y: 26, rotateX: -80 }} animate={{ y: 0, rotateX: 0 }} exit={{ y: -26, rotateX: 80 }} transition={SPRING}>{name}</motion.b>
-        </AnimatePresence>
-        <span className="pp-head__since">{linked && pair.since ? <>since <Since at={pair.since} /></> : status === 'lost' ? 'retrying on its own' : status === 'waiting' ? 'saying hello…' : ''}</span>
-      </div>
-      <LinkLine status={status} peer={peer} phone bare />
-    </motion.header>
-  )
-}
-
-/** One-finger drag moves this phone's cursor on the computer; a quick tap presses what it points at; the rail on the
- *  right scrolls the page. */
-function Pad({ enabled }: { enabled: boolean }) {
-  const acc = useRef({ dx: 0, dy: 0, sy: 0 })
-  const start = useRef<{ x: number; y: number; t: number; moved: number } | null>(null)
-  const last = useRef({ x: 0, y: 0 })
-  const dot = useRef<HTMLSpanElement>(null)
-  const [mode, setMode] = useState<'' | 'point' | 'scroll'>('')
-  useEffect(() => {
-    const t = window.setInterval(() => {
-      const a = acc.current
-      if (a.dx || a.dy) post({ t: 'point', dx: Math.round(a.dx), dy: Math.round(a.dy) })
-      if (a.sy) post({ t: 'scroll', dy: Math.round(a.sy) })
-      acc.current = { dx: 0, dy: 0, sy: 0 }
-    }, 60)
-    return () => window.clearInterval(t)
-  }, [])
-  const down = (kind: 'point' | 'scroll') => (e: React.PointerEvent) => {
-    if (!enabled) return
-    e.currentTarget.setPointerCapture(e.pointerId)
-    start.current = { x: e.clientX, y: e.clientY, t: Date.now(), moved: 0 }
-    last.current = { x: e.clientX, y: e.clientY }
-    setMode(kind)
-  }
-  const move = (e: React.PointerEvent) => {
-    if (!start.current || !mode) return
-    const dx = e.clientX - last.current.x
-    const dy = e.clientY - last.current.y
-    last.current = { x: e.clientX, y: e.clientY }
-    start.current.moved += Math.abs(dx) + Math.abs(dy)
-    if (mode === 'point') {
-      acc.current.dx += dx
-      acc.current.dy += dy
-      const r = e.currentTarget.getBoundingClientRect()
-      dot.current?.style.setProperty('translate', `${e.clientX - r.left}px ${e.clientY - r.top}px`)
-    } else acc.current.sy -= dy * 1.6
-  }
-  const up = () => {
-    const s = start.current
-    if (s && mode === 'point' && s.moved < 8 && Date.now() - s.t < 260) {
-      post({ t: 'tap' })
-      navigator.vibrate?.(12)
-    }
-    start.current = null
-    setMode('')
-  }
-  return (
-    <div className={`pp-pad ${enabled ? '' : 'is-off'}`}>
-      <div className={`pp-pad__area ${mode === 'point' ? 'is-on' : ''}`} onPointerDown={down('point')} onPointerMove={move} onPointerUp={up} onPointerCancel={up}>
-        <span ref={dot} className="pp-pad__dot" aria-hidden />
-        <span className="pp-pad__hint">Drag to move your cursor · tap to press</span>
-      </div>
-      <div className={`pp-pad__rail ${mode === 'scroll' ? 'is-on' : ''}`} onPointerDown={down('scroll')} onPointerMove={move} onPointerUp={up} onPointerCancel={up} aria-label="Scroll the page">
-        {Array.from({ length: 9 }, (_, i) => <i key={i} />)}
-        <span>Scroll</span>
-      </div>
-    </div>
-  )
-}
-
-function PhoneView({ code }: { code: string }) {
-  const pair = usePair()
-  const [q, setQ] = useState('')
-  const [text, setText] = useState('')
-  const [ended, setEnded] = useState(false)
-  const root = useRef<HTMLDivElement>(null)
-  useEffect(() => {
-    joinAsPhone(code)
-    document.documentElement.dataset.pairPhone = '1'
-    return () => {
-      delete document.documentElement.dataset.pairPhone
-    }
-  }, [code])
-  useEffect(() => onPairEvent((e) => { if (e.kind === 'unpaired' && e.by === 'peer') setEnded(true) }), [])
-  useEffect(
-    () =>
-      onPairMessage((m) => {
-        if (m.t === 'drop') {
-          navigator.vibrate?.(30)
-          chime('job')
-        }
-      }),
-    [],
-  )
-  const linked = pair.status === 'linked'
-  const page = pagePath(pair.page || '')
-  const incoming = pair.drops.filter((d) => d.from === 'host')
-
-  if (ended)
-    return (
-      <div className="pr t-cream pp">
-        <Tether status="off" peer="" />
-        <motion.div className="pp-ended" initial={{ y: 30 }} animate={{ y: 0 }} transition={SPRING}>
-          <h1>Unpaired.</h1>
-          <p>Scan the code on your computer again to pick the trail back up.</p>
-          <button onClick={() => { setEnded(false); joinAsPhone(code) }}>Link again</button>
-        </motion.div>
-      </div>
-    )
-
-  return (
-    <div className="pr t-cream pp" ref={root}>
-      <Tether status={pair.status === 'off' ? 'waiting' : pair.status} peer={pair.peer} />
-
-      <section className="pp-block">
-        <h2>Steer</h2>
-        <div className="pp-pages">
-          {PAIR_PAGES.map((p) => {
-            const on = page === p.to
-            return (
-              <motion.button key={p.to} className={on ? 'is-on' : ''} disabled={!linked} onClick={() => { post({ t: 'go', to: p.to }); navigator.vibrate?.(10) }} whileTap={{ scale: 0.92 }}>
-                {on && <motion.span layoutId="pp-here" className="pp-pages__here" transition={{ type: 'spring', stiffness: 420, damping: 32 }} />}
-                <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.1} strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d={p.glyph} /></svg>
-                <span>{p.label}</span>
-              </motion.button>
-            )
-          })}
-        </div>
-      </section>
-
-      <section className="pp-block">
-        <h2>Point and scroll</h2>
-        <Pad enabled={linked} />
-      </section>
-
-      <section className="pp-block">
-        <h2>Ask on the big screen</h2>
-        <form className="pp-form" onSubmit={(e) => { e.preventDefault(); if (q.trim().length >= 3) { post({ t: 'ask', q: q.trim() }); setQ(''); notify.ok('Asked on your computer', 'The answer opens there.') } }}>
-          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="How does retrying work?" disabled={!linked} aria-label="Question" />
-          <button type="submit" disabled={!linked || q.trim().length < 3}>Ask</button>
-        </form>
-      </section>
-
-      <section className="pp-block">
-        <h2>Pass across</h2>
-        <form className="pp-form" onSubmit={(e) => { e.preventDefault(); if (text.trim()) { post({ t: 'drop', text: text.trim() }); setText('') } }}>
-          <input value={text} onChange={(e) => setText(e.target.value)} placeholder="Text or a link" disabled={!linked} aria-label="Send to computer" />
-          <button type="submit" disabled={!linked || !text.trim()}>Send</button>
-        </form>
-        <div className="pp-drops">
-          <AnimatePresence initial={false}>
-            {incoming.map((d) => (
-              <motion.div key={d.id} layout className="pr-drop" initial={{ y: -40, scale: 0.9, rotate: -3 }} animate={{ y: 0, scale: 1, rotate: 0 }} exit={{ x: 200, rotate: 6, transition: { duration: 0.25 } }} transition={SPRING}>
-                <span className="pr-drop__from"><ScreenGlyph size={13} /> {d.title ? d.title.replace(/ · Trailhead$/, '') : 'From your computer'}</span>
-                <p className={isLink(d.text) ? 'mono' : ''}>{d.text}</p>
-                <div className="pr-drop__acts">
-                  <button onClick={() => navigator.clipboard?.writeText(d.text).then(() => notify.ok('Copied'), () => undefined)}>Copy</button>
-                  {isLink(d.text) && <a href={d.text.trim()} target="_blank" rel="noreferrer noopener">Open ↗</a>}
-                  {'share' in navigator && <button onClick={() => navigator.share({ text: d.text }).catch(() => undefined)}>Share</button>}
-                  <button className="is-quiet" onClick={() => dismissDrop(d.id)}>Done</button>
-                </div>
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </div>
-      </section>
-
-      <footer className="pp-foot">
-        <motion.button className="pp-ring" disabled={!linked} onClick={buzz} whileTap={{ scale: 0.9, rotate: -8 }}>
-          Buzz {pair.peer || 'the computer'}
-        </motion.button>
-        <button className="is-quiet" onClick={() => { unpair(); setEnded(true) }}>Unpair</button>
-      </footer>
-    </div>
-  )
-}

@@ -36,7 +36,7 @@ function HandGlyph({ size = 18 }: { size?: number }) {
   )
 }
 
-function Letters({ text, delay }: { text: string; delay: number }) {
+export function Letters({ text, delay }: { text: string; delay: number }) {
   return (
     <h2 className="psp-title" aria-label={text}>
       {Array.from(text).map((ch, i) => (
@@ -50,16 +50,89 @@ function Letters({ text, delay }: { text: string; delay: number }) {
   )
 }
 
+/** The two devices and the cord between them, laid out to fit this screen. Each tile carries its half of the cord, so
+ *  the halves move with the tiles: linking draws the halves out until they meet in the middle, unpairing pulls the
+ *  cord taut and red, snaps it, and lets each half whip back to its own device as the two are thrown apart. */
+function Duo({ linked }: { linked: boolean }) {
+  const W = Math.min(window.innerWidth * 0.92, 520)
+  const T = W < 420 ? 76 : 92
+  const near = Math.max(T / 2 + 34, W * 0.2)
+  const far = W / 2 - T / 2 - 8
+  const snap = 0.62
+  return (
+    <motion.div
+      className="psp-duo"
+      style={{ width: W, height: T + 40 }}
+      animate={linked ? undefined : { x: [0, 0, -9, 8, -5, 3, 0] }}
+      transition={{ duration: 1.1, times: [0, snap / 1.1, (snap + 0.06) / 1.1, (snap + 0.14) / 1.1, (snap + 0.22) / 1.1, (snap + 0.3) / 1.1, 1] }}
+    >
+      {[-1, 1].map((side) => {
+        const s = -side // towards the middle
+        // each half ends level in the middle, so the two read as one cord until it breaks
+        const sag = `M0 0 Q ${s * near * 0.5} 18 ${s * near} 18`
+        const taut = `M0 0 Q ${s * near * 0.5} 0 ${s * near} 0`
+        const curl = `M0 0 Q ${s * near * 0.45} 8 ${s * near * 0.22} 46`
+        return (
+          <motion.span
+            key={side}
+            className="psp-dev"
+            style={{ width: T, height: T, marginLeft: -T / 2, marginTop: -T / 2 }}
+            initial={linked ? { x: side * (far + 90), rotate: side * 26, scale: 0.6 } : { x: side * near, rotate: 0, scale: 1 }}
+            animate={
+              linked
+                ? { x: side * near, rotate: 0, scale: 1 }
+                : { x: [side * near, side * near, side * (far + 16), side * far], y: [0, 0, -14, 0], rotate: [0, side * -5, side * 18, side * 13] }
+            }
+            transition={linked ? { type: 'spring', stiffness: 170, damping: 16, delay: 0.12 } : { duration: 1.25, times: [0, snap / 1.25, (snap + 0.3) / 1.25, 1], ease: [[0.3, 0, 0.6, 1], [0.2, 0.9, 0.3, 1], [0.4, 0, 0.3, 1]] }}
+          >
+            <svg className="psp-half" viewBox="-1 -1 2 2" aria-hidden>
+              <motion.path
+                fill="none"
+                strokeWidth={5}
+                strokeLinecap="round"
+                initial={linked ? { d: sag, pathLength: 0, stroke: '#ffbd1a' } : { d: sag, pathLength: 1, stroke: '#ffbd1a' }}
+                animate={linked ? { pathLength: 1 } : { d: [sag, taut, curl], pathLength: [1, 1, 0.3], stroke: ['#ffbd1a', '#ef4b33', '#ef4b33'] }}
+                transition={linked ? { duration: 0.42, delay: 0.5, ease: [0.65, 0, 0.35, 1] } : { duration: 1.05, times: [0, snap / 1.05, 1], ease: [[0.4, 0, 0.6, 1], [0.1, 0.8, 0.3, 1]] }}
+              />
+            </svg>
+            <motion.span
+              className="psp-tile"
+              style={{ width: T, height: T, background: side < 0 ? 'var(--butter)' : 'var(--peach)' }}
+              animate={linked ? undefined : { x: [0, 0, 1.5, -1.5, 1.5, -1.5, 0, 0] }}
+              transition={{ duration: snap, times: [0, 0.35, 0.5, 0.62, 0.74, 0.86, 0.98, 1] }}
+            >
+              {side < 0 ? <ScreenGlyph size={T * 0.4} /> : <HandGlyph size={T * 0.4} />}
+            </motion.span>
+          </motion.span>
+        )
+      })}
+      {/* the moment in the middle: a ring and a scatter, where the halves meet or where the cord breaks */}
+      <motion.span className="psp-pop" initial={{ scale: 0, borderWidth: 12 }} animate={{ scale: 2.6, borderWidth: 0 }} transition={{ duration: 0.6, delay: linked ? 0.92 : snap, ease: [0.22, 1, 0.36, 1] }} style={{ borderColor: linked ? '#fbf8f1' : '#ef4b33' }} aria-hidden />
+      {Array.from({ length: linked ? 14 : 10 }, (_, i) => {
+        const a = (i / (linked ? 14 : 10)) * Math.PI * 2 + (linked ? 0 : 0.3)
+        const d = (linked ? 80 : 60) + (i % 3) * 26
+        return (
+          <motion.i
+            key={i}
+            className="psp-spark"
+            style={{ background: linked ? COLORS[i % COLORS.length] : i % 2 ? '#ef4b33' : '#ffbd1a', borderRadius: i % 3 === 0 ? '50%' : i % 3 === 1 ? 3 : '50% 50% 50% 3px' }}
+            initial={{ x: 0, y: 0, scale: 0, rotate: 0 }}
+            animate={{ x: Math.cos(a) * d, y: Math.sin(a) * d * 0.7 + (linked ? 0 : 30), scale: [0, 1.2, 0], rotate: 220 }}
+            transition={{ duration: linked ? 0.9 : 0.7, delay: linked ? 0.95 : snap, ease: [0.22, 1, 0.36, 1] }}
+          />
+        )
+      })}
+      {linked && <motion.i className="psp-runner" initial={{ x: -near, scale: 0 }} animate={{ x: [-near, near], scale: [0, 1, 1, 0] }} transition={{ duration: 0.7, delay: 1.15, ease: [0.65, 0, 0.35, 1], repeat: 1, repeatDelay: 0.08 }} aria-hidden />}
+    </motion.div>
+  )
+}
+
 function Splash({ e }: { e: PairEvent }) {
   const linked = e.kind !== 'unpaired'
   const me = deviceName()
   const peer = e.peer || (e.role === 'host' ? 'your phone' : 'your computer')
   const title = linked ? 'Linked' : 'Unpaired'
   const line = linked ? `${me} and ${peer} are on one trail` : e.by === 'you' ? `You let go of ${peer}` : `${peer} ended the link`
-  // tiles: far apart -> together when linking; together -> thrown apart when unpairing
-  const from = linked ? 46 : 13
-  const to = linked ? 13 : 30
-  const cord = 'M -100 0 C -50 26, 50 26, 100 0'
   const enter = linked ? { initial: 'circle(0% at 50% 50%)', open: 'circle(75% at 50% 50%)' } : { initial: 'inset(0 50% 0 50%)', open: 'inset(0 0% 0 0%)' }
 
   return (
@@ -68,59 +141,15 @@ function Splash({ e }: { e: PairEvent }) {
       style={{ background: INK }}
       initial={{ clipPath: enter.initial }}
       animate={{ clipPath: enter.open }}
-      exit={{ clipPath: enter.initial, transition: { duration: 0.5, ease: [0.76, 0, 0.24, 1] } }}
-      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+      exit={{ clipPath: enter.initial, transition: { duration: 0.45, ease: [0.76, 0, 0.24, 1] } }}
+      transition={{ duration: linked ? 0.5 : 0.38, ease: [0.22, 1, 0.36, 1] }}
       role="status"
       aria-live="polite"
     >
       <motion.div className="psp-in" exit={{ y: -40, transition: { duration: 0.4, ease: [0.76, 0, 0.24, 1] } }}>
-        <div className="psp-duo">
-          <svg className="psp-cord" viewBox="-160 -40 320 80" aria-hidden>
-            {linked ? (
-              <>
-                <motion.path d={cord} fill="none" stroke="var(--yellow)" strokeWidth={5} strokeLinecap="round" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 0.55, delay: 0.55, ease: [0.65, 0, 0.35, 1] }} />
-                <motion.circle r={7} fill="#fff" initial={{ offsetDistance: '0%', scale: 0 }} animate={{ offsetDistance: ['0%', '100%'], scale: [0, 1, 1, 0] }} transition={{ duration: 0.9, delay: 1.1, ease: 'easeInOut', repeat: 1, repeatDelay: 0.1 }} style={{ offsetPath: `path('${cord}')` }} />
-              </>
-            ) : (
-              <>
-                <motion.path d="M -100 0 C -60 24, -20 26, 0 24" fill="none" stroke="var(--stop)" strokeWidth={5} strokeLinecap="round" initial={{ pathLength: 1, rotate: 0 }} animate={{ pathLength: 0, rotate: -18 }} transition={{ delay: 0.45, type: 'spring', stiffness: 160, damping: 14 }} style={{ originX: '-100px', originY: '0px' }} />
-                <motion.path d="M 100 0 C 60 24, 20 26, 0 24" fill="none" stroke="var(--stop)" strokeWidth={5} strokeLinecap="round" initial={{ pathLength: 1, rotate: 0 }} animate={{ pathLength: 0, rotate: 18 }} transition={{ delay: 0.45, type: 'spring', stiffness: 160, damping: 14 }} style={{ originX: '100px', originY: '0px' }} />
-              </>
-            )}
-          </svg>
-          {[
-            { key: 'screen', side: -1, bg: 'var(--butter)', glyph: <ScreenGlyph size={34} /> },
-            { key: 'phone', side: 1, bg: 'var(--peach)', glyph: <HandGlyph size={34} /> },
-          ].map((t) => (
-            <motion.span
-              key={t.key}
-              className="psp-tile"
-              style={{ background: t.bg }}
-              initial={{ x: `${t.side * from}vmin`, rotate: linked ? t.side * 24 : 0, scale: linked ? 0.6 : 1 }}
-              animate={{ x: `${t.side * to}vmin`, rotate: linked ? 0 : t.side * 14, scale: 1 }}
-              transition={linked ? { type: 'spring', stiffness: 170, damping: 15, delay: 0.15 } : { type: 'spring', stiffness: 220, damping: 12, delay: 0.5 }}
-            >
-              {t.glyph}
-            </motion.span>
-          ))}
-          {linked &&
-            Array.from({ length: 14 }, (_, i) => {
-              const a = (i / 14) * Math.PI * 2
-              const d = 90 + (i % 3) * 34
-              return (
-                <motion.i
-                  key={i}
-                  className="psp-spark"
-                  style={{ background: COLORS[i % COLORS.length], borderRadius: i % 3 === 0 ? '50%' : i % 3 === 1 ? 4 : '50% 50% 50% 4px' }}
-                  initial={{ x: 0, y: 12, scale: 0, rotate: 0 }}
-                  animate={{ x: Math.cos(a) * d, y: 12 + Math.sin(a) * d * 0.7, scale: [0, 1.2, 0], rotate: 200 }}
-                  transition={{ duration: 0.9, delay: 1.05, ease: [0.22, 1, 0.36, 1] }}
-                />
-              )
-            })}
-        </div>
-        <Letters text={title} delay={linked ? 0.75 : 0.35} />
-        <motion.p className="psp-line" initial={{ y: 24, clipPath: 'inset(0 0 100% 0)' }} animate={{ y: 0, clipPath: 'inset(0 0 0% 0)' }} transition={{ type: 'spring', stiffness: 260, damping: 26, delay: linked ? 1 : 0.6 }}>
+        <Duo linked={linked} />
+        <Letters text={title} delay={linked ? 0.75 : 0.8} />
+        <motion.p className="psp-line" initial={{ y: 24, clipPath: 'inset(0 0 100% 0)' }} animate={{ y: 0, clipPath: 'inset(0 0 0% 0)' }} transition={{ type: 'spring', stiffness: 260, damping: 26, delay: linked ? 1 : 1.0 }}>
           {line}
         </motion.p>
       </motion.div>
