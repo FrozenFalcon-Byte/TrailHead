@@ -227,6 +227,17 @@ const SPARKS = ['var(--orange)', 'var(--yellow)', 'var(--green)', 'var(--blue)',
 function Pad({ enabled, peer, held }: { enabled: boolean; peer: string; held: boolean }) {
   const acc = useRef({ dx: 0, dy: 0, sy: 0 })
   const start = useRef<{ x: number; y: number; t: number; moved: number } | null>(null)
+  // fingers on the pad, for telling a two-finger tap (right click) and a two-finger drag (scroll) from pointing
+  const fingers = useRef(new Map<number, { x: number; y: number }>())
+  const two = useRef<{ t: number; moved: number } | null>(null)
+  const press = useRef(0)
+  const [grab, setGrab] = useState<'' | 'hold' | 'lock'>('')
+  const grabRef = useRef<'' | 'hold' | 'lock'>('')
+  const setG = (g: '' | 'hold' | 'lock') => {
+    if (!!grabRef.current !== !!g) post({ t: 'grab', on: !!g })
+    grabRef.current = g
+    setGrab(g)
+  }
   const last = useRef({ x: 0, y: 0 })
   const cursor = useRef<HTMLSpanElement>(null)
   const trail = useRef<SVGPathElement>(null)
@@ -263,9 +274,39 @@ function Pad({ enabled, peer, held }: { enabled: boolean; peer: string; held: bo
   }
   const place = (x: number, y: number) => cursor.current?.style.setProperty('translate', `${x}px ${y}px`)
 
+  const menu = () => {
+    post({ t: 'menu' })
+    navigator.vibrate?.([10, 30, 10])
+    echo('menu', `Right-clicked on ${peer || 'the computer'}`)
+  }
+  // let go of a drag if the link drops or the remote is paused mid-way
+  useEffect(() => {
+    if (!enabled && grabRef.current) setG('')
+  }, [enabled]) // eslint-disable-line react-hooks/exhaustive-deps
+
   const down = (kind: 'point' | 'scroll') => (e: React.PointerEvent) => {
     if (!enabled) return
     e.currentTarget.setPointerCapture(e.pointerId)
+    if (kind === 'point') {
+      fingers.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
+      if (fingers.current.size === 2) {
+        // a second finger: this is a right click or a two-finger scroll, not pointing
+        window.clearTimeout(press.current)
+        two.current = { t: Date.now(), moved: 0 }
+        return
+      }
+      if (fingers.current.size > 2) return
+      window.clearTimeout(press.current)
+      // held still for a moment: start dragging, which selects text on the computer
+      if (!grabRef.current)
+        press.current = window.setTimeout(() => {
+          if (start.current && start.current.moved < 10 && fingers.current.size === 1) {
+            setG('hold')
+            navigator.vibrate?.(25)
+            echo('tap', 'Dragging · let go to drop')
+          }
+        }, 420)
+    }
     start.current = { x: e.clientX, y: e.clientY, t: Date.now(), moved: 0 }
     last.current = { x: e.clientX, y: e.clientY }
     setMode(kind)
@@ -276,6 +317,15 @@ function Pad({ enabled, peer, held }: { enabled: boolean; peer: string; held: bo
     }
   }
   const move = (e: React.PointerEvent) => {
+    if (two.current && fingers.current.has(e.pointerId)) {
+      const f = fingers.current.get(e.pointerId)!
+      const dy = e.clientY - f.y
+      two.current.moved += Math.abs(dy) + Math.abs(e.clientX - f.x)
+      fingers.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
+      if (two.current.moved > 14) acc.current.sy -= dy * 0.9
+      return
+    }
+    if (mode === 'point') fingers.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
     if (!start.current || !mode) return
     const dx = e.clientX - last.current.x
     const dy = e.clientY - last.current.y
@@ -298,7 +348,33 @@ function Pad({ enabled, peer, held }: { enabled: boolean; peer: string; held: bo
     }
   }
   const up = (e: React.PointerEvent) => {
+    window.clearTimeout(press.current)
+    if (mode === 'point' || two.current) {
+      fingers.current.delete(e.pointerId)
+      if (two.current) {
+        if (fingers.current.size) return
+        const tw = two.current
+        two.current = null
+        start.current = null
+        setMode('')
+        if (tw.moved < 18 && Date.now() - tw.t < 450) menu()
+        return
+      }
+    }
     const s = start.current
+    if (grabRef.current === 'hold') {
+      setG('')
+      start.current = null
+      setMode('')
+      return
+    }
+    if (grabRef.current === 'lock' && s && s.moved < 8 && Date.now() - s.t < 260) {
+      // a tap ends a locked drag rather than pressing
+      setG('')
+      start.current = null
+      setMode('')
+      return
+    }
     if (s && mode === 'point' && s.moved < 8 && Date.now() - s.t < 260) {
       post({ t: 'tap' })
       navigator.vibrate?.(12)
@@ -317,7 +393,7 @@ function Pad({ enabled, peer, held }: { enabled: boolean; peer: string; held: bo
   return (
     <Section i={1} title="Point and scroll" meta={<span className="pp-sec__meta">{enabled ? 'Live' : held ? 'Paused' : 'Waiting'}</span>}>
       <div className={`pp-pad ${enabled ? '' : 'is-off'}`}>
-        <div className={`pp-pad__area ${mode === 'point' ? 'is-on' : ''}`} onPointerDown={down('point')} onPointerMove={move} onPointerUp={up} onPointerCancel={up}>
+        <div className={`pp-pad__area ${mode === 'point' ? 'is-on' : ''} ${grab ? 'is-grab' : ''}`} onPointerDown={down('point')} onPointerMove={move} onPointerUp={up} onPointerCancel={up}>
           <svg className="pp-pad__trail" aria-hidden>
             <path ref={trail} />
           </svg>
@@ -341,7 +417,9 @@ function Pad({ enabled, peer, held }: { enabled: boolean; peer: string; held: bo
               </motion.span>
             )}
           </AnimatePresence>
-          <span className="pp-pad__hint">{enabled ? 'Drag to move your cursor · tap to press' : held ? `${peer || 'The computer'} paused the remote` : 'Waiting for the link'}</span>
+          <span className="pp-pad__hint">
+            {!enabled ? (held ? `${peer || 'The computer'} paused the remote` : 'Waiting for the link') : grab ? (grab === 'lock' ? 'Dragging · tap to drop' : 'Dragging · let go to drop') : 'Drag · tap · hold to select'}
+          </span>
         </div>
         <div className={`pp-pad__rail ${mode === 'scroll' ? 'is-on' : ''}`} onPointerDown={down('scroll')} onPointerMove={move} onPointerUp={up} onPointerCancel={up} aria-label="Scroll the page">
           <motion.svg className="pp-pad__arrow" viewBox="0 0 24 24" animate={{ y: dir === 1 ? -5 : 0, scale: dir === 1 ? 1.25 : 1 }} transition={POP} aria-hidden>
@@ -356,6 +434,16 @@ function Pad({ enabled, peer, held }: { enabled: boolean; peer: string; held: bo
             <path d="M6 9 L12 15 L18 9" />
           </motion.svg>
         </div>
+      </div>
+      <div className="pp-padkeys">
+        <button className="pp-key" style={{ '--key': 'var(--sky)', '--i': 0 } as React.CSSProperties} disabled={!enabled} onClick={menu}>
+          <svg viewBox="0 0 24 24" aria-hidden><path d="M7 3 H17 A3 3 0 0 1 20 6 V15 A7 7 0 0 1 4 15 V6 A3 3 0 0 1 7 3 Z M12 3 V10 M12 10 H20" /><path d="M12 3 H17 A3 3 0 0 1 20 6 V10 H12 Z" fill="currentColor" /></svg>
+          Right click
+        </button>
+        <button className={`pp-key ${grab ? 'is-lit' : ''}`} style={{ '--key': grab ? 'var(--yellow)' : 'var(--butter)', '--i': 1 } as React.CSSProperties} disabled={!enabled} onClick={() => { setG(grab ? '' : 'lock'); navigator.vibrate?.(15); if (!grab) echo('tap', 'Dragging · move to select') }} aria-pressed={!!grab}>
+          <svg viewBox="0 0 24 24" aria-hidden><path d="M5 7 H19 M5 12 H11 M5 17 H9 M14 11 L20 17 L17 17.5 L18.6 21 L17 21.6 L15.5 18.2 L14 20 Z" /></svg>
+          {grab ? 'Drop' : 'Select / drag'}
+        </button>
       </div>
     </Section>
   )

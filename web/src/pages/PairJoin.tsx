@@ -1,7 +1,7 @@
 import { AnimatePresence, motion } from 'motion/react'
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ALPHABET, findCode, forgetLastLink, lastLink, validCode, type LastLink } from '../lib/pair'
+import { ALPHABET, findCode, forgetLastLink, freshJoin, lastLink, validCode, type LastLink } from '../lib/pair'
 import { shareOrigin } from '../lib/qr'
 import { notify } from '../lib/toast'
 import { PhoneGlyph } from '../motion/PairHost'
@@ -39,7 +39,10 @@ export function JoinView() {
     setCode(c)
     setGoing(true)
     navigator.vibrate?.(20)
-    window.setTimeout(() => navigate(`/pair#${c}`), 820)
+    window.setTimeout(() => {
+      freshJoin()
+      navigate(`/pair#${c}`)
+    }, 820)
   }
   const take = (raw: string) => {
     const found = findCode(raw)

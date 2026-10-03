@@ -25,6 +25,8 @@ export type Msg =
   | { t: 'scroll'; dy: number }
   | { t: 'point'; dx: number; dy: number }
   | { t: 'tap' }
+  | { t: 'grab'; on: boolean }
+  | { t: 'menu' }
   | { t: 'ask'; q: string }
   | { t: 'drop'; text: string; title?: string }
   | { t: 'ring' }
@@ -136,9 +138,9 @@ let watch = 0
 let lastSeen = 0
 let trafficId = 0
 // Pointer and scroll moves are many and small: they skip the traffic markers.
-const QUIET = new Set(['beat', 'point', 'scroll', 'hello', 'welcome', 'page', 'hold'])
+const QUIET = new Set(['beat', 'point', 'scroll', 'hello', 'welcome', 'page', 'hold', 'grab'])
 // what a paused remote cannot do
-const CONTROL = new Set(['go', 'point', 'tap', 'scroll', 'ask'])
+const CONTROL = new Set(['go', 'point', 'tap', 'scroll', 'ask', 'grab', 'menu'])
 
 function mark(dir: 'in' | 'out', kind: string) {
   if (QUIET.has(kind)) return
@@ -317,6 +319,12 @@ export function startHosting(fresh = false) {
   save()
   connect(code)
   return code
+}
+
+/** Joining from the join screen is a fresh link (with its splash), never a quiet pick-up of an old one. */
+export function freshJoin() {
+  if (state.role) return
+  forget()
 }
 
 /** Phone: join the code from the scanned link. */

@@ -10,7 +10,7 @@ import { EASE, KIND_COLOR, KIND_LABEL, SPRING, UseArt } from './pairParts'
 
 type Act = { id: number; kind: string; label: string }
 
-const ACT_LABEL: Record<string, string> = { go: 'Steering', tap: 'Pressed', ask: 'Asking', drop: 'Passing', ring: 'Buzz', scroll: 'Scrolling' }
+const ACT_LABEL: Record<string, string> = { go: 'Steering', tap: 'Pressed', menu: 'Right click', ask: 'Asking', drop: 'Passing', ring: 'Buzz', scroll: 'Scrolling' }
 
 /** The island: a pill that swells into a Live Activity when something happens, and holds "No signal" while lost. */
 export const Island = forwardRef<HTMLDivElement, { lost: boolean; waiting: boolean }>(function Island({ lost, waiting }, ref) {

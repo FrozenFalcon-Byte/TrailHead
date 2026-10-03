@@ -11,8 +11,8 @@ export const EASE = [0.22, 1, 0.36, 1] as const
 export const SPRING = { type: 'spring', stiffness: 260, damping: 28 } as const
 /** Flipped-out words leave on a short clock, so the old word is never still turning when the new one lands. */
 export const FLIP_OUT = { duration: 0.22, ease: [0.5, 0, 0.75, 0] } as const
-export const KIND_LABEL: Record<string, string> = { go: 'Steer', ask: 'Ask', drop: 'Pass', ring: 'Ring', tap: 'Point', bye: 'Bye' }
-export const KIND_COLOR: Record<string, string> = { go: 'var(--blue)', ask: 'var(--violet)', drop: 'var(--orange)', ring: 'var(--yellow)', tap: 'var(--green)', bye: 'var(--stop)' }
+export const KIND_LABEL: Record<string, string> = { go: 'Steer', ask: 'Ask', drop: 'Pass', ring: 'Ring', tap: 'Point', menu: 'Menu', bye: 'Bye' }
+export const KIND_COLOR: Record<string, string> = { go: 'var(--blue)', ask: 'var(--violet)', drop: 'var(--orange)', ring: 'var(--yellow)', tap: 'var(--green)', menu: 'var(--plum)', bye: 'var(--stop)' }
 
 export function UseArt({ kind }: { kind: string }) {
   const stroke = { fill: 'none', stroke: 'currentColor', strokeWidth: 2.2, strokeLinecap: 'round', strokeLinejoin: 'round' } as const
@@ -27,6 +27,15 @@ export function UseArt({ kind }: { kind: string }) {
       <svg width={24} height={24} viewBox="0 0 24 24" aria-hidden>
         <path d="M12 3 V7 M12 17 V21 M3 12 H7 M17 12 H21" {...stroke} />
         <motion.circle r={2.6} fill="currentColor" animate={{ cx: [12, 15, 10, 12], cy: [12, 10, 14, 12] }} transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut' }} />
+      </svg>
+    )
+  if (kind === 'menu')
+    return (
+      <svg width={24} height={24} viewBox="0 0 24 24" aria-hidden>
+        <path d="M5 4 H19 V20 H5 Z" {...stroke} />
+        {[0, 1, 2].map((i) => (
+          <motion.path key={i} d={`M8 ${9 + i * 3.5} H16`} {...stroke} animate={{ pathLength: [0.3, 1, 0.3] }} transition={{ duration: 1.2, repeat: Infinity, delay: i * 0.15 }} />
+        ))}
       </svg>
     )
   if (kind === 'ask')

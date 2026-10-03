@@ -1,5 +1,5 @@
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { deviceName, getPair, onPairEvent, onPairMessage, post, type PairEvent } from '../lib/pair'
 import { chime, ring } from '../lib/toast'
@@ -127,7 +127,25 @@ function Duo({ linked }: { linked: boolean }) {
   )
 }
 
-function Splash({ e }: { e: PairEvent }) {
+/* The splash's own beats (the tiles, the cord, the title) start only once the wipe has opened, and it closes a set
+   time after that, so a phone busy mounting the remote when the link lands still plays the whole thing instead of
+   catching its tail behind a wipe that stalled. */
+function Splash({ e, quick, onDone }: { e: PairEvent; quick: boolean; onDone: () => void }) {
+  const [ready, setReady] = useState(quick)
+  // a page with no frames to spare (or hidden) may never report the wipe done: go on regardless, and never stay up
+  useEffect(() => {
+    const go = window.setTimeout(() => setReady(true), 900)
+    const cap = window.setTimeout(onDone, 6000)
+    return () => {
+      window.clearTimeout(go)
+      window.clearTimeout(cap)
+    }
+  }, [onDone])
+  useEffect(() => {
+    if (!ready) return
+    const t = window.setTimeout(onDone, quick ? 1100 : e.kind === 'unpaired' ? 1700 : 1950)
+    return () => window.clearTimeout(t)
+  }, [ready, quick, e.kind, onDone])
   const linked = e.kind !== 'unpaired'
   const me = deviceName()
   const peer = e.peer || (e.role === 'host' ? 'your phone' : 'your computer')
@@ -142,17 +160,20 @@ function Splash({ e }: { e: PairEvent }) {
       initial={{ clipPath: enter.initial }}
       animate={{ clipPath: enter.open }}
       exit={{ clipPath: enter.initial, transition: { duration: 0.45, ease: [0.76, 0, 0.24, 1] } }}
-      transition={{ duration: linked ? 0.5 : 0.38, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ duration: linked ? 0.42 : 0.34, ease: [0.22, 1, 0.36, 1] }}
+      onAnimationComplete={() => setReady(true)}
       role="status"
       aria-live="polite"
     >
-      <motion.div className="psp-in" exit={{ y: -40, transition: { duration: 0.4, ease: [0.76, 0, 0.24, 1] } }}>
-        <Duo linked={linked} />
-        <Letters text={title} delay={linked ? 0.75 : 0.8} />
-        <motion.p className="psp-line" initial={{ y: 24, clipPath: 'inset(0 0 100% 0)' }} animate={{ y: 0, clipPath: 'inset(0 0 0% 0)' }} transition={{ type: 'spring', stiffness: 260, damping: 26, delay: linked ? 1 : 1.0 }}>
-          {line}
-        </motion.p>
-      </motion.div>
+      {ready && (
+        <motion.div className="psp-in" exit={{ y: -40, transition: { duration: 0.4, ease: [0.76, 0, 0.24, 1] } }}>
+          <Duo linked={linked} />
+          <Letters text={title} delay={linked ? 0.6 : 0.65} />
+          <motion.p className="psp-line" initial={{ y: 24, clipPath: 'inset(0 0 100% 0)' }} animate={{ y: 0, clipPath: 'inset(0 0 0% 0)' }} transition={{ type: 'spring', stiffness: 260, damping: 26, delay: 0.85 }}>
+            {line}
+          </motion.p>
+        </motion.div>
+      )}
     </motion.div>
   )
 }
@@ -249,11 +270,7 @@ export function PairSplash() {
       }),
     [],
   )
-  useEffect(() => {
-    if (!ev) return
-    const t = window.setTimeout(() => setEv(null), reduce ? 1400 : 2400)
-    return () => window.clearTimeout(t)
-  }, [ev, reduce])
+  const endEv = useCallback(() => setEv(null), [])
   useEffect(() => {
     if (!buzz) return
     const t = window.setTimeout(() => setBuzz(null), 2600)
@@ -262,7 +279,7 @@ export function PairSplash() {
 
   return createPortal(
     <AnimatePresence>
-      {ev && <Splash key={ev.id} e={ev} />}
+      {ev && <Splash key={ev.id} e={ev} quick={!!reduce} onDone={endEv} />}
       {buzz && !ev && <Buzz key={buzz.id} from={buzz.from} onDone={() => setBuzz(null)} />}
       {out && !ev && !buzz && <Sent key={out.id} to={out.to} />}
     </AnimatePresence>,

@@ -40,9 +40,49 @@ function pressAt(x: number, y: number) {
   el.click()
 }
 
+// what the phone's cursor is over, so menus and anything else that lights up under a mouse lights up under it too
+let hovered: Element | null = null
+function hover(x: number, y: number) {
+  const el = document.elementFromPoint(x, y)
+  if (el === hovered) return
+  const init = { bubbles: true, composed: true, clientX: x, clientY: y }
+  if (hovered) {
+    hovered.dispatchEvent(new PointerEvent('pointerout', { ...init, pointerType: 'mouse', relatedTarget: el }))
+    hovered.dispatchEvent(new MouseEvent('mouseout', { ...init, relatedTarget: el }))
+  }
+  if (el) {
+    el.dispatchEvent(new PointerEvent('pointerover', { ...init, pointerType: 'mouse', relatedTarget: hovered }))
+    el.dispatchEvent(new MouseEvent('mouseover', { ...init, relatedTarget: hovered }))
+  }
+  hovered = el
+}
+
+type Caret = { node: Node; offset: number }
+type CaretDoc = Document & { caretPositionFromPoint?: (x: number, y: number) => { offsetNode: Node; offset: number } | null }
+
+/** Where a text caret would land at a point, for selecting by dragging the phone's cursor. */
+function caretAt(x: number, y: number): Caret | null {
+  const d = document as CaretDoc
+  if (d.caretPositionFromPoint) {
+    const p = d.caretPositionFromPoint(x, y)
+    return p ? { node: p.offsetNode, offset: p.offset } : null
+  }
+  const r = document.caretRangeFromPoint?.(x, y)
+  return r ? { node: r.startContainer, offset: r.startOffset } : null
+}
+
+function fire(x: number, y: number, kind: 'down' | 'move' | 'up') {
+  const el = document.elementFromPoint(x, y)
+  if (!el) return
+  const init = { bubbles: true, cancelable: true, composed: true, clientX: x, clientY: y, button: 0, buttons: kind === 'up' ? 0 : 1 }
+  el.dispatchEvent(new PointerEvent(`pointer${kind}`, { ...init, pointerType: 'mouse', isPrimary: true }))
+  el.dispatchEvent(new MouseEvent(`mouse${kind}`, init))
+}
+
 /** The phone's cursor: the Trailhead teardrop in orange with the phone's name tagged under it. It springs after the
  *  deltas the phone sends, swings a little as it travels, squishes and rings out on a tap (which presses what is
- *  under it), and tucks away when the phone goes quiet. */
+ *  under it), and tucks away when the phone goes quiet. Held down (a long press on the phone) it drags, selecting
+ *  the text it passes over; a two-finger tap opens a menu where it stands. */
 function Pointer({ name }: { name: string }) {
   const x = useMotionValue(window.innerWidth / 2)
   const y = useMotionValue(window.innerHeight / 2)
@@ -51,27 +91,71 @@ function Pointer({ name }: { name: string }) {
   const lean = useSpring(useTransform(useVelocity(sx), (v) => Math.max(-22, Math.min(22, -v / 90))), { stiffness: 170, damping: 8, mass: 0.8 })
   const [on, setOn] = useState(false)
   const [down, setDown] = useState(false)
+  const [grab, setGrab] = useState(false)
+  const [menu, setMenu] = useState<{ id: number; x: number; y: number; link: string; picked: string } | null>(null)
   const [taps, setTaps] = useState<{ id: number; x: number; y: number }[]>([])
   const idle = useRef(0)
+  const anchor = useRef<Caret | null>(null)
+  const grabbing = useRef(false)
   useEffect(
     () =>
       onPairMessage((m) => {
-        if (m.t !== 'point' && m.t !== 'tap') return
+        if (m.t !== 'point' && m.t !== 'tap' && m.t !== 'grab' && m.t !== 'menu') return
         window.clearTimeout(idle.current)
-        idle.current = window.setTimeout(() => setOn(false), 4000)
+        idle.current = window.setTimeout(() => setOn(false), grabbing.current ? 30000 : 4000)
         setOn(true)
+        const at = () => ({ x: x.get(), y: y.get() })
         if (m.t === 'point') {
           x.set(Math.max(4, Math.min(window.innerWidth - 4, x.get() + m.dx * 2.2)))
           y.set(Math.max(4, Math.min(window.innerHeight - 4, y.get() + m.dy * 2.2)))
+          hover(x.get(), y.get())
+          const hot = document.elementFromPoint(x.get(), y.get())?.closest('.ph-menu button')
+          document.querySelectorAll('.ph-menu .is-hot').forEach((b) => b !== hot && b.classList.remove('is-hot'))
+          hot?.classList.add('is-hot')
+          if (grabbing.current) {
+            const p = at()
+            fire(p.x, p.y, 'move')
+            const focus = caretAt(p.x, p.y)
+            if (anchor.current && focus) window.getSelection()?.setBaseAndExtent(anchor.current.node, anchor.current.offset, focus.node, focus.offset)
+            // nudge the page along while selecting near its top or bottom edge
+            if (p.y > window.innerHeight - 40) window.scrollBy(0, 18)
+            else if (p.y < 40) window.scrollBy(0, -18)
+          }
           return
         }
-        const at = { x: x.get(), y: y.get() }
+        if (m.t === 'grab') {
+          const p = at()
+          grabbing.current = m.on
+          setGrab(m.on)
+          if (m.on) {
+            setMenu(null)
+            const c = caretAt(p.x, p.y)
+            anchor.current = c && c.node.nodeType === Node.TEXT_NODE ? c : null
+            window.getSelection()?.removeAllRanges()
+            fire(p.x, p.y, 'down')
+          } else {
+            fire(p.x, p.y, 'up')
+            anchor.current = null
+          }
+          return
+        }
+        if (m.t === 'menu') {
+          const p = at()
+          const hit = document.elementFromPoint(p.x, p.y)
+          // a page with its own right-click menu gets the event first
+          const ev = new MouseEvent('contextmenu', { bubbles: true, cancelable: true, composed: true, clientX: p.x, clientY: p.y, button: 2 })
+          if (hit && !hit.dispatchEvent(ev)) return
+          const link = hit?.closest<HTMLAnchorElement>('a[href]')?.href ?? ''
+          setMenu({ id: Date.now(), ...p, link, picked: window.getSelection()?.toString().trim() ?? '' })
+          return
+        }
+        const p = at()
         const id = Date.now()
         setDown(true)
         window.setTimeout(() => setDown(false), 140)
-        setTaps((t) => [...t, { id, ...at }])
+        setTaps((t) => [...t, { id, ...p }])
         window.setTimeout(() => setTaps((t) => t.filter((k) => k.id !== id)), 800)
-        pressAt(at.x, at.y)
+        pressAt(p.x, p.y)
       }),
     [x, y],
   )
@@ -79,16 +163,96 @@ function Pointer({ name }: { name: string }) {
     <>
       <motion.div className="ph-cursor" style={{ x: sx, y: sy }} initial={false} animate={{ scale: on ? 1 : 0 }} transition={{ type: 'spring', stiffness: 420, damping: 22 }} aria-hidden>
         <motion.div style={{ rotate: lean, originX: 0, originY: 0 }}>
-          <motion.span className="ph-cursor__body" animate={{ scale: down ? 0.72 : 1, rotate: down ? -12 : 0 }} transition={{ type: 'spring', stiffness: 600, damping: 12 }} />
+          <motion.span className={`ph-cursor__body ${grab ? 'is-grab' : ''}`} animate={{ scale: down ? 0.72 : grab ? 0.82 : 1, rotate: down ? -12 : 0 }} transition={{ type: 'spring', stiffness: 600, damping: 12 }} />
           <motion.span className="ph-cursor__tag" animate={{ y: down ? 3 : 0 }} transition={{ type: 'spring', stiffness: 500, damping: 14 }}>
-            <PhoneGlyph size={12} /> {name}
+            <PhoneGlyph size={12} /> {grab ? `${name} · selecting` : name}
           </motion.span>
         </motion.div>
       </motion.div>
       {taps.map((t) => (
         <motion.span key={t.id} className="ph-tap" style={{ left: t.x, top: t.y }} initial={{ scale: 0.2, borderWidth: 8 }} animate={{ scale: 2.6, borderWidth: 0 }} transition={{ duration: 0.7, ease: EASE }} aria-hidden />
       ))}
+      <AnimatePresence>{menu && <RemoteMenu key={menu.id} {...menu} onClose={() => setMenu(null)} />}</AnimatePresence>
     </>
+  )
+}
+
+/** The menu a right click from the phone opens where its cursor stands. The phone picks from it by pointing and
+ *  tapping, like anything else on the page; a click with the mouse works too. */
+function RemoteMenu({ x, y, link, picked, onClose }: { x: number; y: number; link: string; picked: string; onClose: () => void }) {
+  const navigate = useNavigate()
+  const box = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const away = (e: Event) => {
+      if (!box.current?.contains(e.target as Node)) onClose()
+    }
+    const key = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
+    const t = window.setTimeout(() => {
+      document.addEventListener('pointerdown', away, true)
+      document.addEventListener('scroll', onClose, true)
+    }, 50)
+    window.addEventListener('keydown', key)
+    return () => {
+      window.clearTimeout(t)
+      document.removeEventListener('pointerdown', away, true)
+      document.removeEventListener('scroll', onClose, true)
+      window.removeEventListener('keydown', key)
+    }
+  }, [onClose])
+  const copy = (t: string, what: string) =>
+    navigator.clipboard?.writeText(t).then(() => notify.ok(`${what} copied`), () => notify.warn('Could not copy', 'The browser wants a click on this screen first.'))
+  const inside = link && new URL(link).origin === window.location.origin
+  const items: { id: string; label: string; glyph: string; run: () => void }[] = [
+    ...(picked
+      ? [
+          { id: 'copy', label: 'Copy selection', glyph: 'M8 8 H19 V20 H8 Z M5 16 V4 H16', run: () => copy(picked, 'Selection') },
+          { id: 'give', label: 'Send selection to phone', glyph: 'M7 2.5 H17 V21.5 H7 Z M10 9 L12 7 L14 9 M12 7 V14', run: () => post({ t: 'drop', text: picked.slice(0, 4000) }) },
+        ]
+      : []),
+    ...(link
+      ? [
+          { id: 'open', label: inside ? 'Go to link' : 'Open link here', glyph: 'M14 4 H20 V10 M20 4 L11 13 M18 14 V20 H4 V6 H10', run: () => (inside ? navigate(new URL(link).pathname + new URL(link).search) : window.location.assign(link)) },
+          { id: 'link', label: 'Send link to phone', glyph: 'M10 14 A4 4 0 0 0 16 14 L19 11 A4 4 0 0 0 13 5 L12 6 M14 10 A4 4 0 0 0 8 10 L5 13 A4 4 0 0 0 11 19 L12 18', run: () => post({ t: 'drop', text: link }) },
+          { id: 'copylink', label: 'Copy link', glyph: 'M8 8 H19 V20 H8 Z M5 16 V4 H16', run: () => copy(link, 'Link') },
+        ]
+      : []),
+    { id: 'back', label: 'Back', glyph: 'M19 12 H5 M11 6 L5 12 L11 18', run: () => window.history.back() },
+    { id: 'fwd', label: 'Forward', glyph: 'M5 12 H19 M13 6 L19 12 L13 18', run: () => window.history.forward() },
+    { id: 'page', label: 'Send this page to phone', glyph: 'M4 6 H20 V18 H4 Z M4 9.5 H20', run: () => post({ t: 'drop', text: window.location.href, title: document.title }) },
+    { id: 'reload', label: 'Reload', glyph: 'M20 12 A8 8 0 1 1 17 5.8 M20 4 V9 H15', run: () => window.location.reload() },
+  ]
+  const W = 236
+  const H = items.length * 38 + 16
+  const left = Math.min(x + 6, window.innerWidth - W - 10)
+  const top = y + H + 10 > window.innerHeight ? Math.max(10, y - H - 6) : y + 6
+  return (
+    <motion.div
+      ref={box}
+      className="ph-menu"
+      role="menu"
+      style={{ left, top, width: W, transformOrigin: `${x - left}px ${y - top}px` }}
+      initial={{ scale: 0.3, rotate: -6 }}
+      animate={{ scale: 1, rotate: 0 }}
+      exit={{ scale: 0.5, transition: { duration: 0.14 } }}
+      transition={{ type: 'spring', stiffness: 520, damping: 26 }}
+    >
+      {items.map((it, i) => (
+        <motion.button
+          key={it.id}
+          role="menuitem"
+          initial={{ x: -14 }}
+          animate={{ x: 0 }}
+          transition={{ type: 'spring', stiffness: 500, damping: 24, delay: 0.03 + i * 0.025 }}
+          onClick={() => {
+            it.run()
+            onClose()
+          }}
+        >
+          <svg viewBox="0 0 24 24" aria-hidden><path d={it.glyph} /></svg>
+          {it.label}
+        </motion.button>
+      ))}
+    </motion.div>
   )
 }
 
@@ -141,6 +305,7 @@ function DropCard({ d }: { d: Drop }) {
 // what this screen sent lately, kept across pages so it can be sent again in a click
 let sentLog: { id: string; text: string; title?: string }[] = []
 
+const DRAWER_W = 314
 const DOCK_BEADS = ['var(--orange)', 'var(--yellow)', 'var(--green)', 'var(--blue)', 'var(--violet)']
 
 type Act = { id: string; label: string; sub: string; bg: string; glyph: string; run: () => void; off?: boolean; on?: boolean }
@@ -257,7 +422,7 @@ function Dock() {
           <DropCard key={d.id} d={d} />
         ))}
       </AnimatePresence>
-      <motion.div className={`ph-tether is-${pair.status} ${pair.held ? 'is-held' : ''}`} layout transition={{ type: 'spring', stiffness: 340, damping: 30 }}>
+      <div className={`ph-tether is-${pair.status} ${pair.held ? 'is-held' : ''}`}>
         <button className="ph-tether__handle" onClick={() => setOpen((o) => !o)} aria-expanded={open} aria-keyshortcuts="Alt+P" data-cursor={open ? 'Fold the drawer · Esc' : 'Your phone · Alt+P'}>
           <PhoneGlyph live={live} />
           <span className="ph-tether__beads" aria-hidden>
@@ -274,12 +439,12 @@ function Dock() {
         </button>
         <AnimatePresence initial={false}>
           {open && (
-            <motion.div className="ph-drawer" initial={{ width: 0 }} animate={{ width: 'auto' }} exit={{ width: 0 }} transition={{ type: 'spring', stiffness: 320, damping: 32 }}>
+            <motion.div className="ph-drawer" initial={{ width: 0 }} animate={{ width: DRAWER_W }} exit={{ width: 0, transition: { duration: 0.28, ease: [0.76, 0, 0.24, 1] } }} transition={{ type: 'spring', stiffness: 300, damping: 30 }}>
               <div className="ph-drawer__in">
                 <div className="ph-drawer__head">
                   <small>{live ? (pair.held ? 'Paused' : 'Linked to') : lost ? 'Out of reach' : 'Waiting for'}</small>
                   <AnimatePresence mode="popLayout" initial={false}>
-                    <motion.b key={name} initial={{ y: 20, rotateX: -80 }} animate={{ y: 0, rotateX: 0 }} exit={{ y: -20, rotateX: 80, transition: { duration: 0.22, ease: [0.5, 0, 0.75, 0] } }} transition={{ type: 'spring', stiffness: 420, damping: 24 }}>{name[0].toUpperCase() + name.slice(1)}</motion.b>
+                    <motion.b key={name} initial={{ y: 20, rotateX: -80 }} animate={{ y: 0, rotateX: 0 }} exit={{ y: -20, rotateX: 80, transition: { duration: 0.22, ease: [0.5, 0, 0.75, 0] } }} transition={{ type: 'spring', stiffness: 420, damping: 24 }}>{pair.peer || 'Your phone'}</motion.b>
                   </AnimatePresence>
                   <span className="ph-drawer__kbd"><kbd>Alt</kbd><kbd>P</kbd></span>
                 </div>
@@ -308,7 +473,7 @@ function Dock() {
             </motion.div>
           )}
         </AnimatePresence>
-      </motion.div>
+      </div>
     </div>
   )
 }

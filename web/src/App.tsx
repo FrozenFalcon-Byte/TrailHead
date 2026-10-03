@@ -27,10 +27,51 @@ import { PairSplash } from './motion/PairSplash'
 // Read once per page load: set when the previous page reloaded itself into a new build.
 const ARRIVAL = takeArrival()
 
+/* A tab opened before a deploy asks for the old build's bundles, which the new deploy no longer serves; a stalled
+   network can also leave one hanging. Either way the page would sit on its loading line for good. A bundle that fails
+   or takes too long reloads the page once, into the current build; a second failure in a row is shown as an error. */
+const RELOADED = 'th-chunk-reload'
+const once = (): boolean => {
+  try {
+    if (sessionStorage.getItem(RELOADED)) return false
+    sessionStorage.setItem(RELOADED, '1')
+  } catch {
+    return false
+  }
+  window.location.reload()
+  return true
+}
+function bundle<T>(load: () => Promise<T>) {
+  return () =>
+    new Promise<T>((resolve, reject) => {
+      const late = window.setTimeout(() => {
+        if (!once()) reject(new Error('This page took too long to load. Check the connection and reload.'))
+      }, 15000)
+      load().then(
+        (m) => {
+          window.clearTimeout(late)
+          try {
+            sessionStorage.removeItem(RELOADED)
+          } catch {
+            /* nothing kept */
+          }
+          resolve(m)
+        },
+        (err) => {
+          window.clearTimeout(late)
+          if (!once()) reject(err)
+        },
+      )
+    })
+}
+window.addEventListener('vite:preloadError', (e) => {
+  if (once()) e.preventDefault()
+})
+
 // The dashboard is its own bundle, so the landing page loads light.
-const Dashboard = lazy(() => import('./dash/Dashboard'))
-const Guide = lazy(() => import('./guide/Guide'))
-const Pair = lazy(() => import('./pages/Pair'))
+const Dashboard = lazy(bundle(() => import('./dash/Dashboard')))
+const Guide = lazy(bundle(() => import('./guide/Guide')))
+const Pair = lazy(bundle(() => import('./pages/Pair')))
 
 /** Redirect exactly once. <Navigate> would fire again every time the page re-renders while the curtain plays its
  *  exit, and that loops. */
